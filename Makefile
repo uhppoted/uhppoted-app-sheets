@@ -67,5 +67,5 @@ version: build
 # SHEETS COMMANDS
 
 get-acl: build
-	$(CLI) $(DEBUG) --credentials "./runtime/credentials.json" --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" --range "Class Data!A2:E" --file "runtime/test.ACL"
+	$(CLI) $(DEBUG) --credentials "./runtime/quickstart.json" --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" --range "Class Data!A2:E" --file "runtime/test.ACL"
 

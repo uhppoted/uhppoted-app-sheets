@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -25,23 +26,21 @@ func authorize(credentials string) (*http.Client, error) {
 		return nil, err
 	}
 
-	dir := filepath.Dir(credentials)
+	dir, file := filepath.Split(credentials)
+	name := strings.TrimSuffix(file, filepath.Ext(file))
+	tokens := filepath.Join(dir, fmt.Sprintf("%s.tokens", name))
 
-	return getClient(dir, config), nil
+	return getClient(tokens, config), nil
 }
 
 // Retrieve a token, saves the token, then returns the generated client.
-func getClient(dir string, config *oauth2.Config) *http.Client {
-	// The file token.json stores the user's access and refresh tokens, and is
-	// created automatically when the authorization flow completes for the first
-	// time.
-	tokFile := filepath.Join(dir, "token.json")
-	tok, err := tokenFromFile(tokFile)
+func getClient(tokens string, config *oauth2.Config) *http.Client {
+	token, err := tokenFromFile(tokens)
 	if err != nil {
-		tok = getTokenFromWeb(config)
-		saveToken(tokFile, tok)
+		token = getTokenFromWeb(config)
+		saveToken(tokens, token)
 	}
-	return config.Client(context.Background(), tok)
+	return config.Client(context.Background(), token)
 }
 
 // Request a token from the web, then returns the retrieved token.

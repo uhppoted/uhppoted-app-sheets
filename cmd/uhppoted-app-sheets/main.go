@@ -54,7 +54,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	re := regexp.MustCompile("https://docs.google.com/spreadsheets/d/([A-Za-z0-9]+)")
+	re := regexp.MustCompile("https://docs.google.com/spreadsheets/d/([A-Za-z0-9_]+)")
 	match := re.FindStringSubmatch(options.url)
 
 	if len(match) < 2 {
@@ -63,6 +63,10 @@ func main() {
 
 	spreadsheet := match[1]
 	region := options.region
+
+	if options.debug {
+		log.Printf("DEBUG  Spreadsheet - ID:%s  range:%s", spreadsheet, region)
+	}
 
 	client, err := authorize(options.credentials)
 	if err != nil {
