@@ -52,14 +52,14 @@ release-tar: release
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
 debug: build
-	$(CLI) help
+	$(CLI) get-acl --credentials "./runtime/quickstart.json" --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" --range "Class Data!A2:E" --file "runtime/test.ACL"
 	
 usage: build
 	$(CLI)
 
 help: build
 	$(CLI) help
-	$(CLI) help get-devices
+	$(CLI) help get-acl
 
 version: build
 	$(CLI) version
