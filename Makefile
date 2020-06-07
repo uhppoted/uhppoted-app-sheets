@@ -52,8 +52,9 @@ release-tar: release
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
 debug: build
-	$(CLI) get-acl --credentials "./runtime/quickstart.json" --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" --range "Class Data!A2:E" --file "runtime/test.ACL"
-	
+	$(CLI) get-acl --credentials "./runtime/uhppoted-test.json" --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "runtime/debug.acl"
+
+
 usage: build
 	$(CLI)
 
@@ -67,5 +68,5 @@ version: build
 # SHEETS COMMANDS
 
 get-acl: build
-	$(CLI) $(DEBUG) --credentials "./runtime/quickstart.json" --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" --range "Class Data!A2:E" --file "runtime/test.ACL"
+	$(CLI) $(DEBUG) get-acl --credentials "./runtime/uhppoted-test.json" --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "runtime/debug.acl"
 

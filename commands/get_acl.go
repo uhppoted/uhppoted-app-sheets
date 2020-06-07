@@ -54,8 +54,7 @@ func (c *GetACL) Execute(ctx context.Context) error {
 		fmt.Errorf("--range is a required option")
 	}
 
-	re := regexp.MustCompile("https://docs.google.com/spreadsheets/d/([A-Za-z0-9_]+)")
-	match := re.FindStringSubmatch(c.url)
+	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(c.url)
 	if len(match) < 2 {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
