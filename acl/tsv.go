@@ -2,19 +2,40 @@ package acl
 
 import (
 	"encoding/csv"
-	"google.golang.org/api/sheets/v4"
-	"os"
-	"path/filepath"
+	"fmt"
+	"io"
 	"regexp"
 	"strings"
+
+	"google.golang.org/api/sheets/v4"
 )
 
-func MakeTSV(filename string, data *sheets.ValueRange) error {
+func MakeTSV(f io.Writer, data *sheets.ValueRange) error {
+	if len(data.Values) == 0 {
+		return fmt.Errorf("Empty sheet")
+	}
+
 	// ... header
 	row := data.Values[0]
 	header := make([]string, len(row))
 	for i, v := range row {
-		header[i] = strings.TrimSpace(v.(string))
+		header[i] = clean(v.(string))
+	}
+
+	if len(header) == 0 {
+		return fmt.Errorf("Missing/invalid header row")
+	}
+
+	if len(header) < 1 || normalise(header[0]) != "cardnumber" {
+		return fmt.Errorf("Missing 'card number' column")
+	}
+
+	if len(header) < 2 || normalise(header[1]) != "from" {
+		return fmt.Errorf("Missing 'from' column")
+	}
+
+	if len(header) < 3 || normalise(header[2]) != "to" {
+		return fmt.Errorf("Missing 'to' column")
 	}
 
 	// ... records
@@ -34,18 +55,6 @@ func MakeTSV(filename string, data *sheets.ValueRange) error {
 	}
 
 	// ... write to file
-	dir := filepath.Dir(filename)
-	if err := os.MkdirAll(dir, 0660); err != nil {
-		return err
-	}
-
-	f, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
 	w := csv.NewWriter(f)
 	w.Comma = '\t'
 
@@ -57,4 +66,12 @@ func MakeTSV(filename string, data *sheets.ValueRange) error {
 	w.Flush()
 
 	return nil
+}
+
+func clean(v string) string {
+	return strings.TrimSpace(v)
+}
+
+func normalise(v string) string {
+	return strings.ToLower(strings.ReplaceAll(v, " ", ""))
 }

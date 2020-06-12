@@ -1,7 +1,8 @@
-VERSION = v0.6.x
-LDFLAGS = -ldflags "-X uhppote.VERSION=$(VERSION)" 
-DIST   ?= development
-CLI     = ./bin/uhppoted-app-sheets
+VERSION     = v0.6.x
+LDFLAGS     = -ldflags "-X uhppote.VERSION=$(VERSION)" 
+DIST       ?= development
+CLI         = ./bin/uhppoted-app-sheets
+CREDENTIALS = ../runtime/.uhppoted-test.json
 
 DATETIME  = $(shell date "+%Y-%m-%d %H:%M:%S")
 DEBUG    ?= --debug
@@ -52,8 +53,7 @@ release-tar: release
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
 debug: build
-	$(CLI) get-acl --credentials "./runtime/uhppoted-test.json" --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "runtime/debug.acl"
-
+	$(CLI) get-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "../runtime/sheets/debug.acl"
 
 usage: build
 	$(CLI)
@@ -68,5 +68,5 @@ version: build
 # SHEETS COMMANDS
 
 get-acl: build
-	$(CLI) $(DEBUG) get-acl --credentials "./runtime/uhppoted-test.json" --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "runtime/debug.acl"
+	$(CLI) get-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "../runtime/sheets/debug.acl"
 

@@ -4,7 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -85,8 +88,29 @@ func (c *GetACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("No data in spreadsheet/range")
 	}
 
-	if err := acl.MakeTSV(c.file, response); err != nil {
+	tmp, err := ioutil.TempFile(os.TempDir(), "ACL")
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		tmp.Close()
+		os.Remove(tmp.Name())
+	}()
+
+	if err := acl.MakeTSV(tmp, response); err != nil {
 		return fmt.Errorf("Error creating TSV file (%v)", err)
+	}
+
+	tmp.Close()
+
+	dir := filepath.Dir(c.file)
+	if err := os.MkdirAll(dir, 0770); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tmp.Name(), c.file); err != nil {
+		return err
 	}
 
 	log.Printf("INFO   Retrieved ACL to file %s\n", c.file)
