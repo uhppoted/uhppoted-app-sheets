@@ -2,9 +2,12 @@
 
 ## IN PROGRESS
 
+- [ ] Make Sheets/TSV column order less rigid
 - [ ] Handle --debug flag before command
-- [ ] compare-acl
 - [ ] load-acl
+      - `dry-run` option
+- [ ] compare-acl
+- [ ] store-acl
 
 ## TODO
 
