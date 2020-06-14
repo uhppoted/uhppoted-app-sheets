@@ -53,7 +53,9 @@ release-tar: release
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
 debug: build
-	$(CLI) get-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "../runtime/sheets/debug.acl"
+	$(CLI) help
+	$(CLI) help load-acl
+	$(CLI) load-acl --config ../runtime/sheets/uhppoted.conf --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K"
 
 usage: build
 	$(CLI)
@@ -69,4 +71,7 @@ version: build
 
 get-acl: build
 	$(CLI) get-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "../runtime/sheets/debug.acl"
+
+load-acl: build
+	$(CLI) load-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K"
 

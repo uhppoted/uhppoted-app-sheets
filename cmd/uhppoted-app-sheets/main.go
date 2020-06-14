@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	//	"regexp"
-	//	"strings"
 	"time"
 
 	"github.com/uhppoted/uhppoted-api/command"
@@ -17,6 +15,7 @@ import (
 var cli = []uhppoted.Command{
 	&commands.VersionCmd,
 	&commands.GetACLCmd,
+	&commands.LoadACLCmd,
 }
 
 var options = struct {
@@ -36,10 +35,6 @@ var options = struct {
 var help = uhppoted.NewHelp("uhppoted-app-sheets", cli, nil)
 
 func main() {
-	//	flag.StringVar(&options.credentials, "credentials", options.credentials, "Path for the 'credentials.json' file")
-	//	flag.StringVar(&options.url, "url", options.url, "Spreadsheet URL")
-	//	flag.StringVar(&options.region, "range", options.region, "Spreadsheet range e.g. 'Class Data!A2:E'")
-	//	flag.StringVar(&options.file, "file", options.file, "TSV file name. Defaults to 'ACL - <yyyy-mm-dd HHmmss>.tsv'")
 	flag.BoolVar(&options.debug, "debug", options.debug, "Enable debugging information")
 	flag.Parse()
 
