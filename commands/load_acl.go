@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	"context"
 	"flag"
 	"fmt"
@@ -96,21 +95,23 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("No data in spreadsheet/range")
 	}
 
-	var tsv bytes.Buffer
-	if err := acl.MakeTSV(&tsv, response); err != nil {
-		return fmt.Errorf("Error creating TSV (%v)", err)
+	table, err := acl.MakeTable(response)
+	if err != nil {
+		return fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}
 
-	list, err := api.ParseTSV(bytes.NewReader(tsv.Bytes()), devices)
+	list, err := api.ParseTable(table, devices)
 	if err != nil {
 		return err
+	} else if list == nil {
+		return fmt.Errorf("Error creating ACL from worksheet (%v)", list)
 	}
 
-	for k, l := range list {
+	for k, l := range *list {
 		log.Printf("%v  Retrieved %v records", k, len(l))
 	}
 
-	rpt, err := api.PutACL(&u, list)
+	rpt, err := api.PutACL(&u, *list)
 	for k, v := range rpt {
 		log.Printf("%v  SUMMARY  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v", k, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed)
 	}

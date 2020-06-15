@@ -1,18 +1,19 @@
 package acl
 
 import (
-	"encoding/csv"
 	"fmt"
-	"io"
 	"regexp"
+	"strings"
 	"time"
 
 	"google.golang.org/api/sheets/v4"
+
+	api "github.com/uhppoted/uhppoted-api/acl"
 )
 
-func MakeTSV(f io.Writer, data *sheets.ValueRange) error {
+func MakeTable(data *sheets.ValueRange) (*api.Table, error) {
 	if len(data.Values) == 0 {
-		return fmt.Errorf("Empty sheet")
+		return nil, fmt.Errorf("Empty sheet")
 	}
 
 	// .. build index
@@ -21,7 +22,7 @@ func MakeTSV(f io.Writer, data *sheets.ValueRange) error {
 	for i, v := range row {
 		k := normalise(v.(string))
 		if _, ok := index[k]; ok {
-			return fmt.Errorf("Duplicate column name '%s'", v.(string))
+			return nil, fmt.Errorf("Duplicate column name '%s'", v.(string))
 		}
 
 		index[k] = i
@@ -51,19 +52,19 @@ func MakeTSV(f io.Writer, data *sheets.ValueRange) error {
 	}
 
 	if len(header) == 0 {
-		return fmt.Errorf("Missing/invalid header row")
+		return nil, fmt.Errorf("Missing/invalid header row")
 	}
 
 	if len(header) < 1 || normalise(header[0]) != "cardnumber" {
-		return fmt.Errorf("Missing 'card number' column")
+		return nil, fmt.Errorf("Missing 'card number' column")
 	}
 
 	if len(header) < 2 || normalise(header[1]) != "from" {
-		return fmt.Errorf("Missing 'from' column")
+		return nil, fmt.Errorf("Missing 'from' column")
 	}
 
 	if len(header) < 3 || normalise(header[2]) != "to" {
-		return fmt.Errorf("Missing 'to' column")
+		return nil, fmt.Errorf("Missing 'to' column")
 	}
 
 	// ... records
@@ -101,16 +102,16 @@ func MakeTSV(f io.Writer, data *sheets.ValueRange) error {
 		records = append(records, record)
 	}
 
-	// ... write to file
-	w := csv.NewWriter(f)
-	w.Comma = '\t'
+	return &api.Table{
+		Header:  header,
+		Records: records,
+	}, nil
+}
 
-	w.Write(header)
-	for _, record := range records {
-		w.Write(record)
-	}
+func clean(v string) string {
+	return strings.TrimSpace(v)
+}
 
-	w.Flush()
-
-	return nil
+func normalise(v string) string {
+	return strings.ToLower(strings.ReplaceAll(v, " ", ""))
 }
