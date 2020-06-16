@@ -8,11 +8,11 @@
       - log result to worksheet
       - log report to worksheet
       - `dry-run` option
+- [ ] Allow --debug flag before command
+- [ ] Allow --conf flag before command
 - [ ] Update the DEFAULT values - they all refer to twystd :-(
 - [ ] compare-acl
 - [ ] store-acl
-- [ ] Allow --debug flag before command
-- [ ] Allow --conf flag before command
 - [ ] Remove 'run' argument from uhppoted-api:command.Parse
 - [ ] GMail API notifications (?)
 
