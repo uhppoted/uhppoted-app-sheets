@@ -7,17 +7,21 @@ import (
 	"log"
 	"regexp"
 	"strings"
+	"time"
 
+	"google.golang.org/api/sheets/v4"
+
+	"github.com/uhppoted/uhppote-core/uhppote"
 	api "github.com/uhppoted/uhppoted-api/acl"
 	"github.com/uhppoted/uhppoted-api/config"
 	"github.com/uhppoted/uhppoted-app-sheets/acl"
-	"google.golang.org/api/sheets/v4"
 )
 
 var LoadACLCmd = LoadACL{
 	credentials: "",
 	url:         "",
 	region:      "",
+	logsheet:    "Log!A2:G",
 	dryrun:      false,
 	config:      config.DefaultConfig,
 	debug:       false,
@@ -27,6 +31,7 @@ type LoadACL struct {
 	credentials string
 	url         string
 	region      string
+	logsheet    string
 	dryrun      bool
 	config      string
 	debug       bool
@@ -38,6 +43,7 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&l.credentials, "credentials", l.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&l.url, "url", l.url, "Spreadsheet URL")
 	flagset.StringVar(&l.region, "range", l.region, "Spreadsheet range e.g. 'Class Data!A2:E'")
+	flagset.StringVar(&l.logsheet, "log", l.logsheet, fmt.Sprintf("Spreadsheet range for logging result. Defaults to %s", l.logsheet))
 	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
 	flagset.BoolVar(&l.dryrun, "dryrun", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
 
@@ -73,7 +79,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	region := l.region
 
 	if l.debug {
-		log.Printf("DEBUG  Spreadsheet - ID:%s  range:%s", spreadsheet, region)
+		log.Printf("DEBUG  Spreadsheet - ID:%s  range:%s  log:%s", spreadsheet, region, l.logsheet)
 	}
 
 	client, err := authorize(l.credentials)
@@ -86,25 +92,9 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("Unable to create new Sheets client (%v)", err)
 	}
 
-	response, err := google.Spreadsheets.Values.Get(spreadsheet, region).Do()
-	if err != nil {
-		return fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
-	}
-
-	if len(response.Values) == 0 {
-		return fmt.Errorf("No data in spreadsheet/range")
-	}
-
-	table, err := acl.MakeTable(response)
-	if err != nil {
-		return fmt.Errorf("Error creating table from worksheet (%v)", err)
-	}
-
-	list, err := api.ParseTable(table, devices)
+	list, err := l.getACL(google, spreadsheet, region, devices, ctx)
 	if err != nil {
 		return err
-	} else if list == nil {
-		return fmt.Errorf("Error creating ACL from worksheet (%v)", list)
 	}
 
 	for k, l := range *list {
@@ -114,6 +104,54 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	rpt, err := api.PutACL(&u, *list)
 	for k, v := range rpt {
 		log.Printf("%v  SUMMARY  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v", k, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed)
+	}
+
+	err = l.logToWorksheet(google, spreadsheet, rpt, ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (l *LoadACL) getACL(google *sheets.Service, spreadsheet, region string, devices []*uhppote.Device, ctx context.Context) (*api.ACL, error) {
+	response, err := google.Spreadsheets.Values.Get(spreadsheet, region).Do()
+	if err != nil {
+		return nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
+	}
+
+	if len(response.Values) == 0 {
+		return nil, fmt.Errorf("No data in spreadsheet/range")
+	}
+
+	table, err := acl.MakeTable(response)
+	if err != nil {
+		return nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
+	}
+
+	list, err := api.ParseTable(table, devices)
+	if err != nil {
+		return nil, err
+	} else if list == nil {
+		return nil, fmt.Errorf("Error creating ACL from worksheet (%v)", list)
+	}
+
+	return list, nil
+}
+
+func (l *LoadACL) logToWorksheet(google *sheets.Service, spreadsheet string, report map[uint32]api.Report, ctx context.Context) error {
+	var rows = sheets.ValueRange{
+		Values: [][]interface{}{},
+	}
+
+	timestamp := time.Now().Format("2006-01-02 15:04:05")
+	for k, v := range report {
+		rows.Values = append(rows.Values, []interface{}{timestamp, k, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed})
+	}
+
+	_, err := google.Spreadsheets.Values.Append(spreadsheet, l.logsheet, &rows).ValueInputOption("RAW").InsertDataOption("INSERT_ROWS").Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("Error writing log to Google Sheets (%w)", err)
 	}
 
 	return nil

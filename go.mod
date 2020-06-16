@@ -11,6 +11,6 @@ require (
 )
 
 replace (
-	github.com/uhppoted/uhppote-core => github.com/uhppoted/uhppote-core master
-	github.com/uhppoted/uhppoted-api => github.com/uhppoted/uhppoted-api master
+	github.com/uhppoted/uhppote-core => github.com/uhppoted/uhppote-core v0.6.4-0.20200616052722-1d3ab43ea21e
+	github.com/uhppoted/uhppoted-api => github.com/uhppoted/uhppoted-api v0.6.4-0.20200616053657-974bf27cd459
 )

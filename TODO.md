@@ -3,10 +3,11 @@
 ## IN PROGRESS
 
 - [x] get-acl
-- [x] Make Sheets/TSV column order less rigid
+- [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
-      - log result to worksheet
-      - log report to worksheet
+      - Make log columns order less fixed
+      - Delete old log rows
+      - Write report to worksheet
       - `dry-run` option
 - [ ] Allow --debug flag before command
 - [ ] Allow --conf flag before command
