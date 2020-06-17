@@ -19,8 +19,21 @@ jobs:
         go-version: ^1.14
       id: go
 
+    - name: Create build folder
+      run: mkdir -p build
+      
+    - name: Switch to build folder
+      run: cd build
+
+    - name: Checkout uhppote-core
+      run: git clone https://github.com/uhppoted/uhppote-core.git
+  
+    - name: Checkout uhppoted-apiu
+      run: git clone https://github.com/uhppoted/uhppoted-api.git
+      
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
     - name: Build
       run: make release
+      
