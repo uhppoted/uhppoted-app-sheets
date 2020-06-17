@@ -19,9 +19,6 @@ jobs:
         go-version: ^1.14
       id: go
 
-    - name: Debug(1)
-      run: pwd
-
     - name: Checkout uhppote-core
       run: git clone https://github.com/uhppoted/uhppote-core.git ../uhppote-core
   
@@ -31,12 +28,6 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Debug(2)
-      run: pwd
-      
-    - name: Debug(3)
-      run: ls -1 ..
-        
     - name: Build
       run: make release
       
