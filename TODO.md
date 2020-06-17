@@ -5,10 +5,10 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
+      - `dry-run` option
       - Make log columns order less fixed
       - Delete old log rows
       - Write report to worksheet
-      - `dry-run` option
 - [ ] Allow --debug flag before command
 - [ ] Allow --conf flag before command
 - [ ] Update the DEFAULT values - they all refer to twystd :-(

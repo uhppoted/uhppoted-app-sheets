@@ -24,6 +24,7 @@ var LoadACLCmd = LoadACL{
 	logsheet:    "Log!A2:G",
 	dryrun:      false,
 	config:      config.DefaultConfig,
+	nolog:       false,
 	debug:       false,
 }
 
@@ -34,6 +35,7 @@ type LoadACL struct {
 	logsheet    string
 	dryrun      bool
 	config      string
+	nolog       bool
 	debug       bool
 }
 
@@ -45,6 +47,7 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&l.region, "range", l.region, "Spreadsheet range e.g. 'Class Data!A2:E'")
 	flagset.StringVar(&l.logsheet, "log", l.logsheet, fmt.Sprintf("Spreadsheet range for logging result. Defaults to %s", l.logsheet))
 	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
+	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
 	flagset.BoolVar(&l.dryrun, "dryrun", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
 
 	return flagset
@@ -106,9 +109,11 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		log.Printf("%v  SUMMARY  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v", k, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed)
 	}
 
-	err = l.logToWorksheet(google, spreadsheet, rpt, ctx)
-	if err != nil {
-		return err
+	if !l.nolog {
+		err = l.logToWorksheet(google, spreadsheet, rpt, ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
