@@ -67,7 +67,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	if strings.TrimSpace(l.region) == "" {
-		fmt.Errorf("--range is a required option")
+		return fmt.Errorf("--range is a required option")
 	}
 
 	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(l.url)
