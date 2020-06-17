@@ -104,7 +104,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		log.Printf("%v  Retrieved %v records", k, len(l))
 	}
 
-	rpt, err := api.PutACL(&u, *list)
+	rpt, err := api.PutACL(&u, *list, l.dryrun)
 	for k, v := range rpt {
 		log.Printf("%v  SUMMARY  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v", k, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed)
 	}

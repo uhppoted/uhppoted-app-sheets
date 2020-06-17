@@ -55,7 +55,7 @@ release-tar: release
 debug: build
 	$(CLI) help
 	$(CLI) help load-acl
-	$(CLI) load-acl --no-log --config ../runtime/sheets/uhppoted.conf --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K"  --log "Log!A2:G"
+	$(CLI) load-acl --dryrun --config ../runtime/sheets/uhppoted.conf --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K"  --log "Log!A2:G"
 
 usage: build
 	$(CLI)

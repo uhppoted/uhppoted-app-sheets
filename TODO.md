@@ -5,7 +5,6 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
-      - `dry-run` option
       - Make log columns order less fixed
       - Delete old log rows
       - Write report to worksheet
