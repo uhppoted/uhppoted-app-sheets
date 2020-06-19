@@ -55,7 +55,14 @@ release-tar: release
 debug: build
 	$(CLI) help
 	$(CLI) help load-acl
-	$(CLI) load-acl --dryrun --config ../runtime/sheets/uhppoted.conf --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --log-range "Log!A1:G" --log-retention 1
+	$(CLI) load-acl --dryrun \
+	                --config ../runtime/sheets/uhppoted.conf \
+	                --credentials $(CREDENTIALS) \
+	                --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	                --range "ACL!A2:K" \
+	                --report-range "Report!A1G" \
+	                --log-range "Log!A1:H" \
+	                --log-retention 1
 
 usage: build
 	$(CLI)
@@ -73,5 +80,11 @@ get-acl: build
 	$(CLI) get-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "../runtime/sheets/debug.acl"
 
 load-acl: build
-	$(CLI) load-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A:K" --log-range "Log!A1:G"  --log-retention 5
+	$(CLI) load-acl --config ../runtime/sheets/uhppoted.conf \
+	                --credentials $(CREDENTIALS) \
+	                --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	                --range "ACL!A2:K" \
+	                --report-range "Report!A1H" \
+	                --log-range "Log!A1:H" \
+	                --log-retention 1
 

@@ -4,10 +4,12 @@
 
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
+- [ ] Update everything that is using uhppoted-api::acl.Report
+
 - [ ] load-acl
-      - Write report to worksheet
+      - Clean up reporting code
       - Make log columns ordering less fixed
-      - Relook at maybe-doer (?)
+      - Make report structure less fixed
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
 - [ ] Update the DEFAULT values - they all refer to twystd :-(

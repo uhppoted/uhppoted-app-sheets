@@ -49,13 +49,13 @@ func getSpreadsheet(google *sheets.Service, id string) (*sheets.Spreadsheet, err
 	return spreadsheet, nil
 }
 
-func getSheetID(spreadsheet *sheets.Spreadsheet, area string) (int64, error) {
+func getSheet(spreadsheet *sheets.Spreadsheet, area string) (*sheets.Sheet, error) {
 	name := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(area)[1]
 	for _, sheet := range spreadsheet.Sheets {
 		if strings.ToLower(strings.TrimSpace(sheet.Properties.Title)) == strings.ToLower(strings.TrimSpace(name)) {
-			return sheet.Properties.SheetId, nil
+			return sheet, nil
 		}
 	}
 
-	return 0, fmt.Errorf("Unable to identify worksheet ID for '%s'", area)
+	return nil, fmt.Errorf("Unable to identify worksheet for '%s'", area)
 }
