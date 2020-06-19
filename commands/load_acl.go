@@ -22,7 +22,7 @@ var LoadACLCmd = LoadACL{
 	credentials:  "",
 	url:          "",
 	region:       "",
-	logSheet:     "Log!A2:G",
+	logRange:     "Log!A1:G",
 	logRetention: 30,
 	dryrun:       false,
 	config:       config.DefaultConfig,
@@ -34,7 +34,7 @@ type LoadACL struct {
 	credentials  string
 	url          string
 	region       string
-	logSheet     string
+	logRange     string
 	logRetention uint
 	dryrun       bool
 	config       string
@@ -48,7 +48,7 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&l.credentials, "credentials", l.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&l.url, "url", l.url, "Spreadsheet URL")
 	flagset.StringVar(&l.region, "range", l.region, "Spreadsheet range e.g. 'Class Data!A2:E'")
-	flagset.StringVar(&l.logSheet, "log", l.logSheet, fmt.Sprintf("Spreadsheet range for logging result. Defaults to %s", l.logSheet))
+	flagset.StringVar(&l.logRange, "log-range", l.logRange, fmt.Sprintf("Spreadsheet range for logging result. Defaults to %s", l.logRange))
 	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, fmt.Sprintf("Log sheet records older than 'log-retention' days are automatically pruned. Defaults to %v", l.logRetention))
 	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
 	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
@@ -82,11 +82,10 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
-	spreadsheet := match[1]
+	spreadsheetId := match[1]
 	region := l.region
-
 	if l.debug {
-		log.Printf("DEBUG  Spreadsheet - ID:%s  range:%s  log:%s", spreadsheet, region, l.logSheet)
+		log.Printf("DEBUG  Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, region, l.logRange)
 	}
 
 	client, err := authorize(l.credentials)
@@ -99,7 +98,12 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("Unable to create new Sheets client (%v)", err)
 	}
 
-	list, err := l.getACL(google, spreadsheet, region, devices, ctx)
+	spreadsheet, err := getSpreadsheet(google, spreadsheetId)
+	if err != nil {
+		return err
+	}
+
+	list, err := l.getACL(google, spreadsheetId, region, devices, ctx)
 	if err != nil {
 		return err
 	}
@@ -114,12 +118,12 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	if !l.nolog {
-		err = l.updateLogSheet(google, spreadsheet, l.logSheet, rpt, ctx)
+		err = l.updateLogSheet(google, spreadsheet, rpt, ctx)
 		if err != nil {
 			return err
 		}
 
-		err = l.pruneLogSheet(google, spreadsheet, l.logSheet, l.logRetention, ctx)
+		err = l.pruneLogSheet(google, spreadsheet, ctx)
 		if err != nil {
 			return err
 		}
@@ -153,7 +157,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet, area string, devic
 	return list, nil
 }
 
-func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet, area string, report map[uint32]api.Report, ctx context.Context) error {
+func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
 	var rows = sheets.ValueRange{
 		Values: [][]interface{}{},
 	}
@@ -163,7 +167,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet, area strin
 		rows.Values = append(rows.Values, []interface{}{timestamp, k, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed})
 	}
 
-	_, err := google.Spreadsheets.Values.Append(spreadsheet, area, &rows).ValueInputOption("RAW").InsertDataOption("OVERWRITE").Context(ctx).Do()
+	_, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.logRange, &rows).ValueInputOption("RAW").InsertDataOption("OVERWRITE").Context(ctx).Do()
 	if err != nil {
 		return fmt.Errorf("Error writing log to Google Sheets (%w)", err)
 	}
@@ -171,26 +175,25 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet, area strin
 	return nil
 }
 
-func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet, area string, retention uint, ctx context.Context) error {
-	logSheetID, err := l.getLogSheetID(google, spreadsheet, area)
+func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ctx context.Context) error {
+	logSheetID, err := getSheetID(spreadsheet, l.logRange)
 	if err != nil {
 		return err
-	} else if logSheetID == nil {
-		return fmt.Errorf("Invalid log sheet ID (%v)", logSheetID)
 	}
 
-	response, err := google.Spreadsheets.Values.Get(spreadsheet, area).Do()
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
 	}
 
 	before := time.Now().
 		In(time.Local).
-		Add(time.Hour * time.Duration(-24*(int(retention)-1))).
+		Add(time.Hour * time.Duration(-24*(int(l.logRetention)-1))).
 		Truncate(24 * time.Hour)
 
 	cutoff := time.Date(before.Year(), before.Month(), before.Day(), 0, 0, 0, 0, before.Location())
 	list := []int{}
+	deleted := 0
 
 	log.Printf("Pruning log records from before %v", cutoff.Format("2006-01-02"))
 
@@ -222,12 +225,11 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet, area string
 				Requests: []*sheets.Request{},
 			}
 
-			deleted := 0
 			for start, end := range ranges {
 				rq.Requests = append(rq.Requests, &sheets.Request{
 					DeleteDimension: &sheets.DeleteDimensionRequest{
 						Range: &sheets.DimensionRange{
-							SheetId:    *logSheetID,
+							SheetId:    logSheetID,
 							Dimension:  "ROWS",
 							StartIndex: int64(start - deleted),
 							EndIndex:   int64(end - deleted + 1),
@@ -238,32 +240,15 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet, area string
 				deleted += end - start + 1
 			}
 
-			_, err = google.Spreadsheets.BatchUpdate(spreadsheet, &rq).Context(ctx).Do()
-			if err != nil {
+			if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
 				return err
 			}
-
-			log.Printf("Pruned %d log records from log sheet", deleted)
 		}
 	}
+
+	log.Printf("Pruned %d log records from log sheet", deleted)
 
 	return nil
-}
-
-func (l *LoadACL) getLogSheetID(google *sheets.Service, spreadsheet, area string) (*int64, error) {
-	document, err := google.Spreadsheets.Get(spreadsheet).Do()
-	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve spreadsheet metadata (%v)", err)
-	}
-
-	name := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(area)[1]
-	for _, sheet := range document.Sheets {
-		if strings.ToLower(strings.TrimSpace(sheet.Properties.Title)) == strings.ToLower(strings.TrimSpace(name)) {
-			return &sheet.Properties.SheetId, nil
-		}
-	}
-
-	return nil, fmt.Errorf("Unable to identify log worksheet ID")
 }
 
 func (c *LoadACL) Name() string {

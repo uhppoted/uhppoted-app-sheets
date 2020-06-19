@@ -6,7 +6,8 @@
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
       - Write report to worksheet
-      - Restructure to pass spreadsheet around instead of the ID (?)
+      - Make log columns ordering less fixed
+      - Relook at maybe-doer (?)
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
 - [ ] Update the DEFAULT values - they all refer to twystd :-(
