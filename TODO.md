@@ -4,10 +4,8 @@
 
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
-- [ ] Update/test everything that is using uhppoted-api::acl.Report
-      - Move template to report
-- [ ] Clean up acl::report code
 - [ ] load-acl
+      - Validate spreadsheet ranges against regex
       - Make log columns ordering less hardcoded
       - Make report sheet structure less hardcoded
       - get-version/is-updated/somesuch (https://stackoverflow.com/questions/18321050/google-docs-spreadsheet-get-revision-id)
@@ -20,6 +18,8 @@
 - [ ] compare-acl
 - [ ] store-acl
 - [ ] Remove 'run' argument from uhppoted-api:command.Parse
+- [ ] Move templates to report/diff
+- [ ] Clean up acl::report code
 - [ ] GMail API notifications (?)
 
 ## TODO
