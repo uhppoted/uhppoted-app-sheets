@@ -4,12 +4,16 @@
 
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
-- [ ] Update everything that is using uhppoted-api::acl.Report
-
+- [ ] Update/test everything that is using uhppoted-api::acl.Report
+      - Move template to report
+- [ ] Clean up acl::report code
 - [ ] load-acl
-      - Clean up reporting code
-      - Make log columns ordering less fixed
-      - Make report structure less fixed
+      - Make log columns ordering less hardcoded
+      - Make report sheet structure less hardcoded
+      - get-version/is-updated/somesuch (https://stackoverflow.com/questions/18321050/google-docs-spreadsheet-get-revision-id)
+      - use version that has been stable for e.g. 30 minutes
+      - --force
+      - TLA+ model
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
 - [ ] Update the DEFAULT values - they all refer to twystd :-(
