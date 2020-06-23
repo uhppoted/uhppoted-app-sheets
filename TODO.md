@@ -5,8 +5,8 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
-      - Validate spreadsheet ranges against regex
       - Make log columns ordering less hardcoded
+      - Use named ranges (?)
       - Make report sheet structure less hardcoded
       - get-version/is-updated/somesuch (https://stackoverflow.com/questions/18321050/google-docs-spreadsheet-get-revision-id)
       - use version that has been stable for e.g. 30 minutes
@@ -14,12 +14,14 @@
       - TLA+ model
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
-- [ ] Update the DEFAULT values - they all refer to twystd :-(
 - [ ] compare-acl
 - [ ] store-acl
+- [ ] Update the DEFAULT values - they all refer to twystd :-(
 - [ ] Remove 'run' argument from uhppoted-api:command.Parse
-- [ ] Move templates to report/diff
-- [ ] Clean up acl::report code
+- [ ] Clean up reporting code
+      - Move templates to report/diff
+      - ReportSummary.String() (?)
+      - Update CLI, etc to use report.Summarize and report.Consolidate
 - [ ] GMail API notifications (?)
 
 ## TODO

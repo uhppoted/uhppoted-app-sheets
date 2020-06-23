@@ -89,14 +89,31 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("--range is a required option")
 	}
 
-	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(l.url)
+	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(l.url))
 	if len(match) < 2 {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheetId := match[1]
+
+	if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(l.area)); len(match) < 2 {
+		return fmt.Errorf("Invalid range '%s' - expected something like 'ACL!A2:K", l.area)
+	}
+
 	if l.debug {
 		log.Printf("DEBUG  Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, l.area, l.logRange)
+	}
+
+	if !l.nolog {
+		if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(l.logRange)); len(match) < 2 {
+			return fmt.Errorf("Invalid log-range '%s' - expected something like 'Log!A1:H", l.logRange)
+		}
+	}
+
+	if !l.noreport {
+		if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(l.reportRange)); len(match) < 2 {
+			return fmt.Errorf("Invalid report-range '%s' - expected something like 'Report!A1:E", l.reportRange)
+		}
 	}
 
 	client, err := authorize(l.credentials)
@@ -124,15 +141,14 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	rpt, err := api.PutACL(&u, *list, l.dryrun)
-	for k, v := range rpt {
-		log.Printf("%v  SUMMARY  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v",
-			k,
-			len(v.Unchanged),
-			len(v.Updated),
-			len(v.Added),
-			len(v.Deleted),
-			len(v.Failed),
-			len(v.Errored))
+	if err != nil {
+		return err
+	}
+
+	summary := api.Summarize(rpt)
+	format := "%v  SUMMARY  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
+	for _, v := range summary {
+		log.Printf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored)
 	}
 
 	for k, v := range rpt {
@@ -186,31 +202,24 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 }
 
 func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
-	devices := []uint32{}
-	for k, _ := range report {
-		devices = append(devices, k)
-	}
-
-	sort.Slice(devices, func(i, j int) bool { return devices[i] < devices[j] })
+	summary := api.Summarize(report)
 
 	var rows = sheets.ValueRange{
 		Values: [][]interface{}{},
 	}
 
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
-	for _, id := range devices {
-		if v, ok := report[id]; ok {
-			rows.Values = append(rows.Values, []interface{}{
-				timestamp,
-				id,
-				len(v.Unchanged),
-				len(v.Updated),
-				len(v.Added),
-				len(v.Deleted),
-				len(v.Failed),
-				len(v.Errored),
-			})
-		}
+	for _, v := range summary {
+		rows.Values = append(rows.Values, []interface{}{
+			timestamp,
+			fmt.Sprintf("%v", v.DeviceID),
+			v.Unchanged,
+			v.Updated,
+			v.Added,
+			v.Deleted,
+			v.Failed,
+			v.Errored,
+		})
 	}
 
 	_, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.logRange, &rows).ValueInputOption("RAW").InsertDataOption("OVERWRITE").Context(ctx).Do()
@@ -298,7 +307,6 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 }
 
 func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
-
 	// ... clear existing report
 
 	sheet, err := getSheet(spreadsheet, l.reportRange)
