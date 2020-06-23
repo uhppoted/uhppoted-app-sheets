@@ -59,3 +59,7 @@ func getSheet(spreadsheet *sheets.Spreadsheet, area string) (*sheets.Sheet, erro
 
 	return nil, fmt.Errorf("Unable to identify worksheet for '%s'", area)
 }
+
+func normalise(v string) string {
+	return strings.ToLower(strings.ReplaceAll(v, " ", ""))
+}

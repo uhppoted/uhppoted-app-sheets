@@ -5,9 +5,8 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
-      - Make log columns ordering less hardcoded
+      - Make report sheet structure less hardcoded and less fragile e.g. reliant on frozen rows
       - Use named ranges (?)
-      - Make report sheet structure less hardcoded
       - get-version/is-updated/somesuch (https://stackoverflow.com/questions/18321050/google-docs-spreadsheet-get-revision-id)
       - use version that has been stable for e.g. 30 minutes
       - --force

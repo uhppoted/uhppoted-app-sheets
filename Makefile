@@ -61,7 +61,7 @@ debug: build
 	                --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
 	                --range "ACL!A2:K" \
 	                --report-range "Report!A1:E" \
-	                --log-range "Log!A1:H" \
+	                --log-range "Log!A1:I" \
 	                --log-retention 1
 
 usage: build

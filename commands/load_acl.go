@@ -137,7 +137,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	for k, l := range *list {
-		log.Printf("%v  Retrieved %v records", k, len(l))
+		log.Printf("INFO   %v  Retrieved %v records", k, len(l))
 	}
 
 	rpt, err := api.PutACL(&u, *list, l.dryrun)
@@ -146,14 +146,14 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	summary := api.Summarize(rpt)
-	format := "%v  SUMMARY  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
+	format := "INFO   %v  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
 	for _, v := range summary {
 		log.Printf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored)
 	}
 
 	for k, v := range rpt {
 		for _, err := range v.Errors {
-			log.Printf("%v  ERROR  %v", k, err)
+			log.Printf("ERROR  %v  %v", k, err)
 		}
 	}
 
@@ -202,7 +202,60 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 }
 
 func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
+	index := map[string]int{
+		"timestamp": 0,
+		"deviceid":  1,
+		"unchanged": 2,
+		"updated":   3,
+		"added":     4,
+		"deleted":   5,
+		"failed":    6,
+		"errors":    7,
+	}
+
+	// Build column index
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
+	if err != nil {
+		return fmt.Errorf("Unable to retrieve column headers from Log sheet (%v)", err)
+	}
+
+	if len(response.Values) > 0 {
+		header := response.Values[0]
+		index = map[string]int{}
+
+		for i, v := range header {
+			k := normalise(v.(string))
+			switch k {
+			case "timestamp":
+				index["timestamp"] = i
+			case "deviceid":
+				index["deviceid"] = i
+			case "unchanged":
+				index["unchanged"] = i
+			case "updated":
+				index["updated"] = i
+			case "added":
+				index["added"] = i
+			case "deleted":
+				index["deleted"] = i
+			case "failed":
+				index["failed"] = i
+			case "errors":
+				index["errors"] = i
+			}
+		}
+
+		log.Printf("DEBUG  Log sheet column index: %v", index)
+	}
+
+	// Append log rows
 	summary := api.Summarize(report)
+	columns := 0
+	for _, v := range index {
+		if v >= columns {
+			columns = v + 1
+		}
+	}
 
 	var rows = sheets.ValueRange{
 		Values: [][]interface{}{},
@@ -210,20 +263,52 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
 	for _, v := range summary {
-		rows.Values = append(rows.Values, []interface{}{
-			timestamp,
-			fmt.Sprintf("%v", v.DeviceID),
-			v.Unchanged,
-			v.Updated,
-			v.Added,
-			v.Deleted,
-			v.Failed,
-			v.Errored,
-		})
+		row := make([]interface{}, columns)
+
+		for i := 0; i < columns; i++ {
+			row[i] = ""
+		}
+
+		if ix, ok := index["timestamp"]; ok {
+			row[ix] = timestamp
+		}
+
+		if ix, ok := index["deviceid"]; ok {
+			row[ix] = fmt.Sprintf("%v", v.DeviceID)
+		}
+
+		if ix, ok := index["unchanged"]; ok {
+			row[ix] = v.Unchanged
+		}
+
+		if ix, ok := index["updated"]; ok {
+			row[ix] = v.Updated
+		}
+
+		if ix, ok := index["added"]; ok {
+			row[ix] = v.Added
+		}
+
+		if ix, ok := index["deleted"]; ok {
+			row[ix] = v.Deleted
+		}
+
+		if ix, ok := index["failed"]; ok {
+			row[ix] = v.Failed
+		}
+
+		if ix, ok := index["errors"]; ok {
+			row[ix] = v.Errored
+		}
+
+		rows.Values = append(rows.Values, row)
 	}
 
-	_, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.logRange, &rows).ValueInputOption("RAW").InsertDataOption("OVERWRITE").Context(ctx).Do()
-	if err != nil {
+	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.logRange, &rows).
+		ValueInputOption("RAW").
+		InsertDataOption("INSERT_ROWS").
+		Context(ctx).
+		Do(); err != nil {
 		return fmt.Errorf("Error writing log to Google Sheets (%w)", err)
 	}
 
@@ -250,7 +335,7 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 	list := []int{}
 	deleted := 0
 
-	log.Printf("Pruning log records from before %v", cutoff.Format("2006-01-02"))
+	log.Printf("INFO   Pruning log records from before %v", cutoff.Format("2006-01-02"))
 
 	for row, record := range response.Values {
 		timestamp, err := time.ParseInLocation("2006-01-02 15:04:05", record[0].(string), time.Local)
@@ -301,7 +386,7 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 		}
 	}
 
-	log.Printf("Pruned %d log records from log sheet", deleted)
+	log.Printf("INFO   Pruned %d log records from log sheet", deleted)
 
 	return nil
 }
@@ -317,7 +402,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	start := sheet.Properties.GridProperties.FrozenRowCount
 	end := sheet.Properties.GridProperties.RowCount
 
-	log.Printf("Clearing old report data from worksheet")
+	log.Printf("INFO   Clearing old report data from worksheet")
 
 	if end > start {
 		title := fmt.Sprintf("Report!A1:E1")
@@ -334,7 +419,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	// ... write report
 
-	log.Printf("Writing report to worksheet")
+	log.Printf("INFO   Writing report to worksheet")
 
 	consolidated := api.Consolidate(report)
 
