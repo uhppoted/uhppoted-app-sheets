@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"regexp"
 	"sort"
 	"strings"
@@ -50,6 +49,47 @@ type LoadACL struct {
 
 	dryrun bool
 	debug  bool
+}
+
+func (c *LoadACL) Name() string {
+	return "load-acl"
+}
+
+func (c *LoadACL) Description() string {
+	return "Updates a set of configured UHPPOTE access controllers from a Google Sheets worksheet"
+}
+
+func (c *LoadACL) Usage() string {
+	return "--credentials <file> --url <url>"
+}
+
+func (c *LoadACL) Help() {
+	fmt.Println()
+	fmt.Printf("  Usage: %s [options] load-acl [--no-log] [--no-report] [--dryrun] --credentials <credentials> --url <URL> --range <range> [--log-range <range>] [--log-retention <days>] [--report-range <range>]\n", APP)
+	fmt.Println()
+	fmt.Println("  Updates the cards on a set of configured controllers from a Google Sheets worksheet access control list")
+	fmt.Println()
+
+	c.FlagSet().VisitAll(func(f *flag.Flag) {
+		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
+	})
+
+	fmt.Println()
+	fmt.Println("  Options:")
+	fmt.Println()
+	fmt.Println("    --config <file>  Path to controllers configuration file")
+	fmt.Println("    --debug          Displays vaguely useful internal information")
+	fmt.Println()
+	fmt.Println("  Examples:")
+	fmt.Println()
+	fmt.Println(`    uhppote-app-sheets --debug load-acl --credentials "credentials.json" \`)
+	fmt.Println(`                                        --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                        --range "Class Data!A2:E" \`)
+	fmt.Println()
+	fmt.Println(`    uhppote-app-sheets --conf example.conf load-acl --credentials "credentials.json" \`)
+	fmt.Println(`                                                    --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                                    --range "Class Data!A2:E" \`)
+	fmt.Println()
 }
 
 func (l *LoadACL) FlagSet() *flag.FlagSet {
@@ -101,7 +141,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	if l.debug {
-		log.Printf("DEBUG  Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, l.area, l.logRange)
+		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, l.area, l.logRange))
 	}
 
 	if !l.nolog {
@@ -137,7 +177,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	for k, l := range *list {
-		log.Printf("INFO   %v  Retrieved %v records", k, len(l))
+		info(fmt.Sprintf("Retrieved %v records", k, len(l)))
 	}
 
 	rpt, err := api.PutACL(&u, *list, l.dryrun)
@@ -146,14 +186,14 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	summary := api.Summarize(rpt)
-	format := "INFO   %v  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
+	format := "%v  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
 	for _, v := range summary {
-		log.Printf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored)
+		info(fmt.Sprintf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored))
 	}
 
 	for k, v := range rpt {
 		for _, err := range v.Errors {
-			log.Printf("ERROR  %v  %v", k, err)
+			warn(fmt.Sprintf("%v  %v", k, err))
 		}
 	}
 
@@ -202,61 +242,14 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 }
 
 func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
-	index := map[string]int{
-		"timestamp": 0,
-		"deviceid":  1,
-		"unchanged": 2,
-		"updated":   3,
-		"added":     4,
-		"deleted":   5,
-		"failed":    6,
-		"errors":    7,
-	}
-
-	// Build column index
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve column headers from Log sheet (%v)", err)
 	}
 
-	if len(response.Values) > 0 {
-		header := response.Values[0]
-		index = map[string]int{}
+	index, columns := buildLogSheetIndex(response.Values)
 
-		for i, v := range header {
-			k := normalise(v.(string))
-			switch k {
-			case "timestamp":
-				index["timestamp"] = i
-			case "deviceid":
-				index["deviceid"] = i
-			case "unchanged":
-				index["unchanged"] = i
-			case "updated":
-				index["updated"] = i
-			case "added":
-				index["added"] = i
-			case "deleted":
-				index["deleted"] = i
-			case "failed":
-				index["failed"] = i
-			case "errors":
-				index["errors"] = i
-			}
-		}
-
-		log.Printf("DEBUG  Log sheet column index: %v", index)
-	}
-
-	// Append log rows
 	summary := api.Summarize(report)
-	columns := 0
-	for _, v := range index {
-		if v >= columns {
-			columns = v + 1
-		}
-	}
-
 	var rows = sheets.ValueRange{
 		Values: [][]interface{}{},
 	}
@@ -326,6 +319,8 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
 	}
 
+	index, _ := buildLogSheetIndex(response.Values)
+
 	before := time.Now().
 		In(time.Local).
 		Add(time.Hour * time.Duration(-24*(int(l.logRetention)-1))).
@@ -335,12 +330,14 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 	list := []int{}
 	deleted := 0
 
-	log.Printf("INFO   Pruning log records from before %v", cutoff.Format("2006-01-02"))
+	info(fmt.Sprintf("Pruning log records from before %v", cutoff.Format("2006-01-02")))
 
 	for row, record := range response.Values {
-		timestamp, err := time.ParseInLocation("2006-01-02 15:04:05", record[0].(string), time.Local)
-		if err == nil && timestamp.Before(cutoff) {
-			list = append(list, row)
+		if ix, ok := index["timestamp"]; ok {
+			timestamp, err := time.ParseInLocation("2006-01-02 15:04:05", record[ix].(string), time.Local)
+			if err == nil && timestamp.Before(cutoff) {
+				list = append(list, row)
+			}
 		}
 	}
 
@@ -386,7 +383,7 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 		}
 	}
 
-	log.Printf("INFO   Pruned %d log records from log sheet", deleted)
+	info(fmt.Sprintf("Pruned %d log records from log sheet", deleted))
 
 	return nil
 }
@@ -402,7 +399,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	start := sheet.Properties.GridProperties.FrozenRowCount
 	end := sheet.Properties.GridProperties.RowCount
 
-	log.Printf("INFO   Clearing old report data from worksheet")
+	info("Clearing old report data from worksheet")
 
 	if end > start {
 		title := fmt.Sprintf("Report!A1:E1")
@@ -419,7 +416,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	// ... write report
 
-	log.Printf("INFO   Writing report to worksheet")
+	info("Writing report to worksheet")
 
 	consolidated := api.Consolidate(report)
 
@@ -488,43 +485,51 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	return nil
 }
 
-func (c *LoadACL) Name() string {
-	return "load-acl"
-}
+func buildLogSheetIndex(rows [][]interface{}) (map[string]int, int) {
+	index := map[string]int{
+		"timestamp": 0,
+		"deviceid":  1,
+		"unchanged": 2,
+		"updated":   3,
+		"added":     4,
+		"deleted":   5,
+		"failed":    6,
+		"errors":    7,
+	}
 
-func (c *LoadACL) Description() string {
-	return "Updates a set of configured UHPPOTE access controllers from a Google Sheets worksheet"
-}
+	if len(rows) > 0 {
+		header := rows[0]
+		index = map[string]int{}
 
-func (c *LoadACL) Usage() string {
-	return "--credentials <file> --url <url>"
-}
+		for i, v := range header {
+			k := normalise(v.(string))
+			switch k {
+			case "timestamp":
+				index["timestamp"] = i
+			case "deviceid":
+				index["deviceid"] = i
+			case "unchanged":
+				index["unchanged"] = i
+			case "updated":
+				index["updated"] = i
+			case "added":
+				index["added"] = i
+			case "deleted":
+				index["deleted"] = i
+			case "failed":
+				index["failed"] = i
+			case "errors":
+				index["errors"] = i
+			}
+		}
+	}
 
-func (c *LoadACL) Help() {
-	fmt.Println()
-	fmt.Printf("  Usage: %s [options] load-acl --credentials <credentials> --url <URL> --range <range> --dryrun\n", APP)
-	fmt.Println()
-	fmt.Println("  Retrieves an access control list from a Google Sheets worksheet and writes it to a file in TSV format")
-	fmt.Println()
+	columns := 0
+	for _, v := range index {
+		if v >= columns {
+			columns = v + 1
+		}
+	}
 
-	c.FlagSet().VisitAll(func(f *flag.Flag) {
-		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
-	})
-
-	fmt.Println()
-	fmt.Println("  Options:")
-	fmt.Println()
-	fmt.Println("    --config <file>  Path to controllers configuration file")
-	fmt.Println("    --debug          Displays vaguely useful internal information")
-	fmt.Println()
-	fmt.Println("  Examples:")
-	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --debug load-acl --credentials "credentials.json" \`)
-	fmt.Println(`                                        --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                        --range "Class Data!A2:E" \`)
-	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --conf example.conf load-acl --credentials "credentials.json" \`)
-	fmt.Println(`                                                    --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                                    --range "Class Data!A2:E" \`)
-	fmt.Println()
+	return index, columns
 }

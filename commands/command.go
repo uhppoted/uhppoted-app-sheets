@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"sort"
 	"strings"
@@ -62,4 +63,16 @@ func getSheet(spreadsheet *sheets.Spreadsheet, area string) (*sheets.Sheet, erro
 
 func normalise(v string) string {
 	return strings.ToLower(strings.ReplaceAll(v, " ", ""))
+}
+
+func debug(msg string) {
+	log.Printf("%-5s %s", "DEBUG", msg)
+}
+
+func info(msg string) {
+	log.Printf("%-5s %s", "INFO", msg)
+}
+
+func warn(msg string) {
+	log.Printf("%-5s %s", "ERROR", msg)
 }

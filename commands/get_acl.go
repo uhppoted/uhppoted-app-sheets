@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -66,7 +65,7 @@ func (c *GetACL) Execute(ctx context.Context) error {
 	region := c.region
 
 	if c.debug {
-		log.Printf("DEBUG  Spreadsheet - ID:%s  range:%s", spreadsheet, region)
+		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheet, region))
 	}
 
 	client, err := authorize(c.credentials)
@@ -113,7 +112,7 @@ func (c *GetACL) Execute(ctx context.Context) error {
 		return err
 	}
 
-	log.Printf("INFO   Retrieved ACL to file %s\n", c.file)
+	info(fmt.Sprintf("Retrieved ACL to file %s\n", c.file))
 
 	return nil
 }
