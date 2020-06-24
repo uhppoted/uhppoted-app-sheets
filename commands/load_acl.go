@@ -177,7 +177,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	for k, l := range *list {
-		info(fmt.Sprintf("Retrieved %v records", k, len(l)))
+		info(fmt.Sprintf("%v  Retrieved %v records", k, len(l)))
 	}
 
 	rpt, err := api.PutACL(&u, *list, l.dryrun)
