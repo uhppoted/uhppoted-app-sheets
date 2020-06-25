@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -145,13 +146,13 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	if !l.nolog {
-		if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(l.logRange)); len(match) < 2 {
+		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+[0-9]+):([a-zA-Z]+(?:[0-9]+)?)`).FindStringSubmatch(l.logRange); len(match) < 4 {
 			return fmt.Errorf("Invalid log-range '%s' - expected something like 'Log!A1:H", l.logRange)
 		}
 	}
 
 	if !l.noreport {
-		if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(l.reportRange)); len(match) < 2 {
+		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+[0-9]+):([a-zA-Z]+(?:[0-9]+)?)`).FindStringSubmatch(l.reportRange); len(match) < 4 {
 			return fmt.Errorf("Invalid report-range '%s' - expected something like 'Report!A1:E", l.reportRange)
 		}
 	}
@@ -247,7 +248,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 		return fmt.Errorf("Unable to retrieve column headers from Log sheet (%v)", err)
 	}
 
-	index, columns := buildLogSheetIndex(response.Values)
+	index, columns := buildLogIndex(response.Values)
 
 	summary := api.Summarize(report)
 	var rows = sheets.ValueRange{
@@ -319,7 +320,7 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
 	}
 
-	index, _ := buildLogSheetIndex(response.Values)
+	index, _ := buildLogIndex(response.Values)
 
 	before := time.Now().
 		In(time.Local).
@@ -389,24 +390,43 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 }
 
 func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
-	// ... clear existing report
-
-	sheet, err := getSheet(spreadsheet, l.reportRange)
+	// ... parse report structure
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
 	}
 
-	start := sheet.Properties.GridProperties.FrozenRowCount
-	end := sheet.Properties.GridProperties.RowCount
+	index := buildReportIndex(response.Values)
 
-	info("Clearing old report data from worksheet")
+	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
+	if len(match) < 5 {
+		return fmt.Errorf("Invalid report range '%s'", l.reportRange)
+	}
 
-	if end > start {
-		title := fmt.Sprintf("Report!A1:E1")
-		data := fmt.Sprintf("Report!A3:E")
+	name := match[1]
+	left := match[2]
+	top, _ := strconv.Atoi(match[3])
+	right := match[4]
+	columns := []string{"updated", "added", "deleted", "failed", "errors"}
+
+	ranges := map[string]string{
+		"title": fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
+		"data":  fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
+	}
+
+	for _, col := range columns {
+		if ix, ok := index[col]; ok {
+			ranges[col] = fmt.Sprintf("%v!%v%v:%v", name, ix, top+2, ix)
+		}
+	}
+
+	// ... clear existing report
+
+	{
+		info("Clearing old report data from worksheet")
 
 		rq := sheets.BatchClearValuesRequest{
-			Ranges: []string{title, data},
+			Ranges: []string{ranges["title"], ranges["data"]},
 		}
 
 		if _, err := google.Spreadsheets.Values.BatchClear(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
@@ -415,13 +435,12 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	// ... write report
-
 	info("Writing report to worksheet")
 
 	consolidated := api.Consolidate(report)
 
 	var title = sheets.ValueRange{
-		Range: "Report!A1:A1",
+		Range: ranges["title"],
 		Values: [][]interface{}{
 			[]interface{}{
 				time.Now().Format("ACL Update Report: 2006-01-02 15:04:05"),
@@ -429,53 +448,74 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		},
 	}
 
-	var A = sheets.ValueRange{
-		Range:  "Report!A3:A",
-		Values: [][]interface{}{},
-	}
-	var B = sheets.ValueRange{
-		Range:  "Report!B3:B",
-		Values: [][]interface{}{},
-	}
-
-	var C = sheets.ValueRange{
-		Range:  "Report!C3:C",
-		Values: [][]interface{}{},
-	}
-
-	var D = sheets.ValueRange{
-		Range:  "Report!D3:D",
-		Values: [][]interface{}{},
-	}
-
-	var E = sheets.ValueRange{
-		Range:  "Report!E3:E",
-		Values: [][]interface{}{},
-	}
-
-	for _, card := range consolidated.Updated {
-		A.Values = append(A.Values, []interface{}{fmt.Sprintf("%v", card)})
-	}
-
-	for _, card := range consolidated.Added {
-		B.Values = append(B.Values, []interface{}{fmt.Sprintf("%v", card)})
-	}
-
-	for _, card := range consolidated.Deleted {
-		C.Values = append(C.Values, []interface{}{fmt.Sprintf("%v", card)})
-	}
-
-	for _, card := range consolidated.Failed {
-		D.Values = append(D.Values, []interface{}{fmt.Sprintf("%v", card)})
-	}
-
-	for _, card := range consolidated.Errored {
-		E.Values = append(E.Values, []interface{}{fmt.Sprintf("%v", card)})
-	}
-
 	rq := sheets.BatchUpdateValuesRequest{
 		ValueInputOption: "RAW",
-		Data:             []*sheets.ValueRange{&title, &A, &B, &C, &D, &E},
+		Data:             []*sheets.ValueRange{&title},
+	}
+
+	if r, ok := ranges["updated"]; ok {
+		var A = sheets.ValueRange{
+			Range:  r,
+			Values: [][]interface{}{},
+		}
+
+		for _, card := range consolidated.Updated {
+			A.Values = append(A.Values, []interface{}{fmt.Sprintf("%v", card)})
+		}
+
+		rq.Data = append(rq.Data, &A)
+	}
+
+	if r, ok := ranges["added"]; ok {
+		var B = sheets.ValueRange{
+			Range:  r,
+			Values: [][]interface{}{},
+		}
+
+		for _, card := range consolidated.Added {
+			B.Values = append(B.Values, []interface{}{fmt.Sprintf("%v", card)})
+		}
+
+		rq.Data = append(rq.Data, &B)
+	}
+
+	if r, ok := ranges["deleted"]; ok {
+		var C = sheets.ValueRange{
+			Range:  r,
+			Values: [][]interface{}{},
+		}
+
+		for _, card := range consolidated.Deleted {
+			C.Values = append(C.Values, []interface{}{fmt.Sprintf("%v", card)})
+		}
+
+		rq.Data = append(rq.Data, &C)
+	}
+
+	if r, ok := ranges["failed"]; ok {
+		var D = sheets.ValueRange{
+			Range:  r,
+			Values: [][]interface{}{},
+		}
+
+		for _, card := range consolidated.Failed {
+			D.Values = append(D.Values, []interface{}{fmt.Sprintf("%v", card)})
+		}
+
+		rq.Data = append(rq.Data, &D)
+	}
+
+	if r, ok := ranges["errors"]; ok {
+		var E = sheets.ValueRange{
+			Range:  r,
+			Values: [][]interface{}{},
+		}
+
+		for _, card := range consolidated.Errored {
+			E.Values = append(E.Values, []interface{}{fmt.Sprintf("%v", card)})
+		}
+
+		rq.Data = append(rq.Data, &E)
 	}
 
 	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
@@ -485,7 +525,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	return nil
 }
 
-func buildLogSheetIndex(rows [][]interface{}) (map[string]int, int) {
+func buildLogIndex(rows [][]interface{}) (map[string]int, int) {
 	index := map[string]int{
 		"timestamp": 0,
 		"deviceid":  1,
@@ -532,4 +572,51 @@ func buildLogSheetIndex(rows [][]interface{}) (map[string]int, int) {
 	}
 
 	return index, columns
+}
+
+func buildReportIndex(rows [][]interface{}) map[string]string {
+	index := map[string]string{
+		"unchanged": "A",
+		"added":     "B",
+		"deleted":   "C",
+		"failed":    "D",
+		"errors":    "E",
+	}
+
+	if len(rows) > 1 {
+		header := rows[1]
+		index = map[string]string{}
+
+		// TODO Need to account for startCol somehow
+		for i, v := range header {
+			k := normalise(v.(string))
+			switch k {
+			case "updated":
+				index["updated"] = indexToCol(i)
+			case "added":
+				index["added"] = indexToCol(i)
+			case "deleted":
+				index["deleted"] = indexToCol(i)
+			case "failed":
+				index["failed"] = indexToCol(i)
+			case "errors":
+				index["errors"] = indexToCol(i)
+			}
+		}
+	}
+
+	return index
+}
+
+func indexToCol(ix int) string {
+	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	N := len(columns)
+
+	col := string(columns[ix%N])
+	ix = ix / N
+	for ; ix > 0; ix = ix / N {
+		col = col + string(columns[ix%N])
+	}
+
+	return col
 }
