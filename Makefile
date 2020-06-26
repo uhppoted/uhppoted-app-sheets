@@ -60,7 +60,7 @@ debug: build
 	                --credentials $(CREDENTIALS) \
 	                --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
 	                --range "ACL!A2:K" \
-	                --report-range "Report!A1:E" \
+	                --report-range "Report!B2:G" \
 	                --log-range "Log!A1:I" \
 	                --log-retention 1
 

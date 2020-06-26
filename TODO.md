@@ -6,11 +6,9 @@
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
       - Make report sheet structure less hardcoded
-        -- Convert column index to string 
-        -- Account for start column 
         -- Clean up repeated code blocks
       - Pad report with 1 extra row and prune remaining rows
-      - Report duplicates as card errors rather than failing the whole load (--strict (?))
+      - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
       - Use named ranges (?)
       - get-version/is-updated/somesuch (https://stackoverflow.com/questions/18321050/google-docs-spreadsheet-get-revision-id)
       - use version that has been stable for e.g. 30 minutes

@@ -152,7 +152,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	if !l.noreport {
-		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+[0-9]+):([a-zA-Z]+(?:[0-9]+)?)`).FindStringSubmatch(l.reportRange); len(match) < 4 {
+		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange); len(match) < 5 {
 			return fmt.Errorf("Invalid report-range '%s' - expected something like 'Report!A1:E", l.reportRange)
 		}
 	}
@@ -396,8 +396,6 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
 	}
 
-	index := buildReportIndex(response.Values)
-
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
 	if len(match) < 5 {
 		return fmt.Errorf("Invalid report range '%s'", l.reportRange)
@@ -414,9 +412,10 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		"data":  fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
 	}
 
-	for _, col := range columns {
-		if ix, ok := index[col]; ok {
-			ranges[col] = fmt.Sprintf("%v!%v%v:%v", name, ix, top+2, ix)
+	index := buildReportIndex(left, response.Values)
+	for _, column := range columns {
+		if ix, ok := index[column]; ok {
+			ranges[column] = fmt.Sprintf("%v!%v%v:%v", name, ix, top+2, ix)
 		}
 	}
 
@@ -574,7 +573,7 @@ func buildLogIndex(rows [][]interface{}) (map[string]int, int) {
 	return index, columns
 }
 
-func buildReportIndex(rows [][]interface{}) map[string]string {
+func buildReportIndex(left string, rows [][]interface{}) map[string]string {
 	index := map[string]string{
 		"unchanged": "A",
 		"added":     "B",
@@ -585,38 +584,58 @@ func buildReportIndex(rows [][]interface{}) map[string]string {
 
 	if len(rows) > 1 {
 		header := rows[1]
+		offset := colToI(left)
 		index = map[string]string{}
 
-		// TODO Need to account for startCol somehow
 		for i, v := range header {
 			k := normalise(v.(string))
 			switch k {
 			case "updated":
-				index["updated"] = indexToCol(i)
+				index["updated"] = iToCol(offset + i)
 			case "added":
-				index["added"] = indexToCol(i)
+				index["added"] = iToCol(offset + i)
 			case "deleted":
-				index["deleted"] = indexToCol(i)
+				index["deleted"] = iToCol(offset + i)
 			case "failed":
-				index["failed"] = indexToCol(i)
+				index["failed"] = iToCol(offset + i)
 			case "errors":
-				index["errors"] = indexToCol(i)
+				index["errors"] = iToCol(offset + i)
 			}
 		}
 	}
 
+	fmt.Printf(">>> %v\n", index)
+
 	return index
 }
 
-func indexToCol(ix int) string {
+func iToCol(index int) string {
 	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	N := len(columns)
 
-	col := string(columns[ix%N])
-	ix = ix / N
-	for ; ix > 0; ix = ix / N {
-		col = col + string(columns[ix%N])
+	col := string(columns[index%N])
+	index = index / N
+	for ; index > 0; index = index / N {
+		col = col + string(columns[index%N])
 	}
 
 	return col
+}
+
+func colToI(column string) int {
+	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	N := len(columns)
+	col := []rune(strings.ToUpper(column))
+	ix := 0
+
+	for _, c := range col {
+		for i, r := range columns {
+			if r == c {
+				ix = ix*N + i
+				break
+			}
+		}
+	}
+
+	return ix
 }
