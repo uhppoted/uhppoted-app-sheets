@@ -29,5 +29,5 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build
-      run: make release
+      run: make build-all
       

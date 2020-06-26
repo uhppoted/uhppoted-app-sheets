@@ -390,53 +390,48 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 }
 
 func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
+	consolidated := api.Consolidate(report)
+
+	columns := map[string][]uint32{
+		"updated": consolidated.Updated,
+		"added":   consolidated.Added,
+		"deleted": consolidated.Deleted,
+		"failed":  consolidated.Failed,
+		"errors":  consolidated.Errored,
+	}
+
 	// ... parse report structure
-	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
-	if err != nil {
-		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
-	}
-
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
-	if len(match) < 5 {
-		return fmt.Errorf("Invalid report range '%s'", l.reportRange)
-	}
-
 	name := match[1]
 	left := match[2]
 	top, _ := strconv.Atoi(match[3])
 	right := match[4]
-	columns := []string{"updated", "added", "deleted", "failed", "errors"}
-
 	ranges := map[string]string{
 		"title": fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
 		"data":  fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
 	}
 
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
+	if err != nil {
+		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
+	}
+
 	index := buildReportIndex(left, response.Values)
-	for _, column := range columns {
+
+	for column, _ := range columns {
 		if ix, ok := index[column]; ok {
 			ranges[column] = fmt.Sprintf("%v!%v%v:%v", name, ix, top+2, ix)
 		}
 	}
 
 	// ... clear existing report
-
-	{
-		info("Clearing old report data from worksheet")
-
-		rq := sheets.BatchClearValuesRequest{
-			Ranges: []string{ranges["title"], ranges["data"]},
-		}
-
-		if _, err := google.Spreadsheets.Values.BatchClear(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
-			return err
-		}
+	info("Clearing existing report from worksheet")
+	if err := clear(google, spreadsheet, []string{ranges["title"], ranges["data"]}, ctx); err != nil {
+		return err
 	}
 
 	// ... write report
 	info("Writing report to worksheet")
-
-	consolidated := api.Consolidate(report)
 
 	var title = sheets.ValueRange{
 		Range: ranges["title"],
@@ -452,69 +447,19 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		Data:             []*sheets.ValueRange{&title},
 	}
 
-	if r, ok := ranges["updated"]; ok {
-		var A = sheets.ValueRange{
-			Range:  r,
-			Values: [][]interface{}{},
+	for k, v := range columns {
+		if r, ok := ranges[k]; ok {
+			var values = sheets.ValueRange{
+				Range:  r,
+				Values: [][]interface{}{},
+			}
+
+			for _, card := range v {
+				values.Values = append(values.Values, []interface{}{fmt.Sprintf("%v", card)})
+			}
+
+			rq.Data = append(rq.Data, &values)
 		}
-
-		for _, card := range consolidated.Updated {
-			A.Values = append(A.Values, []interface{}{fmt.Sprintf("%v", card)})
-		}
-
-		rq.Data = append(rq.Data, &A)
-	}
-
-	if r, ok := ranges["added"]; ok {
-		var B = sheets.ValueRange{
-			Range:  r,
-			Values: [][]interface{}{},
-		}
-
-		for _, card := range consolidated.Added {
-			B.Values = append(B.Values, []interface{}{fmt.Sprintf("%v", card)})
-		}
-
-		rq.Data = append(rq.Data, &B)
-	}
-
-	if r, ok := ranges["deleted"]; ok {
-		var C = sheets.ValueRange{
-			Range:  r,
-			Values: [][]interface{}{},
-		}
-
-		for _, card := range consolidated.Deleted {
-			C.Values = append(C.Values, []interface{}{fmt.Sprintf("%v", card)})
-		}
-
-		rq.Data = append(rq.Data, &C)
-	}
-
-	if r, ok := ranges["failed"]; ok {
-		var D = sheets.ValueRange{
-			Range:  r,
-			Values: [][]interface{}{},
-		}
-
-		for _, card := range consolidated.Failed {
-			D.Values = append(D.Values, []interface{}{fmt.Sprintf("%v", card)})
-		}
-
-		rq.Data = append(rq.Data, &D)
-	}
-
-	if r, ok := ranges["errors"]; ok {
-		var E = sheets.ValueRange{
-			Range:  r,
-			Values: [][]interface{}{},
-		}
-
-		for _, card := range consolidated.Errored {
-			E.Values = append(E.Values, []interface{}{fmt.Sprintf("%v", card)})
-		}
-
-		rq.Data = append(rq.Data, &E)
 	}
 
 	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
@@ -603,8 +548,6 @@ func buildReportIndex(left string, rows [][]interface{}) map[string]string {
 			}
 		}
 	}
-
-	fmt.Printf(">>> %v\n", index)
 
 	return index
 }
