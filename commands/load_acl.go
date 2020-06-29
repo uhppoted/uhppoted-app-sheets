@@ -52,6 +52,12 @@ type LoadACL struct {
 	debug  bool
 }
 
+type report struct {
+	title   string
+	data    string
+	columns map[string]string
+}
+
 func (c *LoadACL) Name() string {
 	return "load-acl"
 }
@@ -242,7 +248,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 	return list, nil
 }
 
-func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
+func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve column headers from Log sheet (%v)", err)
@@ -250,7 +256,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 
 	index, columns := buildLogIndex(response.Values)
 
-	summary := api.Summarize(report)
+	summary := api.Summarize(rpt)
 	var rows = sheets.ValueRange{
 		Values: [][]interface{}{},
 	}
@@ -389,8 +395,25 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 	return nil
 }
 
-func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, report map[uint32]api.Report, ctx context.Context) error {
-	consolidated := api.Consolidate(report)
+func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
+	// ... create report format
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
+	if err != nil {
+		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
+	}
+
+	format := l.buildReportFormat(response.Values)
+
+	// ... clear existing report
+	info("Clearing existing report from worksheet")
+	if err := clear(google, spreadsheet, []string{format.title, format.data}, ctx); err != nil {
+		return err
+	}
+
+	// ... write report
+	info("Writing report to worksheet")
+
+	consolidated := api.Consolidate(rpt)
 
 	columns := map[string][]uint32{
 		"updated": consolidated.Updated,
@@ -400,41 +423,8 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		"errors":  consolidated.Errored,
 	}
 
-	// ... parse report structure
-	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
-	name := match[1]
-	left := match[2]
-	top, _ := strconv.Atoi(match[3])
-	right := match[4]
-	ranges := map[string]string{
-		"title": fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
-		"data":  fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
-	}
-
-	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
-	if err != nil {
-		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
-	}
-
-	index := buildReportIndex(left, response.Values)
-
-	for column, _ := range columns {
-		if ix, ok := index[column]; ok {
-			ranges[column] = fmt.Sprintf("%v!%v%v:%v", name, ix, top+2, ix)
-		}
-	}
-
-	// ... clear existing report
-	info("Clearing existing report from worksheet")
-	if err := clear(google, spreadsheet, []string{ranges["title"], ranges["data"]}, ctx); err != nil {
-		return err
-	}
-
-	// ... write report
-	info("Writing report to worksheet")
-
 	var title = sheets.ValueRange{
-		Range: ranges["title"],
+		Range: format.title,
 		Values: [][]interface{}{
 			[]interface{}{
 				time.Now().Format("ACL Update Report: 2006-01-02 15:04:05"),
@@ -448,7 +438,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	for k, v := range columns {
-		if r, ok := ranges[k]; ok {
+		if r, ok := format.columns[k]; ok {
 			var values = sheets.ValueRange{
 				Range:  r,
 				Values: [][]interface{}{},
@@ -518,7 +508,13 @@ func buildLogIndex(rows [][]interface{}) (map[string]int, int) {
 	return index, columns
 }
 
-func buildReportIndex(left string, rows [][]interface{}) map[string]string {
+func (l *LoadACL) buildReportFormat(rows [][]interface{}) *report {
+	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
+	name := match[1]
+	left := match[2]
+	top, _ := strconv.Atoi(match[3])
+	right := match[4]
+
 	index := map[string]string{
 		"unchanged": "A",
 		"added":     "B",
@@ -549,7 +545,20 @@ func buildReportIndex(left string, rows [][]interface{}) map[string]string {
 		}
 	}
 
-	return index
+	format := report{
+		title:   fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
+		data:    fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
+		columns: map[string]string{},
+	}
+
+	columns := []string{"updated", "added", "deleted", "failed", "errors"}
+	for _, column := range columns {
+		if ix, ok := index[column]; ok {
+			format.columns[column] = fmt.Sprintf("%v!%v%v:%v", name, ix, top+2, ix)
+		}
+	}
+
+	return &format
 }
 
 func iToCol(index int) string {
