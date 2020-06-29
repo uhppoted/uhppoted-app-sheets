@@ -53,6 +53,8 @@ type LoadACL struct {
 }
 
 type report struct {
+	top     int64
+	left    string
 	title   string
 	data    string
 	columns map[string]string
@@ -396,6 +398,11 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 }
 
 func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
+	sheet, err := getSheet(spreadsheet, l.reportRange)
+	if err != nil {
+		return err
+	}
+
 	// ... create report format
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
 	if err != nil {
@@ -408,6 +415,26 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	info("Clearing existing report from worksheet")
 	if err := clear(google, spreadsheet, []string{format.title, format.data}, ctx); err != nil {
 		return err
+	}
+
+	if sheet.Properties.GridProperties.RowCount > format.top+2 {
+		prune := sheets.BatchUpdateSpreadsheetRequest{
+			Requests: []*sheets.Request{
+				&sheets.Request{
+					DeleteDimension: &sheets.DeleteDimensionRequest{
+						Range: &sheets.DimensionRange{
+							SheetId:    sheet.Properties.SheetId,
+							Dimension:  "ROWS",
+							StartIndex: int64(format.top + 2),
+						},
+					},
+				},
+			},
+		}
+
+		if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &prune).Context(ctx).Do(); err != nil {
+			return fmt.Errorf("Error pruning report worksheet (%w)", err)
+		}
 	}
 
 	// ... write report
@@ -454,6 +481,20 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
 		return err
+	}
+
+	// ... pad
+
+	var pad = sheets.ValueRange{
+		Values: [][]interface{}{[]interface{}{""}},
+	}
+
+	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.reportRange, &pad).
+		ValueInputOption("RAW").
+		InsertDataOption("INSERT_ROWS").
+		Context(ctx).
+		Do(); err != nil {
+		return fmt.Errorf("Error padding report worksheet (%w)", err)
 	}
 
 	return nil
@@ -546,6 +587,8 @@ func (l *LoadACL) buildReportFormat(rows [][]interface{}) *report {
 	}
 
 	format := report{
+		top:     int64(top),
+		left:    left,
 		title:   fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
 		data:    fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
 		columns: map[string]string{},
