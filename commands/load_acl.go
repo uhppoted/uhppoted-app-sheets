@@ -442,7 +442,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		return err
 	}
 
-	if sheet.Properties.GridProperties.RowCount > format.top+2 {
+	if sheet.Properties.GridProperties.RowCount > format.top+16 {
 		prune := sheets.BatchUpdateSpreadsheetRequest{
 			Requests: []*sheets.Request{
 				&sheets.Request{
@@ -516,7 +516,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.reportRange, &pad).
 		ValueInputOption("RAW").
-		InsertDataOption("INSERT_ROWS").
+		InsertDataOption("OVERWRITE").
 		Context(ctx).
 		Do(); err != nil {
 		return fmt.Errorf("Error padding report worksheet (%w)", err)
