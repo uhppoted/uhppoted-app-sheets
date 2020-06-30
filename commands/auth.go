@@ -15,20 +15,27 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-func authorize(credentials string) (*http.Client, error) {
+func authorize(credentials, scope string) (*http.Client, error) {
 	b, err := ioutil.ReadFile(credentials)
 	if err != nil {
 		return nil, err
 	}
 
-	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
+	// config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
+	config, err := google.ConfigFromJSON(b, scope)
 	if err != nil {
 		return nil, err
 	}
 
 	dir, file := filepath.Split(credentials)
 	name := strings.TrimSuffix(file, filepath.Ext(file))
-	tokens := filepath.Join(dir, fmt.Sprintf("%s.tokens", name))
+	tokens := ""
+
+	if strings.HasPrefix(scope, "https://www.googleapis.com/auth/drive") {
+		tokens = filepath.Join(dir, fmt.Sprintf("%s.drive", name))
+	} else {
+		tokens = filepath.Join(dir, fmt.Sprintf("%s.tokens", name))
+	}
 
 	return getClient(tokens, config), nil
 }

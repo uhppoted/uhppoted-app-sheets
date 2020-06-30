@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
@@ -50,6 +51,11 @@ type LoadACL struct {
 
 	dryrun bool
 	debug  bool
+}
+
+type version struct {
+	revision string
+	modified time.Time
 }
 
 type report struct {
@@ -165,14 +171,33 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		}
 	}
 
-	client, err := authorize(l.credentials)
+	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope)
 	if err != nil {
-		return fmt.Errorf("Authentication/authorization error (%v)", err)
+		return fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
+	}
+
+	gdrive, err := drive.New(client)
+	if err != nil {
+		return fmt.Errorf("Unable to create new Google Drive client (%w)", err)
+	}
+
+	revision, err := getVersion(gdrive, spreadsheetId, ctx)
+	if err != nil {
+		return fmt.Errorf("Unable to retrieve spreadsheet revisions (%w)", err)
+	}
+
+	if revision != nil {
+		info(fmt.Sprintf("Latest revision %v, %s", revision.revision, revision.modified.Local().Format("2006-01-02 15:04:05 MST")))
+	}
+
+	client, err = authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets")
+	if err != nil {
+		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
 
 	google, err := sheets.New(client)
 	if err != nil {
-		return fmt.Errorf("Unable to create new Sheets client (%v)", err)
+		return fmt.Errorf("Unable to create new Google Sheets client (%w)", err)
 	}
 
 	spreadsheet, err := getSpreadsheet(google, spreadsheetId)

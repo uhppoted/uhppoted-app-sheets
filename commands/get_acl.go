@@ -68,7 +68,7 @@ func (c *GetACL) Execute(ctx context.Context) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheet, region))
 	}
 
-	client, err := authorize(c.credentials)
+	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		return fmt.Errorf("Authentication/authorization error (%v)", err)
 	}

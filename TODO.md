@@ -5,11 +5,9 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
-      - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
-      - Clean up reporting code some more
-        - func prune()
-      - Use named ranges (?)
       - get-version/is-updated/somesuch (https://stackoverflow.com/questions/18321050/google-docs-spreadsheet-get-revision-id)
+      - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
+      - Use named ranges (?)
       - use version that has been stable for e.g. 30 minutes
       - --force
 - [ ] Rename 'release' target to 'build-all' throughout
