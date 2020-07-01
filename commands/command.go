@@ -1,15 +1,12 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"regexp"
 	"sort"
 	"strings"
-	"time"
 
-	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
@@ -17,48 +14,6 @@ import (
 )
 
 const APP = "uhppoted-app-sheets"
-
-func getVersion(gdrive *drive.Service, fileId string, ctx context.Context) (*version, error) {
-	page := ""
-	latest := version{
-		revision: "",
-		modified: time.Time{},
-	}
-
-	for {
-		call := drive.NewRevisionsService(gdrive).List(fileId)
-		if page != "" {
-			call.PageToken(page)
-		}
-
-		revisions, err := call.Do()
-		if err != nil {
-			return nil, err
-		}
-
-		for _, revision := range revisions.Revisions {
-			datetime, err := time.Parse("2006-01-02T15:04:05.999Z", revision.ModifiedTime)
-			if err != nil {
-				return nil, err
-			}
-
-			if latest.modified.Before(datetime) {
-				latest.revision = revision.Id
-				latest.modified = datetime
-			}
-		}
-
-		if page = revisions.NextPageToken; page == "" {
-			break
-		}
-	}
-
-	if latest.modified.IsZero() {
-		return nil, fmt.Errorf("Unable to identify latest revision for file ID %s", fileId)
-	}
-
-	return &latest, nil
-}
 
 func getDevices(conf *config.Config, debug bool) (uhppote.UHPPOTE, []*uhppote.Device) {
 	keys := []uint32{}

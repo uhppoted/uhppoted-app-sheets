@@ -32,8 +32,10 @@ var LoadACLCmd = LoadACL{
 	noreport:    false,
 	reportRange: "Report!A1:H",
 
-	dryrun: false,
-	debug:  false,
+	force:    false,
+	dryrun:   false,
+	debug:    false,
+	revision: DEFAULT_REVISION_FILE,
 }
 
 type LoadACL struct {
@@ -49,13 +51,10 @@ type LoadACL struct {
 	noreport    bool
 	reportRange string
 
-	dryrun bool
-	debug  bool
-}
-
-type version struct {
+	force    bool
+	dryrun   bool
+	debug    bool
 	revision string
-	modified time.Time
 }
 
 type report struct {
@@ -80,9 +79,11 @@ func (c *LoadACL) Usage() string {
 
 func (c *LoadACL) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [options] load-acl [--no-log] [--no-report] [--dryrun] --credentials <credentials> --url <URL> --range <range> [--log-range <range>] [--log-retention <days>] [--report-range <range>]\n", APP)
+	fmt.Printf("  Usage: %s [options] load-acl [--no-log] [--no-report] [--dry-run] [--force] --credentials <credentials> --url <URL> --range <range> [--log-range <range>] [--log-retention <days>] [--report-range <range>]\n", APP)
 	fmt.Println()
-	fmt.Println("  Updates the cards on a set of configured controllers from a Google Sheets worksheet access control list")
+	fmt.Println("  Updates the cards on a set of configured controllers from a Google Sheets worksheet access control list. Unless the --force option")
+	fmt.Println("  is specified updates will be silently ignored (no log and no report) if the spreadsheet revision has not changed or the updated")
+	fmt.Println("  spreadsheet contains no relevant changes.")
 	fmt.Println()
 
 	c.FlagSet().VisitAll(func(f *flag.Flag) {
@@ -117,9 +118,10 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&l.logRange, "log-range", l.logRange, fmt.Sprintf("Spreadsheet range for logging result. Defaults to %s", l.logRange))
 	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, fmt.Sprintf("Log sheet records older than 'log-retention' days are automatically pruned. Defaults to %v", l.logRetention))
 	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
+	flagset.BoolVar(&l.force, "force", l.force, "'Forces' an update, overriding the spreadsheet version and compare logic")
 	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
 	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
-	flagset.BoolVar(&l.dryrun, "dryrun", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
+	flagset.BoolVar(&l.dryrun, "dry-run", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
 
 	return flagset
 }
@@ -181,13 +183,32 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("Unable to create new Google Drive client (%w)", err)
 	}
 
-	revision, err := getVersion(gdrive, spreadsheetId, ctx)
+	updated := true
+	version, err := getRevision(gdrive, spreadsheetId, ctx)
 	if err != nil {
-		return fmt.Errorf("Unable to retrieve spreadsheet revisions (%w)", err)
+		warn(fmt.Sprintf("Unable to retrieve spreadsheet revision (%v)", err))
 	}
 
-	if revision != nil {
-		info(fmt.Sprintf("Latest revision %v, %s", revision.revision, revision.modified.Local().Format("2006-01-02 15:04:05 MST")))
+	if version != nil {
+		info(fmt.Sprintf("Latest revision %v, %s", version.ID, version.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+
+		var last revision
+
+		if err := last.load(l.revision); err != nil {
+			warn(fmt.Sprintf("Error reading last revision from %s", l.revision))
+			warn(fmt.Sprintf("%v", err))
+		} else {
+			info(fmt.Sprintf("Last revision %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+
+			if version.sameAs(&last) {
+				updated = false
+			}
+		}
+	}
+
+	if !updated && !l.force {
+		info("Nothing to do")
+		return nil
 	}
 
 	client, err = authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets")
@@ -211,40 +232,65 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	for k, l := range *list {
-		info(fmt.Sprintf("%v  Retrieved %v records", k, len(l)))
+		info(fmt.Sprintf("%v  Downloaded %v records", k, len(l)))
 	}
 
-	rpt, err := api.PutACL(&u, *list, l.dryrun)
-	if err != nil {
-		return err
-	}
-
-	summary := api.Summarize(rpt)
-	format := "%v  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
-	for _, v := range summary {
-		info(fmt.Sprintf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored))
-	}
-
-	for k, v := range rpt {
-		for _, err := range v.Errors {
-			warn(fmt.Sprintf("%v  %v", k, err))
-		}
-	}
-
-	if !l.nolog {
-		if err := l.updateLogSheet(google, spreadsheet, rpt, ctx); err != nil {
+	updated = false
+	if !l.force {
+		current, err := api.GetACL(&u, devices)
+		if err != nil {
 			return err
 		}
 
-		if err := l.pruneLogSheet(google, spreadsheet, ctx); err != nil {
+		diff, err := api.Compare(*list, current)
+		if err != nil {
 			return err
+		}
+
+		for _, v := range diff {
+			if v.HasChanges() {
+				updated = true
+			}
 		}
 	}
 
-	if !l.noreport {
-		if err := l.updateReportSheet(google, spreadsheet, rpt, ctx); err != nil {
+	if updated || l.force {
+		rpt, err := api.PutACL(&u, *list, l.dryrun)
+		if err != nil {
 			return err
 		}
+
+		summary := api.Summarize(rpt)
+		format := "%v  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
+		for _, v := range summary {
+			info(fmt.Sprintf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored))
+		}
+
+		for k, v := range rpt {
+			for _, err := range v.Errors {
+				warn(fmt.Sprintf("%v  %v", k, err))
+			}
+		}
+
+		if !l.nolog {
+			if err := l.updateLogSheet(google, spreadsheet, rpt, ctx); err != nil {
+				return err
+			}
+
+			if err := l.pruneLogSheet(google, spreadsheet, ctx); err != nil {
+				return err
+			}
+		}
+
+		if !l.noreport {
+			if err := l.updateReportSheet(google, spreadsheet, rpt, ctx); err != nil {
+				return err
+			}
+		}
+	}
+
+	if version != nil {
+		version.store(l.revision)
 	}
 
 	return nil
