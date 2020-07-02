@@ -62,7 +62,8 @@ debug: build
 	                --range "ACL!A2:K" \
 	                --report-range "Report!B2:G" \
 	                --log-range "Log!A1:I" \
-	                --log-retention 1
+	                --log-retention 1 \
+	                --delay 10m
 
 usage: build
 	$(CLI)

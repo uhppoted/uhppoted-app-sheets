@@ -37,6 +37,7 @@ var LoadACLCmd = LoadACL{
 	dryrun:   false,
 	debug:    false,
 	revision: DEFAULT_REVISION_FILE,
+	delay:    delay(15 * time.Minute),
 }
 
 type LoadACL struct {
@@ -56,6 +57,7 @@ type LoadACL struct {
 	dryrun   bool
 	debug    bool
 	revision string
+	delay    delay
 }
 
 type report struct {
@@ -64,6 +66,23 @@ type report struct {
 	title   string
 	data    string
 	columns map[string]string
+}
+
+type delay time.Duration
+
+func (d delay) String() string {
+	return time.Duration(d).String()
+}
+
+func (d *delay) Set(s string) error {
+	duration, err := time.ParseDuration(s)
+	if err != nil {
+		return err
+	}
+
+	*d = delay(duration)
+
+	return nil
 }
 
 func (c *LoadACL) Name() string {
@@ -80,22 +99,22 @@ func (c *LoadACL) Usage() string {
 
 func (c *LoadACL) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [options] load-acl [--no-log] [--no-report] [--dry-run] [--force] --credentials <credentials> --url <URL> --range <range> [--log-range <range>] [--log-retention <days>] [--report-range <range>]\n", APP)
+	fmt.Printf("  Usage: %s [--debug] [--config <configuration>] load-acl [options] --credentials <credentials> --url <URL> --range <range>\n", APP)
 	fmt.Println()
 	fmt.Println("  Updates the cards on a set of configured controllers from a Google Sheets worksheet access control list. Unless the --force option")
 	fmt.Println("  is specified updates will be silently ignored (no log and no report) if the spreadsheet revision has not changed or the updated")
 	fmt.Println("  spreadsheet contains no relevant changes.")
+	fmt.Println()
+	fmt.Println("    --config <file>  Path to controllers configuration file")
+	fmt.Println("    --debug          Displays vaguely useful internal information")
+	fmt.Println()
+	fmt.Println("  Options:")
 	fmt.Println()
 
 	c.FlagSet().VisitAll(func(f *flag.Flag) {
 		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
 	})
 
-	fmt.Println()
-	fmt.Println("  Options:")
-	fmt.Println()
-	fmt.Println("    --config <file>  Path to controllers configuration file")
-	fmt.Println("    --debug          Displays vaguely useful internal information")
 	fmt.Println()
 	fmt.Println("  Examples:")
 	fmt.Println()
@@ -115,14 +134,15 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&l.credentials, "credentials", l.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&l.url, "url", l.url, "Spreadsheet URL")
 	flagset.StringVar(&l.area, "range", l.area, "Spreadsheet range e.g. 'Class Data!A2:E'")
-	flagset.StringVar(&l.reportRange, "report-range", l.reportRange, fmt.Sprintf("Spreadsheet range for load report. Defaults to %s", l.reportRange))
-	flagset.StringVar(&l.logRange, "log-range", l.logRange, fmt.Sprintf("Spreadsheet range for logging result. Defaults to %s", l.logRange))
-	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, fmt.Sprintf("Log sheet records older than 'log-retention' days are automatically pruned. Defaults to %v", l.logRetention))
+	flagset.StringVar(&l.reportRange, "report-range", l.reportRange, "Spreadsheet range for load report")
+	flagset.StringVar(&l.logRange, "log-range", l.logRange, "Spreadsheet range for logging result")
+	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
 	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
 	flagset.BoolVar(&l.force, "force", l.force, "'Forces' an update, overriding the spreadsheet version and compare logic")
 	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
 	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
 	flagset.BoolVar(&l.dryrun, "dry-run", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
+	flagset.Var(&l.delay, "delay", "Sets the delay between when a spreadsheet is modified and when it is regarded as sufficiently stable to use")
 
 	return flagset
 }
@@ -297,6 +317,12 @@ func (l *LoadACL) revised(version *revision) bool {
 			if version.sameAs(&last) {
 				return false
 			}
+		}
+
+		cutoff := time.Now().Add(-time.Duration(l.delay))
+		if cutoff.Before(version.Modified) {
+			info(fmt.Sprintf("Latest revision modified less than %s ago (%s)", l.delay, version.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+			return false
 		}
 	}
 
