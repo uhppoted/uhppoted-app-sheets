@@ -30,8 +30,9 @@ var LoadACLCmd = LoadACL{
 	logRange:     "Log!A1:H",
 	logRetention: 30,
 
-	noreport:    false,
-	reportRange: "Report!A1:H",
+	noreport:     false,
+	reportRange:  "Report!A1:H",
+	reportAlways: false,
 
 	force:    false,
 	dryrun:   false,
@@ -50,8 +51,9 @@ type LoadACL struct {
 	logRange     string
 	logRetention uint
 
-	noreport    bool
-	reportRange string
+	noreport     bool
+	reportAlways bool
+	reportRange  string
 
 	force    bool
 	dryrun   bool
@@ -141,6 +143,7 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.BoolVar(&l.force, "force", l.force, "'Forces' an update, overriding the spreadsheet version and compare logic")
 	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
 	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
+	flagset.BoolVar(&l.reportAlways, "report-always", l.reportAlways, "Writes a report even if there were no changes or errors")
 	flagset.BoolVar(&l.dryrun, "dry-run", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
 	flagset.Var(&l.delay, "delay", "Sets the delay between when a spreadsheet is modified and when it is regarded as sufficiently stable to use")
 
@@ -522,12 +525,27 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 }
 
 func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
+	// ... anything interesting?
+	if !l.reportAlways {
+		interesting := false
+		for _, v := range rpt {
+			if len(v.Updated) > 0 || len(v.Added) > 0 || len(v.Deleted) > 0 || len(v.Failed) > 0 || len(v.Errored) > 0 {
+				interesting = true
+			}
+		}
+
+		if !interesting {
+			info("No interesting information in report - leaving existing report 'as is'")
+			return nil
+		}
+	}
+
+	// ... create report format
 	sheet, err := getSheet(spreadsheet, l.reportRange)
 	if err != nil {
 		return err
 	}
 
-	// ... create report format
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
