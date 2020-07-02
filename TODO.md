@@ -6,6 +6,7 @@
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
       - use version that has been stable for e.g. 30 minutes
+      - add version/modified to the report
       - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
       - Use named ranges (?)
 - [ ] Rename 'release' target to 'build-all' throughout

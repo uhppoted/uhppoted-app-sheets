@@ -13,6 +13,7 @@ import (
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/sheets/v4"
 
+	"github.com/uhppoted/uhppote-core/device"
 	"github.com/uhppoted/uhppote-core/uhppote"
 	api "github.com/uhppoted/uhppoted-api/acl"
 	"github.com/uhppoted/uhppoted-api/config"
@@ -127,24 +128,16 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 }
 
 func (l *LoadACL) Execute(ctx context.Context) error {
+	if err := l.validate(); err != nil {
+		return err
+	}
+
 	conf := config.NewConfig()
 	if err := conf.Load(l.config); err != nil {
 		return fmt.Errorf("WARN  Could not load configuration (%v)", err)
 	}
 
 	u, devices := getDevices(conf, l.debug)
-
-	if strings.TrimSpace(l.credentials) == "" {
-		return fmt.Errorf("--credentials is a required option")
-	}
-
-	if strings.TrimSpace(l.url) == "" {
-		return fmt.Errorf("--url is a required option")
-	}
-
-	if strings.TrimSpace(l.area) == "" {
-		return fmt.Errorf("--range is a required option")
-	}
 
 	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(l.url))
 	if len(match) < 2 {
@@ -153,65 +146,21 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 
 	spreadsheetId := match[1]
 
-	if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(l.area)); len(match) < 2 {
-		return fmt.Errorf("Invalid range '%s' - expected something like 'ACL!A2:K", l.area)
-	}
-
 	if l.debug {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, l.area, l.logRange))
 	}
 
-	if !l.nolog {
-		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+[0-9]+):([a-zA-Z]+(?:[0-9]+)?)`).FindStringSubmatch(l.logRange); len(match) < 4 {
-			return fmt.Errorf("Invalid log-range '%s' - expected something like 'Log!A1:H", l.logRange)
-		}
-	}
-
-	if !l.noreport {
-		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange); len(match) < 5 {
-			return fmt.Errorf("Invalid report-range '%s' - expected something like 'Report!A1:E", l.reportRange)
-		}
-	}
-
-	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope)
+	version, err := l.getRevision(spreadsheetId, ctx)
 	if err != nil {
-		return fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
+		return err
 	}
 
-	gdrive, err := drive.New(client)
-	if err != nil {
-		return fmt.Errorf("Unable to create new Google Drive client (%w)", err)
-	}
-
-	updated := true
-	version, err := getRevision(gdrive, spreadsheetId, ctx)
-	if err != nil {
-		warn(fmt.Sprintf("Unable to retrieve spreadsheet revision (%v)", err))
-	}
-
-	if version != nil {
-		info(fmt.Sprintf("Latest revision %v, %s", version.ID, version.Modified.Local().Format("2006-01-02 15:04:05 MST")))
-
-		var last revision
-
-		if err := last.load(l.revision); err != nil {
-			warn(fmt.Sprintf("Error reading last revision from %s", l.revision))
-			warn(fmt.Sprintf("%v", err))
-		} else {
-			info(fmt.Sprintf("Last revision %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST")))
-
-			if version.sameAs(&last) {
-				updated = false
-			}
-		}
-	}
-
-	if !updated && !l.force {
+	if !l.force && !l.revised(version) {
 		info("Nothing to do")
 		return nil
 	}
 
-	client, err = authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets")
+	client, err := authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
@@ -235,26 +184,12 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		info(fmt.Sprintf("%v  Downloaded %v records", k, len(l)))
 	}
 
-	updated = false
-	if !l.force {
-		current, err := api.GetACL(&u, devices)
-		if err != nil {
-			return err
-		}
-
-		diff, err := api.Compare(*list, current)
-		if err != nil {
-			return err
-		}
-
-		for _, v := range diff {
-			if v.HasChanges() {
-				updated = true
-			}
-		}
+	updated, err := l.compare(&u, devices, list)
+	if err != nil {
+		return err
 	}
 
-	if updated || l.force {
+	if l.force || updated {
 		rpt, err := api.PutACL(&u, *list, l.dryrun)
 		if err != nil {
 			return err
@@ -294,6 +229,98 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (l *LoadACL) validate() error {
+	if strings.TrimSpace(l.credentials) == "" {
+		return fmt.Errorf("--credentials is a required option")
+	}
+
+	if strings.TrimSpace(l.url) == "" {
+		return fmt.Errorf("--url is a required option")
+	}
+
+	if strings.TrimSpace(l.area) == "" {
+		return fmt.Errorf("--range is a required option")
+	}
+
+	if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(l.area)); len(match) < 2 {
+		return fmt.Errorf("Invalid range '%s' - expected something like 'ACL!A2:K", l.area)
+	}
+
+	if !l.nolog {
+		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+[0-9]+):([a-zA-Z]+(?:[0-9]+)?)`).FindStringSubmatch(l.logRange); len(match) < 4 {
+			return fmt.Errorf("Invalid log-range '%s' - expected something like 'Log!A1:H", l.logRange)
+		}
+	}
+
+	if !l.noreport {
+		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange); len(match) < 5 {
+			return fmt.Errorf("Invalid report-range '%s' - expected something like 'Report!A1:E", l.reportRange)
+		}
+	}
+
+	return nil
+}
+
+func (l *LoadACL) getRevision(spreadsheetId string, ctx context.Context) (*revision, error) {
+	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope)
+	if err != nil {
+		return nil, fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
+	}
+
+	gdrive, err := drive.New(client)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to create new Google Drive client (%w)", err)
+	}
+
+	version, err := getRevision(gdrive, spreadsheetId, ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to retrieve spreadsheet revision (%v)", err)
+	}
+
+	return version, nil
+}
+
+func (l *LoadACL) revised(version *revision) bool {
+	if version != nil {
+		info(fmt.Sprintf("Latest revision %v, %s", version.ID, version.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+
+		var last revision
+
+		if err := last.load(l.revision); err != nil {
+			warn(fmt.Sprintf("Error reading last revision from %s", l.revision))
+			warn(fmt.Sprintf("%v", err))
+		} else {
+			info(fmt.Sprintf("Last revision %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+
+			if version.sameAs(&last) {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func (l *LoadACL) compare(u device.IDevice, devices []*uhppote.Device, list *api.ACL) (bool, error) {
+	current, err := api.GetACL(u, devices)
+	if err != nil {
+		return false, err
+	}
+
+	diff, err := api.Compare(*list, current)
+	if err != nil {
+		return false, err
+	}
+
+	for _, v := range diff {
+		if v.HasChanges() {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []*uhppote.Device, ctx context.Context) (*api.ACL, error) {
