@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -21,6 +22,7 @@ import (
 )
 
 var LoadACLCmd = LoadACL{
+	workdir:     DEFAULT_WORKDIR,
 	config:      config.DefaultConfig,
 	credentials: "",
 	url:         "",
@@ -34,14 +36,15 @@ var LoadACLCmd = LoadACL{
 	reportRange:  "Report!A1:H",
 	reportAlways: false,
 
-	force:    false,
-	dryrun:   false,
-	debug:    false,
-	revision: DEFAULT_REVISION_FILE,
-	delay:    delay(15 * time.Minute),
+	force:     false,
+	dryrun:    false,
+	debug:     false,
+	delay:     delay(15 * time.Minute),
+	revisions: filepath.Join(DEFAULT_WORKDIR, ".google", "uhppoted-app-sheets.revision"),
 }
 
 type LoadACL struct {
+	workdir     string
 	config      string
 	credentials string
 	url         string
@@ -55,11 +58,11 @@ type LoadACL struct {
 	reportAlways bool
 	reportRange  string
 
-	force    bool
-	dryrun   bool
-	debug    bool
-	revision string
-	delay    delay
+	force     bool
+	dryrun    bool
+	debug     bool
+	delay     delay
+	revisions string
 }
 
 type report struct {
@@ -136,16 +139,20 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&l.credentials, "credentials", l.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&l.url, "url", l.url, "Spreadsheet URL")
 	flagset.StringVar(&l.area, "range", l.area, "Spreadsheet range e.g. 'Class Data!A2:E'")
-	flagset.StringVar(&l.reportRange, "report-range", l.reportRange, "Spreadsheet range for load report")
-	flagset.StringVar(&l.logRange, "log-range", l.logRange, "Spreadsheet range for logging result")
-	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
-	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
 	flagset.BoolVar(&l.force, "force", l.force, "Forces an update, overriding the spreadsheet version and compare logic")
-	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
-	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
-	flagset.BoolVar(&l.reportAlways, "report-always", l.reportAlways, "Writes a report even if there were no changes or errors")
 	flagset.BoolVar(&l.dryrun, "dry-run", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
 	flagset.Var(&l.delay, "delay", "Sets the delay between when a spreadsheet is modified and when it is regarded as sufficiently stable to use")
+
+	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
+	flagset.StringVar(&l.logRange, "log-range", l.logRange, "Spreadsheet range for logging result")
+	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
+
+	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
+	flagset.BoolVar(&l.reportAlways, "report-always", l.reportAlways, "Writes a report even if there were no changes or errors")
+	flagset.StringVar(&l.reportRange, "report-range", l.reportRange, "Spreadsheet range for load report")
+
+	flagset.StringVar(&l.workdir, "workdir", l.workdir, "Directory for working files (tokens, revisions, etc)")
+	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
 
 	return flagset
 }
@@ -168,6 +175,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	spreadsheetId := match[1]
+	l.revisions = filepath.Join(l.workdir, ".google", fmt.Sprintf("%s.revision", spreadsheetId))
 
 	if l.debug {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, l.area, l.logRange))
@@ -183,7 +191,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return nil
 	}
 
-	client, err := authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets")
+	client, err := authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets", l.workdir)
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
@@ -250,7 +258,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	if version != nil {
-		version.store(l.revision)
+		version.store(l.revisions)
 	}
 
 	return nil
@@ -289,7 +297,7 @@ func (l *LoadACL) validate() error {
 }
 
 func (l *LoadACL) getRevision(spreadsheetId string, ctx context.Context) (*revision, error) {
-	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope)
+	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope, l.workdir)
 	if err != nil {
 		return nil, fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
 	}
@@ -313,8 +321,8 @@ func (l *LoadACL) revised(version *revision) bool {
 
 		var last revision
 
-		if err := last.load(l.revision); err != nil {
-			warn(fmt.Sprintf("Error reading last revision from %s", l.revision))
+		if err := last.load(l.revisions); err != nil {
+			warn(fmt.Sprintf("Error reading last revision from %s", l.revisions))
 			warn(fmt.Sprintf("%v", err))
 		} else {
 			info(fmt.Sprintf("Last revision   %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST")))
@@ -405,7 +413,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 		}
 
 		if ix, ok := index["deviceid"]; ok {
-			row[ix] = fmt.Sprintf("%v", v.DeviceID)
+			row[ix] = fmt.Sprintf("'%v", v.DeviceID)
 		}
 
 		if ix, ok := index["unchanged"]; ok {
@@ -436,7 +444,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 	}
 
 	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.logRange, &rows).
-		ValueInputOption("RAW").
+		ValueInputOption("USER_ENTERED").
 		InsertDataOption("INSERT_ROWS").
 		Context(ctx).
 		Do(); err != nil {
@@ -594,7 +602,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		"errors":  consolidated.Errored,
 	}
 
-	var title = sheets.ValueRange{
+	var timestamp = sheets.ValueRange{
 		Range: format.timestamp,
 		Values: [][]interface{}{
 			[]interface{}{
@@ -604,8 +612,8 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	rq := sheets.BatchUpdateValuesRequest{
-		ValueInputOption: "RAW",
-		Data:             []*sheets.ValueRange{&title},
+		ValueInputOption: "USER_ENTERED",
+		Data:             []*sheets.ValueRange{&timestamp},
 	}
 
 	for k, v := range columns {
@@ -634,7 +642,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.reportRange, &pad).
-		ValueInputOption("RAW").
+		ValueInputOption("USER_ENTERED").
 		InsertDataOption("OVERWRITE").
 		Context(ctx).
 		Do(); err != nil {

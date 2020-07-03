@@ -42,14 +42,14 @@ func (r *revision) load(file string) error {
 
 func (r *revision) store(file string) error {
 	dir := filepath.Dir(file)
-	os.MkdirAll(dir, 0770)
 
-	bytes, err := json.Marshal(r)
-	if err != nil {
+	if err := os.MkdirAll(dir, 0770); err != nil {
 		return err
 	}
 
-	if err := ioutil.WriteFile(file, bytes, 0660); err != nil {
+	if bytes, err := json.Marshal(r); err != nil {
+		return err
+	} else if err := ioutil.WriteFile(file, bytes, 0660); err != nil {
 		return err
 	}
 

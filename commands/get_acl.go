@@ -17,6 +17,7 @@ import (
 )
 
 var GetACLCmd = GetACL{
+	workdir:     DEFAULT_WORKDIR,
 	credentials: "",
 	url:         "",
 	region:      "",
@@ -25,6 +26,7 @@ var GetACLCmd = GetACL{
 }
 
 type GetACL struct {
+	workdir     string
 	credentials string
 	url         string
 	region      string
@@ -35,6 +37,7 @@ type GetACL struct {
 func (c *GetACL) FlagSet() *flag.FlagSet {
 	flagset := flag.NewFlagSet("get-acl", flag.ExitOnError)
 
+	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)'")
 	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&c.url, "url", c.url, "Spreadsheet URL")
 	flagset.StringVar(&c.region, "range", c.region, "Spreadsheet range e.g. 'Class Data!A2:E'")
@@ -68,7 +71,7 @@ func (c *GetACL) Execute(ctx context.Context) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheet, region))
 	}
 
-	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets")
+	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets", c.workdir)
 	if err != nil {
 		return fmt.Errorf("Authentication/authorization error (%v)", err)
 	}

@@ -15,26 +15,25 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-func authorize(credentials, scope string) (*http.Client, error) {
+func authorize(credentials, scope, workdir string) (*http.Client, error) {
 	b, err := ioutil.ReadFile(credentials)
 	if err != nil {
 		return nil, err
 	}
 
-	// config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	config, err := google.ConfigFromJSON(b, scope)
 	if err != nil {
 		return nil, err
 	}
 
-	dir, file := filepath.Split(credentials)
+	_, file := filepath.Split(credentials)
 	name := strings.TrimSuffix(file, filepath.Ext(file))
 	tokens := ""
 
 	if strings.HasPrefix(scope, "https://www.googleapis.com/auth/drive") {
-		tokens = filepath.Join(dir, fmt.Sprintf("%s.drive", name))
+		tokens = filepath.Join(workdir, ".google", fmt.Sprintf("%s.drive", name))
 	} else {
-		tokens = filepath.Join(dir, fmt.Sprintf("%s.tokens", name))
+		tokens = filepath.Join(workdir, ".google", fmt.Sprintf("%s.tokens", name))
 	}
 
 	return getClient(tokens, config), nil
@@ -47,6 +46,7 @@ func getClient(tokens string, config *oauth2.Config) *http.Client {
 		token = getTokenFromWeb(config)
 		saveToken(tokens, token)
 	}
+
 	return config.Client(context.Background(), token)
 }
 
@@ -83,10 +83,18 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 // Saves a token to a file path.
 func saveToken(path string, token *oauth2.Token) {
 	fmt.Printf("Saving credential file to: %s\n", path)
+
+	err := os.MkdirAll(filepath.Dir(path), 0770)
+	if err != nil {
+		log.Fatalf("Unable to cache oauth token: %v", err)
+	}
+
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
+
 	defer f.Close()
+
 	json.NewEncoder(f).Encode(token)
 }

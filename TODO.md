@@ -5,9 +5,8 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
-      - add --revision to options (or rather --workdir or ???)
-      - lockfile
       - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
+      - lockfile
       - Use named ranges (?)
       - Add version/modified to the report (named ranges only)
 - [ ] Rename 'release' target to 'build-all' throughout

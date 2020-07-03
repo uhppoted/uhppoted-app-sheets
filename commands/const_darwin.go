@@ -1,5 +1,5 @@
 package commands
 
 const (
-	DEFAULT_REVISION_FILE = ".google/uhppoted-app-sheets.revision"
+	DEFAULT_WORKDIR = "/usr/local/var/com.github.twystd.uhppoted"
 )
