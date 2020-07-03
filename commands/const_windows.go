@@ -5,4 +5,4 @@ import (
 )
 
 var DEFAULT_WORKDIR = workdir()
-var DEFAULT_REVISION_FILE = filepath.Join(workdir(), "sheets", "uhppoted-app-sheets.revision")
+var DEFAULT_REVISION_FILE = filepath.Join(workdir(), ".google", "uhppoted-app-sheets.revision")

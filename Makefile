@@ -56,6 +56,7 @@ debug: build
 	$(CLI) help
 	$(CLI) help load-acl
 	$(CLI) load-acl --dry-run \
+	                --force   \
 	                --config ../runtime/sheets/uhppoted.conf \
 	                --credentials $(CREDENTIALS) \
 	                --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \

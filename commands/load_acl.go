@@ -63,11 +63,11 @@ type LoadACL struct {
 }
 
 type report struct {
-	top     int64
-	left    string
-	title   string
-	data    string
-	columns map[string]string
+	top       int64
+	left      string
+	timestamp string
+	data      string
+	columns   map[string]string
 }
 
 type delay time.Duration
@@ -114,7 +114,7 @@ func (c *LoadACL) Help() {
 	fmt.Println()
 
 	c.FlagSet().VisitAll(func(f *flag.Flag) {
-		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
+		fmt.Printf("    --%-13s %s\n", f.Name, f.Usage)
 	})
 
 	fmt.Println()
@@ -140,7 +140,7 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&l.logRange, "log-range", l.logRange, "Spreadsheet range for logging result")
 	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
 	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
-	flagset.BoolVar(&l.force, "force", l.force, "'Forces' an update, overriding the spreadsheet version and compare logic")
+	flagset.BoolVar(&l.force, "force", l.force, "Forces an update, overriding the spreadsheet version and compare logic")
 	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
 	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
 	flagset.BoolVar(&l.reportAlways, "report-always", l.reportAlways, "Writes a report even if there were no changes or errors")
@@ -245,6 +245,8 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 				return err
 			}
 		}
+	} else {
+		info("No changes - Nothing to do")
 	}
 
 	if version != nil {
@@ -315,7 +317,7 @@ func (l *LoadACL) revised(version *revision) bool {
 			warn(fmt.Sprintf("Error reading last revision from %s", l.revision))
 			warn(fmt.Sprintf("%v", err))
 		} else {
-			info(fmt.Sprintf("Last revision %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+			info(fmt.Sprintf("Last revision   %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST")))
 
 			if version.sameAs(&last) {
 				return false
@@ -555,7 +557,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	// ... clear existing report
 	info("Clearing existing report from worksheet")
-	if err := clear(google, spreadsheet, []string{format.title, format.data}, ctx); err != nil {
+	if err := clear(google, spreadsheet, []string{format.timestamp, format.data}, ctx); err != nil {
 		return err
 	}
 
@@ -593,10 +595,10 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	var title = sheets.ValueRange{
-		Range: format.title,
+		Range: format.timestamp,
 		Values: [][]interface{}{
 			[]interface{}{
-				time.Now().Format("ACL Update Report: 2006-01-02 15:04:05"),
+				time.Now().Format("2006-01-02 15:04:05"),
 			},
 		},
 	}
@@ -729,11 +731,11 @@ func (l *LoadACL) buildReportFormat(rows [][]interface{}) *report {
 	}
 
 	format := report{
-		top:     int64(top),
-		left:    left,
-		title:   fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
-		data:    fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
-		columns: map[string]string{},
+		top:       int64(top),
+		left:      left,
+		timestamp: fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
+		data:      fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
+		columns:   map[string]string{},
 	}
 
 	columns := []string{"updated", "added", "deleted", "failed", "errors"}
