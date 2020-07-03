@@ -31,9 +31,9 @@ func authorize(credentials, scope, workdir string) (*http.Client, error) {
 	tokens := ""
 
 	if strings.HasPrefix(scope, "https://www.googleapis.com/auth/drive") {
-		tokens = filepath.Join(workdir, ".google", fmt.Sprintf("%s.drive", name))
+		tokens = filepath.Join(workdir, fmt.Sprintf("%s.drive", name))
 	} else {
-		tokens = filepath.Join(workdir, ".google", fmt.Sprintf("%s.tokens", name))
+		tokens = filepath.Join(workdir, fmt.Sprintf("%s.tokens", name))
 	}
 
 	return getClient(tokens, config), nil

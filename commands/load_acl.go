@@ -24,7 +24,7 @@ import (
 var LoadACLCmd = LoadACL{
 	workdir:     DEFAULT_WORKDIR,
 	config:      config.DefaultConfig,
-	credentials: "",
+	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
 	url:         "",
 	area:        "",
 
@@ -191,7 +191,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return nil
 	}
 
-	client, err := authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets", l.workdir)
+	client, err := authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(l.workdir, ".google"))
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
@@ -297,7 +297,7 @@ func (l *LoadACL) validate() error {
 }
 
 func (l *LoadACL) getRevision(spreadsheetId string, ctx context.Context) (*revision, error) {
-	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope, l.workdir)
+	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope, filepath.Join(l.workdir, ".google"))
 	if err != nil {
 		return nil, fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
 	}

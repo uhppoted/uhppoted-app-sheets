@@ -18,7 +18,7 @@ import (
 
 var GetACLCmd = GetACL{
 	workdir:     DEFAULT_WORKDIR,
-	credentials: "",
+	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
 	url:         "",
 	region:      "",
 	file:        time.Now().Format("2006-01-02T150405.acl"),
@@ -71,7 +71,7 @@ func (c *GetACL) Execute(ctx context.Context) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheet, region))
 	}
 
-	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets", c.workdir)
+	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(c.workdir, ".google"))
 	if err != nil {
 		return fmt.Errorf("Authentication/authorization error (%v)", err)
 	}
