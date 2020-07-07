@@ -592,12 +592,10 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		return err
 	}
 
-	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
+	format, err := l.buildReportFormat(google, spreadsheet)
 	if err != nil {
-		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
+		return err
 	}
-
-	format := l.buildReportFormat(response.Values)
 
 	// ... clear existing report
 	info("Clearing existing report from worksheet")
@@ -737,7 +735,13 @@ func buildLogIndex(rows [][]interface{}) (map[string]int, int) {
 	return index, columns
 }
 
-func (l *LoadACL) buildReportFormat(rows [][]interface{}) *report {
+func (l *LoadACL) buildReportFormat(google *sheets.Service, spreadsheet *sheets.Spreadsheet) (*report, error) {
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
+	if err != nil {
+		return nil, fmt.Errorf("Unable to retrieve data from report sheet (%v)", err)
+	}
+
+	rows := response.Values
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
 	name := match[1]
 	left := match[2]
@@ -789,7 +793,7 @@ func (l *LoadACL) buildReportFormat(rows [][]interface{}) *report {
 		}
 	}
 
-	return &format
+	return &format, nil
 }
 
 func iToCol(index int) string {

@@ -5,8 +5,8 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
-      - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
       - Use named ranges (?)
+      - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
       - Add version/modified to the report (named ranges only)
 - [ ] Rename 'release' target to 'build-all' throughout
 - [ ] Move --debug flag before command
