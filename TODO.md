@@ -6,11 +6,11 @@
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
       - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
+- [ ] store-acl
 - [ ] Rename 'release' target to 'build-all' throughout
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
 - [ ] compare-acl
-- [ ] store-acl
 - [ ] Update the DEFAULT values - they all refer to twystd :-(
 - [ ] Remove 'run' argument from uhppoted-api:command.Parse
 - [ ] Clean up reporting code
