@@ -5,9 +5,7 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [ ] load-acl
-      - Use named ranges (?)
       - Report duplicates as card errors/ignored rather than failing the whole load (--strict (?))
-      - Add version/modified to the report (named ranges only)
 - [ ] Rename 'release' target to 'build-all' throughout
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
@@ -24,3 +22,5 @@
 ## TODO
 
 - [ ] TLA+ model
+- [ ] Named ranges
+- [ ] load-acl::Add version/modified to the report (named ranges only)

@@ -683,6 +683,41 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		return fmt.Errorf("Error padding report worksheet (%w)", err)
 	}
 
+	//	// ... (experimental)
+	//
+	//	updated := time.Now().Format("2006-01-02 15:04:05")
+	//	rq := sheets.BatchUpdateSpreadsheetRequest{
+	//		Requests: []*sheets.Request{
+	//			&sheets.Request{
+	//				UpdateCells: &sheets.UpdateCellsRequest{
+	//					Fields: "*",
+	//					Range: &sheets.GridRange{
+	//						SheetId:          sheet.Properties.SheetId,
+	//						StartColumnIndex: 7,
+	//						StartRowIndex:    1,
+	//						EndColumnIndex:   8,
+	//						EndRowIndex:      2,
+	//					},
+	//					Rows: []*sheets.RowData{
+	//						&sheets.RowData{
+	//							Values: []*sheets.CellData{
+	//								&sheets.CellData{
+	//									UserEnteredValue: &sheets.ExtendedValue{
+	//										StringValue: &updated,
+	//									},
+	//								},
+	//							},
+	//						},
+	//					},
+	//				},
+	//			},
+	//		},
+	//	}
+	//
+	//	if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
+	//		return err
+	//	}
+
 	return nil
 }
 
