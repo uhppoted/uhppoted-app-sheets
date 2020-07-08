@@ -74,5 +74,9 @@ func info(msg string) {
 }
 
 func warn(msg string) {
+	log.Printf("%-5s %s", "WARN", msg)
+}
+
+func fatal(msg string) {
 	log.Printf("%-5s %s", "ERROR", msg)
 }

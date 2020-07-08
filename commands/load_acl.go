@@ -39,6 +39,7 @@ var LoadACLCmd = LoadACL{
 	reportAlways: false,
 
 	force:     false,
+	strict:    false,
 	dryrun:    false,
 	debug:     false,
 	delay:     delay(15 * time.Minute),
@@ -61,6 +62,7 @@ type LoadACL struct {
 	reportRange  string
 
 	force     bool
+	strict    bool
 	dryrun    bool
 	debug     bool
 	delay     delay
@@ -112,8 +114,10 @@ func (c *LoadACL) Help() {
 	fmt.Println("  is specified updates will be silently ignored (no log and no report) if the spreadsheet revision has not changed or the updated")
 	fmt.Println("  spreadsheet contains no relevant changes.")
 	fmt.Println()
+	fmt.Println("  Duplicate card numbers are automatically deleted across the system unless the --strict option is provided to fail the load.")
+	fmt.Println()
 	fmt.Println("    --config <file>  Path to controllers configuration file")
-	fmt.Println("    --debug          Displays vaguely useful internal information")
+	fmt.Println("    --debug          Displays internal information for diagnosing errors")
 	fmt.Println()
 	fmt.Println("  Options:")
 	fmt.Println()
@@ -142,6 +146,7 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&l.url, "url", l.url, "Spreadsheet URL")
 	flagset.StringVar(&l.area, "range", l.area, "Spreadsheet range e.g. 'Class Data!A2:E'")
 	flagset.BoolVar(&l.force, "force", l.force, "Forces an update, overriding the spreadsheet version and compare logic")
+	flagset.BoolVar(&l.strict, "strict", l.strict, "Fails with an error if the spreadsheet contains duplicate card numbers")
 	flagset.BoolVar(&l.dryrun, "dry-run", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
 	flagset.Var(&l.delay, "delay", "Sets the delay between when a spreadsheet is modified and when it is regarded as sufficiently stable to use")
 
@@ -198,7 +203,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 
 	version, err := l.getRevision(spreadsheetId, ctx)
 	if err != nil {
-		warn(err.Error())
+		fatal(err.Error())
 	}
 
 	if !l.force && !l.revised(version) {
@@ -249,7 +254,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 
 		for k, v := range rpt {
 			for _, err := range v.Errors {
-				warn(fmt.Sprintf("%v  %v", k, err))
+				fatal(fmt.Sprintf("%v  %v", k, err))
 			}
 		}
 
@@ -358,8 +363,8 @@ func (l *LoadACL) revised(version *revision) bool {
 		var last revision
 
 		if err := last.load(l.revisions); err != nil {
-			warn(fmt.Sprintf("Error reading last revision from %s", l.revisions))
-			warn(fmt.Sprintf("%v", err))
+			fatal(fmt.Sprintf("Error reading last revision from %s", l.revisions))
+			fatal(fmt.Sprintf("%v", err))
 		} else {
 			info(fmt.Sprintf("Last revision   %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST")))
 
@@ -413,11 +418,17 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 		return nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}
 
-	list, err := api.ParseTable(table, devices)
+	list, warnings, err := api.ParseTable(table, devices, l.strict)
 	if err != nil {
 		return nil, err
-	} else if list == nil {
+	}
+
+	if list == nil {
 		return nil, fmt.Errorf("Error creating ACL from worksheet (%v)", list)
+	}
+
+	for _, w := range warnings {
+		warn(w.Error())
 	}
 
 	return list, nil

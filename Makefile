@@ -55,7 +55,8 @@ release: build-all
 debug: build
 	$(CLI) help
 	$(CLI) help load-acl
-	$(CLI) load-acl --dry-run \
+	$(CLI) load-acl \
+	                --dry-run \
 	                --force   \
 	                --config ../runtime/sheets/uhppoted.conf \
 	                --credentials $(CREDENTIALS) \
@@ -73,6 +74,7 @@ usage: build
 help: build
 	$(CLI) help
 	$(CLI) help get-acl
+	$(CLI) help load-acl
 
 version: build
 	$(CLI) version

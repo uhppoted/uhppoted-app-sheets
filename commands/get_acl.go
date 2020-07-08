@@ -146,7 +146,7 @@ func (c *GetACL) Help() {
 	fmt.Println()
 	fmt.Println("  Options:")
 	fmt.Println()
-	fmt.Println("    --debug   Displays vaguely useful internal information")
+	fmt.Println("    --debug   Displays internal information for diagnosing errors")
 	fmt.Println()
 	fmt.Println("  Examples:")
 	fmt.Println()
