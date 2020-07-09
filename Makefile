@@ -54,19 +54,12 @@ release: build-all
 
 debug: build
 	$(CLI) help
-	$(CLI) help load-acl
-	$(CLI) load-acl \
-	                --dry-run \
-	                --force   \
-	                --config ../runtime/sheets/uhppoted.conf \
-	                --credentials $(CREDENTIALS) \
-	                --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-	                --range "ACL!A2:K" \
-	                --report-range "Report!B2:G" \
-	                --log-range "Log!A1:I" \
-	                --log-retention 1 \
-	                --delay 5m \
-	                --report-always
+	$(CLI) help compare-acl
+	$(CLI) compare-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+                       --range "ACL!A2:K" \
+                       --credentials $(CREDENTIALS) \
+                       --config ../runtime/sheets/uhppoted.conf \
+                       --report-range "Audit!B2:E"
 
 usage: build
 	$(CLI)
@@ -83,15 +76,27 @@ version: build
 
 get-acl: build
 #	$(CLI) get-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "../runtime/sheets/debug.acl"
-	$(CLI) get-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "../runtime/sheets/debug.acl"
+	$(CLI) get-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	               --range "ACL!A2:K" \
+	               --file "../runtime/sheets/debug.acl"
 
 load-acl: build
-	$(CLI) load-acl --config ../runtime/sheets/uhppoted.conf \
-	                --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+#	$(CLI) load-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+#	                --range "ACL!A2:K" \
+#	                --credentials $(CREDENTIALS) \
+#	                --dry-run \
+#	                --force   \
+#	                --config ../runtime/sheets/uhppoted.conf \
+#	                --report-range "Report!B2:G" \
+#	                --log-range "Log!A1:I" \
+#	                --log-retention 1 \
+#	                --delay 5m \
+#	                --report-always
+	$(CLI) load-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
 	                --range "ACL!A2:K" \
+	                --config ../runtime/sheets/uhppoted.conf \
 	                --report-range "Report!B2:G" \
 	                --log-range "Log!A1:I" \
 	                --log-retention 1 \
 	                --delay 5m
-
 

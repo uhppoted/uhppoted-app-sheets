@@ -61,6 +61,36 @@ func getSheet(spreadsheet *sheets.Spreadsheet, area string) (*sheets.Sheet, erro
 	return nil, fmt.Errorf("Unable to identify worksheet for '%s'", area)
 }
 
+func iToCol(index int) string {
+	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	N := len(columns)
+
+	col := string(columns[index%N])
+	index = index / N
+	for ; index > 0; index = index / N {
+		col = col + string(columns[index%N])
+	}
+
+	return col
+}
+
+func colToI(column string) int {
+	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	N := len(columns)
+	col := []rune(strings.ToUpper(column))
+	ix := 0
+
+	for _, c := range col {
+		for i, r := range columns {
+			if r == c {
+				ix = ix*N + i
+				break
+			}
+		}
+	}
+
+	return ix
+}
 func normalise(v string) string {
 	return strings.ToLower(strings.ReplaceAll(v, " ", ""))
 }

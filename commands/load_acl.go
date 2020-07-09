@@ -35,7 +35,7 @@ var LoadACLCmd = LoadACL{
 	logRetention: 30,
 
 	noreport:     false,
-	reportRange:  "Report!A1:H",
+	reportRange:  "Report!A1:E",
 	reportAlways: false,
 
 	force:     false,
@@ -129,13 +129,13 @@ func (c *LoadACL) Help() {
 	fmt.Println()
 	fmt.Println("  Examples:")
 	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --debug load-acl --credentials "credentials.json" \`)
-	fmt.Println(`                                        --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                        --range "Class Data!A2:E" \`)
+	fmt.Println(`    uhppote-app-sheets load-acl --credentials "credentials.json" \`)
+	fmt.Println(`                                --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                --range "Class ACL!A2:E" \`)
 	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --conf example.conf load-acl --credentials "credentials.json" \`)
-	fmt.Println(`                                                    --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                                    --range "Class Data!A2:E" \`)
+	fmt.Println(`    uhppote-app-sheets --debug --conf example.conf load-acl --credentials "credentials.json" \`)
+	fmt.Println(`                                                            --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                                            --range "Class ACL!A2:E" \`)
 	fmt.Println()
 }
 
@@ -840,35 +840,4 @@ func (l *LoadACL) buildReportFormat(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	return &format, nil
-}
-
-func iToCol(index int) string {
-	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	N := len(columns)
-
-	col := string(columns[index%N])
-	index = index / N
-	for ; index > 0; index = index / N {
-		col = col + string(columns[index%N])
-	}
-
-	return col
-}
-
-func colToI(column string) int {
-	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	N := len(columns)
-	col := []rune(strings.ToUpper(column))
-	ix := 0
-
-	for _, c := range col {
-		for i, r := range columns {
-			if r == c {
-				ix = ix*N + i
-				break
-			}
-		}
-	}
-
-	return ix
 }

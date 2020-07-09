@@ -5,9 +5,14 @@
 - [x] get-acl
 - [x] Make Sheets/TSV column order less fixed
 - [x] load-acl
+      - add duplicate cards to returned/logged errors
+      - check that compare is the right way around i.e. comparing source and destination correctly
+- [ ] update other ACL parsers to ignore duplicates
 - [ ] compare-acl
+      - consolidation for e.g. added + updated ?
 - [ ] store-acl
-- [ ] Rename 'release' target to 'build-all' throughout
+- [ ] put-acl (? for initializing a spreadsheet from an ACL file)
+- [x] Rename 'release' target to 'build-all' throughout
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
 - [ ] Update the DEFAULT values - they all refer to twystd :-(
@@ -20,6 +25,6 @@
 ## TODO
 
 - [ ] TLA+ model
-- [ ] Named ranges
-- [ ] load-acl::Add version/modified to the report (named ranges only)
 - [ ] Templates
+      - Named ranges
+      - Spreadsheet version/modified fields
