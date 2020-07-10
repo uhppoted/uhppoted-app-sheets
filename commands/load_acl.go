@@ -69,14 +69,6 @@ type LoadACL struct {
 	revisions string
 }
 
-type report struct {
-	top       int64
-	left      string
-	timestamp string
-	data      string
-	columns   map[string]string
-}
-
 type delay time.Duration
 
 func (d delay) String() string {

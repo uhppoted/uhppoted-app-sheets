@@ -7,11 +7,11 @@
 - [x] load-acl
       - add duplicate cards to returned/logged errors
       - check that compare is the right way around i.e. comparing source and destination correctly
-- [ ] update other ACL parsers to ignore duplicates
-- [ ] compare-acl
-      - consolidation for e.g. added + updated ?
-- [ ] store-acl
+- [x] compare-acl
+- [ ] upload-acl
 - [ ] put-acl (? for initializing a spreadsheet from an ACL file)
+- [ ] update other ACL parsers to ignore duplicates
+- [ ] SystemDiff consolidation for e.g. added + updated ?
 - [x] Rename 'release' target to 'build-all' throughout
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command

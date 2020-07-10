@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -264,15 +265,6 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	// ... write report
 	info("Writing report to worksheet")
 
-	consolidated := diff.Consolidate()
-
-	columns := map[string][]uint32{
-		"unchanged":  consolidated.Unchanged,
-		"updated":    consolidated.Updated,
-		"missing":    consolidated.Added,
-		"extraneous": consolidated.Deleted,
-	}
-
 	var timestamp = sheets.ValueRange{
 		Range: format.timestamp,
 		Values: [][]interface{}{
@@ -287,20 +279,50 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		Data:             []*sheets.ValueRange{&timestamp},
 	}
 
-	for k, v := range columns {
-		if r, ok := format.columns[k]; ok {
-			var values = sheets.ValueRange{
-				Range:  r,
-				Values: [][]interface{}{},
+	var values = sheets.ValueRange{
+		Range:  format.data,
+		Values: [][]interface{}{},
+	}
+
+	keys := []uint32{}
+	for k, _ := range *diff {
+		keys = append(keys, k)
+	}
+
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
+	for _, k := range keys {
+		if v, ok := (*diff)[k]; ok {
+			top := len(values.Values)
+			values.Values = append(values.Values, []interface{}{fmt.Sprintf("%v", k), "'-", "'-", "'-"})
+
+			rows := len(v.Updated)
+			if len(v.Added) > rows {
+				rows = len(v.Added)
+			}
+			if len(v.Deleted) > rows {
+				rows = len(v.Deleted)
 			}
 
-			for _, card := range v {
-				values.Values = append(values.Values, []interface{}{fmt.Sprintf("%v", card)})
+			for i := 1; i <= rows; i++ {
+				values.Values = append(values.Values, []interface{}{"", "", "", ""})
 			}
 
-			rq.Data = append(rq.Data, &values)
+			for i, c := range v.Updated {
+				values.Values[top+i][1] = fmt.Sprintf("%v", c.CardNumber)
+			}
+
+			for i, c := range v.Added {
+				values.Values[top+i][2] = fmt.Sprintf("%v", c.CardNumber)
+			}
+
+			for i, c := range v.Deleted {
+				values.Values[top+i][3] = fmt.Sprintf("%v", c.CardNumber)
+			}
 		}
 	}
+
+	rq.Data = append(rq.Data, &values)
 
 	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
 		return err
@@ -324,44 +346,11 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 }
 
 func (c *CompareACL) buildReportFormat(google *sheets.Service, spreadsheet *sheets.Spreadsheet) (*report, error) {
-	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, c.report).Do()
-	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve data from audit sheet (%v)", err)
-	}
-
-	rows := response.Values
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(c.report)
 	name := match[1]
 	left := match[2]
 	top, _ := strconv.Atoi(match[3])
 	right := match[4]
-
-	index := map[string]string{
-		"unchanged":  "A",
-		"updated":    "B",
-		"missing":    "C",
-		"extraneous": "D",
-	}
-
-	if len(rows) > 1 {
-		header := rows[1]
-		offset := colToI(left)
-		index = map[string]string{}
-
-		for i, v := range header {
-			k := normalise(v.(string))
-			switch k {
-			case "unchanged":
-				index["unchanged"] = iToCol(offset + i)
-			case "updated":
-				index["updated"] = iToCol(offset + i)
-			case "missing":
-				index["missing"] = iToCol(offset + i)
-			case "extraneous":
-				index["extraneous"] = iToCol(offset + i)
-			}
-		}
-	}
 
 	format := report{
 		top:       int64(top),
@@ -369,13 +358,6 @@ func (c *CompareACL) buildReportFormat(google *sheets.Service, spreadsheet *shee
 		timestamp: fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
 		data:      fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
 		columns:   map[string]string{},
-	}
-
-	columns := []string{"unchanged", "updated", "missing", "extraneous"}
-	for _, column := range columns {
-		if ix, ok := index[column]; ok {
-			format.columns[column] = fmt.Sprintf("%v!%v%v:%v", name, ix, top+2, ix)
-		}
 	}
 
 	return &format, nil
