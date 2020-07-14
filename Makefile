@@ -54,12 +54,11 @@ release: build-all
 
 debug: build
 	$(CLI) help
-	$(CLI) help compare-acl
-	$(CLI) compare-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-                       --range "ACL!A2:K" \
+	$(CLI) help upload-acl
+	$(CLI) upload-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+                       --range "Uploaded!A1:K"      \
                        --credentials $(CREDENTIALS) \
-                       --config ../runtime/sheets/uhppoted.conf \
-                       --report-range "Audit!B2:E"
+                       --config ../runtime/sheets/uhppoted.conf
 
 usage: build
 	$(CLI)
@@ -69,6 +68,7 @@ help: build
 	$(CLI) help get-acl
 	$(CLI) help load-acl
 	$(CLI) help compare-acl
+	$(CLI) help upload-acl
 
 version: build
 	$(CLI) version
@@ -109,3 +109,8 @@ compare-acl: build
                        --config ../runtime/sheets/uhppoted.conf \
                        --report-range "Audit!B2:E"
 
+upload-acl: build
+	$(CLI) upload-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+                       --range "Uploaded!A1:K"      \
+                       --credentials $(CREDENTIALS) \
+                       --config ../runtime/sheets/uhppoted.conf

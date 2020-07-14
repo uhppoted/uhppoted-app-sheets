@@ -123,11 +123,11 @@ func (c *LoadACL) Help() {
 	fmt.Println()
 	fmt.Println(`    uhppote-app-sheets load-acl --credentials "credentials.json" \`)
 	fmt.Println(`                                --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                --range "Class ACL!A2:E" \`)
+	fmt.Println(`                                --range "ACL!A2:E" \`)
 	fmt.Println()
 	fmt.Println(`    uhppote-app-sheets --debug --conf example.conf load-acl --credentials "credentials.json" \`)
 	fmt.Println(`                                                            --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                                            --range "Class ACL!A2:E" \`)
+	fmt.Println(`                                                            --range "ACL!A2:E" \`)
 	fmt.Println()
 }
 
@@ -136,7 +136,7 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 
 	flagset.StringVar(&l.credentials, "credentials", l.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&l.url, "url", l.url, "Spreadsheet URL")
-	flagset.StringVar(&l.area, "range", l.area, "Spreadsheet range e.g. 'Class Data!A2:E'")
+	flagset.StringVar(&l.area, "range", l.area, "Spreadsheet range e.g. 'ACL!A2:E'")
 	flagset.BoolVar(&l.force, "force", l.force, "Forces an update, overriding the spreadsheet version and compare logic")
 	flagset.BoolVar(&l.strict, "strict", l.strict, "Fails with an error if the spreadsheet contains duplicate card numbers")
 	flagset.BoolVar(&l.dryrun, "dry-run", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
@@ -602,7 +602,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	// ... clear existing report
 	info("Clearing existing report from worksheet")
-	if err := clear(google, spreadsheet, []string{format.timestamp, format.data}, ctx); err != nil {
+	if err := clear(google, spreadsheet, []string{format.title, format.data}, ctx); err != nil {
 		return err
 	}
 
@@ -640,7 +640,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	var timestamp = sheets.ValueRange{
-		Range: format.timestamp,
+		Range: format.title,
 		Values: [][]interface{}{
 			[]interface{}{
 				time.Now().Format("2006-01-02 15:04:05"),
@@ -817,11 +817,11 @@ func (l *LoadACL) buildReportFormat(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	format := report{
-		top:       int64(top),
-		left:      left,
-		timestamp: fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
-		data:      fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
-		columns:   map[string]string{},
+		top:     int64(top),
+		left:    left,
+		title:   fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
+		data:    fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
+		columns: map[string]string{},
 	}
 
 	columns := []string{"updated", "added", "deleted", "failed", "errors"}

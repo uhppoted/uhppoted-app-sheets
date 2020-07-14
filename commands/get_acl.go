@@ -40,7 +40,7 @@ func (c *GetACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)'")
 	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&c.url, "url", c.url, "Spreadsheet URL")
-	flagset.StringVar(&c.region, "range", c.region, "Spreadsheet range e.g. 'Class Data!A2:E'")
+	flagset.StringVar(&c.region, "range", c.region, "Spreadsheet range e.g. 'ACL!A2:E'")
 	flagset.StringVar(&c.file, "file", c.file, "TSV file name. Defaults to 'ACL - <yyyy-mm-dd HHmmss>.tsv'")
 
 	return flagset
@@ -152,7 +152,7 @@ func (c *GetACL) Help() {
 	fmt.Println()
 	fmt.Println(`    uhppote-app-sheets --debug get-acl --credentials "credentials.json" \`)
 	fmt.Println(`                                       --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                       --range "Class Data!A2:E" \`)
+	fmt.Println(`                                       --range "ACL!A2:E" \`)
 	fmt.Println(`                                       --file "example.acl"`)
 	fmt.Println()
 }

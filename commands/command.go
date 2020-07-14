@@ -16,11 +16,12 @@ import (
 const APP = "uhppoted-app-sheets"
 
 type report struct {
-	top       int64
-	left      string
-	timestamp string
-	data      string
-	columns   map[string]string
+	top     int64
+	left    string
+	title   string
+	headers string
+	data    string
+	columns map[string]string
 }
 
 func getDevices(conf *config.Config, debug bool) (uhppote.UHPPOTE, []*uhppote.Device) {

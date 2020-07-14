@@ -7,10 +7,12 @@
 - [x] load-acl
       - add duplicate cards to returned/logged errors
       - check that compare is the right way around i.e. comparing source and destination correctly
+      - change report format to be more log-like 
 - [x] compare-acl
 - [ ] upload-acl
-- [ ] put-acl (? for initializing a spreadsheet from an ACL file)
-- [ ] update other ACL parsers to ignore duplicates
+      - match columns to spreadsheet
+- [ ] put-acl (for initializing a spreadsheet from an ACL file)
+- [x] update other ACL parsers to ignore duplicates
 - [ ] SystemDiff consolidation for e.g. added + updated ?
 - [x] Rename 'release' target to 'build-all' throughout
 - [ ] Move --debug flag before command
