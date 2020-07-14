@@ -165,13 +165,13 @@ func (c *UploadACL) validate() error {
 	return nil
 }
 
-func (c *UploadACL) get(u device.IDevice, devices []*uhppote.Device) (*api.ACL, error) {
+func (c *UploadACL) get(u device.IDevice, devices []*uhppote.Device) (api.ACL, error) {
 	current, err := api.GetACL(u, devices)
 	if err != nil {
 		return nil, err
 	}
 
-	return &current, nil
+	return current, nil
 }
 
 func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadsheet, table *api.Table, ctx context.Context) error {
