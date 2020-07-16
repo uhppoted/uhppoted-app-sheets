@@ -16,7 +16,6 @@ import (
 	"github.com/uhppoted/uhppote-core/uhppote"
 	api "github.com/uhppoted/uhppoted-api/acl"
 	"github.com/uhppoted/uhppoted-api/config"
-	//	"github.com/uhppoted/uhppoted-app-sheets/acl"
 )
 
 var UploadACLCmd = UploadACL{
@@ -180,7 +179,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		return err
 	}
 
-	format, err := c.buildFormat(google, spreadsheet)
+	format, err := c.buildFormat(google, spreadsheet, table)
 	if err != nil {
 		return err
 	}
@@ -223,26 +222,28 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		},
 	}
 
-	var headers = sheets.ValueRange{
-		Range: format.headers,
-		Values: [][]interface{}{
-			[]interface{}{},
-		},
-	}
-
-	for _, h := range table.Header {
-		headers.Values[0] = append(headers.Values[0], h)
-	}
-
 	var values = sheets.ValueRange{
 		Range:  format.data,
 		Values: [][]interface{}{},
 	}
 
+	cols := 0
+	for _, v := range format.xref {
+		if v >= cols {
+			cols = v + 1
+		}
+	}
+
 	for _, record := range table.Records {
-		row := make([]interface{}, len(record))
+		row := make([]interface{}, cols)
+		for i, _ := range row {
+			row[i] = ""
+		}
+
 		for i, v := range record {
-			row[i] = fmt.Sprintf("%v", v)
+			if ix, ok := format.xref[i]; ok {
+				row[ix] = fmt.Sprintf("%v", v)
+			}
 		}
 
 		values.Values = append(values.Values, row)
@@ -250,7 +251,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 
 	rq := sheets.BatchUpdateValuesRequest{
 		ValueInputOption: "USER_ENTERED",
-		Data:             []*sheets.ValueRange{&timestamp, &headers, &values},
+		Data:             []*sheets.ValueRange{&timestamp, &values},
 	}
 
 	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
@@ -274,7 +275,28 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	return nil
 }
 
-func (c *UploadACL) buildFormat(google *sheets.Service, spreadsheet *sheets.Spreadsheet) (*report, error) {
+func (c *UploadACL) buildFormat(google *sheets.Service, spreadsheet *sheets.Spreadsheet, table *api.Table) (*report, error) {
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, c.acl).Do()
+	if err != nil {
+		return nil, fmt.Errorf("Unable to retrieve data from upload sheet (%v)", err)
+	}
+
+	columns := map[int]int{}
+	rows := response.Values
+	if len(rows) > 1 {
+		header := rows[1]
+		for i, col := range table.Header {
+			p := normalise(col)
+			for j, h := range header {
+				if q, ok := h.(string); ok {
+					if p == normalise(q) {
+						columns[i] = j
+					}
+				}
+			}
+		}
+	}
+
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(c.acl)
 	name := match[1]
 	left := match[2]
@@ -288,6 +310,7 @@ func (c *UploadACL) buildFormat(google *sheets.Service, spreadsheet *sheets.Spre
 		headers: fmt.Sprintf("%v!%v%v:%v%v", name, left, top+1, right, top+1),
 		data:    fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
 		columns: map[string]string{},
+		xref:    columns,
 	}
 
 	return &format, nil

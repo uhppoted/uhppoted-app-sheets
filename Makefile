@@ -56,7 +56,7 @@ debug: build
 	$(CLI) help
 	$(CLI) help upload-acl
 	$(CLI) upload-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-                       --range "Uploaded!A1:K"      \
+                       --range "Debug!A1:K"      \
                        --credentials $(CREDENTIALS) \
                        --config ../runtime/sheets/uhppoted.conf
 
@@ -88,7 +88,7 @@ load-acl: build
 #	                --dry-run \
 #	                --force   \
 #	                --config ../runtime/sheets/uhppoted.conf \
-#	                --report-range "Report!B2:G" \
+#	                --report-range "Report!A1:G" \
 #	                --log-range "Log!A1:I" \
 #	                --log-retention 1 \
 #	                --delay 5m \
@@ -97,9 +97,11 @@ load-acl: build
 	                --range "ACL!A2:K" \
 	                --credentials $(CREDENTIALS) \
 	                --config ../runtime/sheets/uhppoted.conf \
-	                --report-range "Report!B2:G" \
-	                --log-range "Log!A1:I" \
+	                --report-range "Report!A1:E" \
+	                --log-range "Log!A1:H" \
 	                --log-retention 1 \
+	                --dry-run \
+	                --force \
 	                --delay 5m
 
 compare-acl: build
@@ -107,7 +109,7 @@ compare-acl: build
                        --range "ACL!A2:K" \
                        --credentials $(CREDENTIALS) \
                        --config ../runtime/sheets/uhppoted.conf \
-                       --report-range "Audit!B2:E"
+                       --report-range "Audit!A1:E"
 
 upload-acl: build
 	$(CLI) upload-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \

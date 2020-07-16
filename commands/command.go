@@ -22,6 +22,7 @@ type report struct {
 	headers string
 	data    string
 	columns map[string]string
+	xref    map[int]int
 }
 
 func getDevices(conf *config.Config, debug bool) (uhppote.UHPPOTE, []*uhppote.Device) {

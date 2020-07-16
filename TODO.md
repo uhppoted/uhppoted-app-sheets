@@ -9,8 +9,7 @@
       - check that compare is the right way around i.e. comparing source and destination correctly
       - change report format to be more log-like 
 - [x] compare-acl
-- [ ] upload-acl
-      - match columns to spreadsheet
+- [x] upload-acl
 - [ ] put-acl (for initializing a spreadsheet from an ACL file)
 - [x] update other ACL parsers to ignore duplicates
 - [ ] SystemDiff consolidation for e.g. added + updated ?
