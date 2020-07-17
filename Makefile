@@ -54,11 +54,13 @@ release: build-all
 
 debug: build
 	$(CLI) help
-	$(CLI) help upload-acl
-	$(CLI) upload-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-                       --range "Debug!A1:K"      \
-                       --credentials $(CREDENTIALS) \
-                       --config ../runtime/sheets/uhppoted.conf
+	$(CLI) help put-acl
+	$(CLI) put-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+                   --range "AsIs!A2:K"      \
+                   --credentials $(CREDENTIALS) \
+                   --file ../runtime/sheets/debug.acl
+
+# GENERAL COMMANDS
 
 usage: build
 	$(CLI)
@@ -73,26 +75,20 @@ help: build
 version: build
 	$(CLI) version
 
-# SHEETS COMMANDS
+# ACL COMMANDS
 
 get-acl: build
-#	$(CLI) get-acl --credentials $(CREDENTIALS) --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" --range "ACL!A2:K" --file "../runtime/sheets/debug.acl"
 	$(CLI) get-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
 	               --range "ACL!A2:K" \
 	               --file "../runtime/sheets/debug.acl"
 
+put-acl: build
+	$(CLI) put-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+                   --range "AsIs!A2:K"      \
+                   --credentials $(CREDENTIALS) \
+                   --file ../runtime/sheets/debug.acl
+
 load-acl: build
-#	$(CLI) load-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-#	                --range "ACL!A2:K" \
-#	                --credentials $(CREDENTIALS) \
-#	                --dry-run \
-#	                --force   \
-#	                --config ../runtime/sheets/uhppoted.conf \
-#	                --report-range "Report!A1:G" \
-#	                --log-range "Log!A1:I" \
-#	                --log-retention 1 \
-#	                --delay 5m \
-#	                --report-always
 	$(CLI) load-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
 	                --range "ACL!A2:K" \
 	                --credentials $(CREDENTIALS) \
@@ -100,8 +96,8 @@ load-acl: build
 	                --report-range "Report!A1:E" \
 	                --log-range "Log!A1:H" \
 	                --log-retention 1 \
-	                --dry-run \
-	                --force \
+#	                --dry-run \
+#	                --force \
 	                --delay 5m
 
 compare-acl: build

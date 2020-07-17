@@ -10,10 +10,10 @@
       - change report format to be more log-like 
 - [x] compare-acl
 - [x] upload-acl
-- [ ] put-acl (for initializing a spreadsheet from an ACL file)
+- [x] put-acl 
 - [x] update other ACL parsers to ignore duplicates
-- [ ] SystemDiff consolidation for e.g. added + updated ?
 - [x] Rename 'release' target to 'build-all' throughout
+- [ ] SystemDiff consolidation for e.g. added + updated ?
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
 - [ ] Update the DEFAULT values - they all refer to twystd :-(

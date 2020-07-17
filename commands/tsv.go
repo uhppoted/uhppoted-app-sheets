@@ -1,4 +1,4 @@
-package acl
+package commands
 
 import (
 	"encoding/csv"
@@ -10,7 +10,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-func MakeTSV(f io.Writer, data *sheets.ValueRange) error {
+func sheetToTSV(f io.Writer, data *sheets.ValueRange) error {
 	if len(data.Values) == 0 {
 		return fmt.Errorf("Empty sheet")
 	}
@@ -113,4 +113,54 @@ func MakeTSV(f io.Writer, data *sheets.ValueRange) error {
 	w.Flush()
 
 	return nil
+}
+
+func tsvToSheet(f io.Reader, area string) (*sheets.ValueRange, *sheets.ValueRange, error) {
+	r := csv.NewReader(f)
+	r.Comma = '\t'
+
+	records, err := r.ReadAll()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(records) == 0 {
+		return nil, nil, fmt.Errorf("TSV file is empty")
+	}
+
+	// header
+	if len(records) < 1 {
+		return nil, nil, fmt.Errorf("TSV file missing header")
+	}
+
+	h := make([]interface{}, len(records[0]))
+
+	for i, v := range records[0] {
+		h[i] = fmt.Sprintf("%v", v)
+	}
+
+	header := sheets.ValueRange{
+		Range:  area,
+		Values: [][]interface{}{h},
+	}
+
+	// data
+	rows := make([][]interface{}, 0)
+
+	for _, record := range records[1:] {
+		row := make([]interface{}, len(record))
+
+		for i, v := range record {
+			row[i] = fmt.Sprintf("%v", v)
+		}
+
+		rows = append(rows, row)
+	}
+
+	data := sheets.ValueRange{
+		Range:  "AsIs!A3:K",
+		Values: rows,
+	}
+
+	return &header, &data, nil
 }

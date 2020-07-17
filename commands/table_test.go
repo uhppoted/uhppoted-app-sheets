@@ -1,7 +1,6 @@
-package acl
+package commands
 
 import (
-	//	"strings"
 	"reflect"
 	"testing"
 
@@ -27,13 +26,13 @@ func TestMakeTable(t *testing.T) {
 		},
 	}
 
-	table, err := MakeTable(&data)
+	table, err := makeTable(&data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTable (%v)", err)
+		t.Fatalf("Unexpected error returned from makeTable (%v)", err)
 	}
 
 	if table == nil {
-		t.Fatalf("MakeTable returend %v", table)
+		t.Fatalf("makeTable returend %v", table)
 	}
 
 	if !reflect.DeepEqual(*table, expected) {
@@ -58,13 +57,13 @@ func TestMakeTableWithOutOfOrderColumns(t *testing.T) {
 		},
 	}
 
-	table, err := MakeTable(&data)
+	table, err := makeTable(&data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTable (%v)", err)
+		t.Fatalf("Unexpected error returned from makeTable (%v)", err)
 	}
 
 	if table == nil {
-		t.Fatalf("MakeTable returend %v", table)
+		t.Fatalf("makeTable returend %v", table)
 	}
 
 	if !reflect.DeepEqual(*table, expected) {
@@ -75,7 +74,7 @@ func TestMakeTableWithOutOfOrderColumns(t *testing.T) {
 func TestMakeTableWithEmptySheet(t *testing.T) {
 	var data = sheets.ValueRange{}
 
-	_, err := MakeTable(&data)
+	_, err := makeTable(&data)
 	if err == nil {
 		t.Fatalf("Expected error return for empty sheet, got %v", err)
 	}
@@ -88,7 +87,7 @@ func TestMakeTableWithoutHeaders(t *testing.T) {
 		},
 	}
 
-	_, err := MakeTable(&data)
+	_, err := makeTable(&data)
 	if err == nil {
 		t.Fatalf("Expected error return for missing headers, got %v", err)
 	}
@@ -101,7 +100,7 @@ func TestMakeTableWithMissingCardNumber(t *testing.T) {
 		},
 	}
 
-	_, err := MakeTable(&data)
+	_, err := makeTable(&data)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'card number' column, got %v", err)
 	}
@@ -114,7 +113,7 @@ func TestMakeTableWithMissingFromDate(t *testing.T) {
 		},
 	}
 
-	_, err := MakeTable(&data)
+	_, err := makeTable(&data)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'from' column, got %v", err)
 	}
@@ -127,7 +126,7 @@ func TestMakeTableWithMissingToDate(t *testing.T) {
 		},
 	}
 
-	_, err := MakeTable(&data)
+	_, err := makeTable(&data)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'to' column, got %v", err)
 	}
@@ -142,7 +141,7 @@ func TestMakeTableWithDuplicatedColumn(t *testing.T) {
 		},
 	}
 
-	_, err := MakeTable(&data)
+	_, err := makeTable(&data)
 	if err == nil {
 		t.Fatalf("Expected error return for duplicated column, got %v", err)
 	}
@@ -166,13 +165,13 @@ func TestMakeTableWithInvalidCardNumber(t *testing.T) {
 		},
 	}
 
-	table, err := MakeTable(&data)
+	table, err := makeTable(&data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTable (%v)", err)
+		t.Fatalf("Unexpected error returned from makeTable (%v)", err)
 	}
 
 	if table == nil {
-		t.Fatalf("MakeTable returend %v", table)
+		t.Fatalf("makeTable returend %v", table)
 	}
 
 	if !reflect.DeepEqual(*table, expected) {
@@ -198,13 +197,13 @@ func TestMakeTableWithInvalidFromDate(t *testing.T) {
 		},
 	}
 
-	table, err := MakeTable(&data)
+	table, err := makeTable(&data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTable (%v)", err)
+		t.Fatalf("Unexpected error returned from makeTable (%v)", err)
 	}
 
 	if table == nil {
-		t.Fatalf("MakeTable returend %v", table)
+		t.Fatalf("makeTable returend %v", table)
 	}
 
 	if !reflect.DeepEqual(*table, expected) {
@@ -230,13 +229,13 @@ func TestMakeTableWithInvalidToDate(t *testing.T) {
 		},
 	}
 
-	table, err := MakeTable(&data)
+	table, err := makeTable(&data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTable (%v)", err)
+		t.Fatalf("Unexpected error returned from makeTable (%v)", err)
 	}
 
 	if table == nil {
-		t.Fatalf("MakeTable returend %v", table)
+		t.Fatalf("makeTable returend %v", table)
 	}
 
 	if !reflect.DeepEqual(*table, expected) {

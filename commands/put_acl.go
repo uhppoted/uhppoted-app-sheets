@@ -4,26 +4,24 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"google.golang.org/api/sheets/v4"
 )
 
-var GetACLCmd = GetACL{
+var PutACLCmd = PutACL{
 	workdir:     DEFAULT_WORKDIR,
 	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
 	url:         "",
 	area:        "",
-	file:        time.Now().Format("2006-01-02T150405.acl"),
+	file:        "",
 	debug:       false,
 }
 
-type GetACL struct {
+type PutACL struct {
 	workdir     string
 	credentials string
 	url         string
@@ -32,19 +30,19 @@ type GetACL struct {
 	debug       bool
 }
 
-func (c *GetACL) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("get-acl", flag.ExitOnError)
+func (c *PutACL) FlagSet() *flag.FlagSet {
+	flagset := flag.NewFlagSet("put-acl", flag.ExitOnError)
 
 	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)'")
 	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&c.url, "url", c.url, "Spreadsheet URL")
-	flagset.StringVar(&c.area, "range", c.area, "Spreadsheet range e.g. 'ACL!A2:E'")
-	flagset.StringVar(&c.file, "file", c.file, "TSV file name. Defaults to 'ACL - <yyyy-mm-dd HHmmss>.tsv'")
+	flagset.StringVar(&c.area, "range", c.area, "Spreadsheet range e.g. 'AsIs!A2:E'")
+	flagset.StringVar(&c.file, "file", c.file, "TSV file")
 
 	return flagset
 }
 
-func (c *GetACL) Execute(ctx context.Context) error {
+func (c *PutACL) Execute(ctx context.Context) error {
 	if strings.TrimSpace(c.credentials) == "" {
 		return fmt.Errorf("--credentials is a required option")
 	}
@@ -57,16 +55,20 @@ func (c *GetACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("--range is a required option")
 	}
 
+	if strings.TrimSpace(c.file) == "" {
+		return fmt.Errorf("--file is a required option")
+	}
+
 	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(c.url)
 	if len(match) < 2 {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
-	spreadsheet := match[1]
-	area := c.area
+	spreadsheetId := match[1]
+	region := c.area
 
 	if c.debug {
-		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheet, area))
+		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheetId, region))
 	}
 
 	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(c.workdir, ".google"))
@@ -79,62 +81,56 @@ func (c *GetACL) Execute(ctx context.Context) error {
 		return fmt.Errorf("Unable to create new Sheets client (%v)", err)
 	}
 
-	response, err := google.Spreadsheets.Values.Get(spreadsheet, area).Do()
-	if err != nil {
-		return fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
-	}
-
-	if len(response.Values) == 0 {
-		return fmt.Errorf("No data in spreadsheet/range")
-	}
-
-	tmp, err := ioutil.TempFile(os.TempDir(), "ACL")
+	spreadsheet, err := getSpreadsheet(google, spreadsheetId)
 	if err != nil {
 		return err
 	}
 
-	defer func() {
-		tmp.Close()
-		os.Remove(tmp.Name())
-	}()
-
-	if err := sheetToTSV(tmp, response); err != nil {
-		return fmt.Errorf("Error creating TSV file (%v)", err)
-	}
-
-	tmp.Close()
-
-	dir := filepath.Dir(c.file)
-	if err := os.MkdirAll(dir, 0770); err != nil {
+	f, err := os.Open(c.file)
+	if err != nil {
 		return err
 	}
 
-	if err := os.Rename(tmp.Name(), c.file); err != nil {
+	defer f.Close()
+
+	header, data, err := tsvToSheet(f, c.area)
+	if err != nil {
+		return err
+	} else if header == nil {
+		return fmt.Errorf("Invalid TSV file (%v)", err)
+	}
+
+	rq := sheets.BatchUpdateValuesRequest{
+		ValueInputOption: "USER_ENTERED",
+		Data:             []*sheets.ValueRange{header, data},
+	}
+
+	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
 		return err
 	}
 
-	info(fmt.Sprintf("Retrieved ACL to file %s\n", c.file))
+	info(fmt.Sprintf("Uploaded TSV file %v to Google Sheets %v", c.file, c.area))
 
 	return nil
 }
 
-func (c *GetACL) Name() string {
-	return "get-acl"
+func (c *PutACL) Name() string {
+	return "put-acl"
 }
 
-func (c *GetACL) Description() string {
-	return "Retrieves an access control list from a Google Sheets worksheet and stores it to a local file"
+func (c *PutACL) Description() string {
+	return "Uploads an access control list from a TSV file to a Google Sheets worksheet"
 }
 
-func (c *GetACL) Usage() string {
+func (c *PutACL) Usage() string {
 	return "--credentials <file> --url <url> --file <file>"
 }
 
-func (c *GetACL) Help() {
+func (c *PutACL) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [options] get-acl --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
+	fmt.Printf("  Usage: %s [options] put-acl --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
 	fmt.Println()
-	fmt.Println("  Retrieves an access control list from a Google Sheets worksheet and writes it to a file in TSV format")
+	fmt.Println("  Uploads an access control list from a TSV file to a Google Sheets worksheet")
 	fmt.Println()
 
 	c.FlagSet().VisitAll(func(f *flag.Flag) {
@@ -144,11 +140,11 @@ func (c *GetACL) Help() {
 	fmt.Println()
 	fmt.Println("  Options:")
 	fmt.Println()
-	fmt.Println("    --debug   Displays internal information for diagnosing errors")
+	fmt.Println("    --debug Displays internal information for diagnosing errors")
 	fmt.Println()
 	fmt.Println("  Examples:")
 	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --debug get-acl --credentials "credentials.json" \`)
+	fmt.Println(`    uhppote-app-sheets --debug put-acl --credentials "credentials.json" \`)
 	fmt.Println(`                                       --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
 	fmt.Println(`                                       --range "ACL!A2:E" \`)
 	fmt.Println(`                                       --file "example.acl"`)

@@ -15,9 +15,10 @@ import (
 var cli = []uhppoted.Command{
 	&commands.VersionCmd,
 	&commands.GetACLCmd,
+	&commands.PutACLCmd,
 	&commands.LoadACLCmd,
-	&commands.UploadACLCmd,
 	&commands.CompareACLCmd,
+	&commands.UploadACLCmd,
 }
 
 var options = struct {

@@ -17,7 +17,6 @@ import (
 	"github.com/uhppoted/uhppote-core/uhppote"
 	api "github.com/uhppoted/uhppoted-api/acl"
 	"github.com/uhppoted/uhppoted-api/config"
-	"github.com/uhppoted/uhppoted-app-sheets/acl"
 )
 
 var CompareACLCmd = CompareACL{
@@ -203,7 +202,7 @@ func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsh
 		return nil, fmt.Errorf("No data in spreadsheet/range")
 	}
 
-	table, err := acl.MakeTable(response)
+	table, err := makeTable(response)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}

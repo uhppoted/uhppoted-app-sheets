@@ -105,6 +105,10 @@ func normalise(v string) string {
 	return strings.ToLower(strings.ReplaceAll(v, " ", ""))
 }
 
+func clean(v string) string {
+	return strings.TrimSpace(v)
+}
+
 func debug(msg string) {
 	log.Printf("%-5s %s", "DEBUG", msg)
 }

@@ -1,9 +1,8 @@
-package acl
+package commands
 
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"google.golang.org/api/sheets/v4"
@@ -11,7 +10,7 @@ import (
 	api "github.com/uhppoted/uhppoted-api/acl"
 )
 
-func MakeTable(data *sheets.ValueRange) (*api.Table, error) {
+func makeTable(data *sheets.ValueRange) (*api.Table, error) {
 	if len(data.Values) == 0 {
 		return nil, fmt.Errorf("Empty sheet")
 	}
@@ -106,12 +105,4 @@ func MakeTable(data *sheets.ValueRange) (*api.Table, error) {
 		Header:  header,
 		Records: records,
 	}, nil
-}
-
-func clean(v string) string {
-	return strings.TrimSpace(v)
-}
-
-func normalise(v string) string {
-	return strings.ToLower(strings.ReplaceAll(v, " ", ""))
 }

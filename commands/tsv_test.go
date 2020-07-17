@@ -1,4 +1,4 @@
-package acl
+package commands
 
 import (
 	"strings"
@@ -7,7 +7,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-func TestMakeTSV(t *testing.T) {
+func TestSheetToTSV(t *testing.T) {
 	expected := `Card Number	From	To	Gate	Tower	Dungeon	Lair
 6001001	2020-01-01	2020-12-31	Y	N	N	Y
 6001002	2020-02-03	2020-11-30	Y	Y	N	N
@@ -22,9 +22,9 @@ func TestMakeTSV(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTSV (%v)", err)
+		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
 
 	if f.String() != expected {
@@ -32,7 +32,7 @@ func TestMakeTSV(t *testing.T) {
 	}
 }
 
-func TestMakeTSVWithOutOfOrderColumns(t *testing.T) {
+func TestSheetToTSVWithOutOfOrderColumns(t *testing.T) {
 	expected := `Card Number	From	To	Gate	Tower	Dungeon	Lair
 6001001	2020-01-01	2020-12-31	Y	N	N	Y
 6001002	2020-02-03	2020-11-30	Y	Y	N	N
@@ -47,9 +47,9 @@ func TestMakeTSVWithOutOfOrderColumns(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTSV (%v)", err)
+		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
 
 	if f.String() != expected {
@@ -57,17 +57,17 @@ func TestMakeTSVWithOutOfOrderColumns(t *testing.T) {
 	}
 }
 
-func TestMakeTSVWithEmptySheet(t *testing.T) {
+func TestSheetToTSVWithEmptySheet(t *testing.T) {
 	var f strings.Builder
 	var data = sheets.ValueRange{}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err == nil {
 		t.Fatalf("Expected error return for empty sheet, got %v", err)
 	}
 }
 
-func TestMakeTSVWithoutHeaders(t *testing.T) {
+func TestSheetToTSVWithoutHeaders(t *testing.T) {
 	var f strings.Builder
 
 	data := sheets.ValueRange{
@@ -76,13 +76,13 @@ func TestMakeTSVWithoutHeaders(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err == nil {
 		t.Fatalf("Expected error return for missing headers, got %v", err)
 	}
 }
 
-func TestMakeTSVWithMissingCardNumber(t *testing.T) {
+func TestSheetToTSVWithMissingCardNumber(t *testing.T) {
 	var f strings.Builder
 
 	data := sheets.ValueRange{
@@ -91,13 +91,13 @@ func TestMakeTSVWithMissingCardNumber(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'card number' column, got %v", err)
 	}
 }
 
-func TestMakeTSVWithMissingFromDate(t *testing.T) {
+func TestSheetToTSVWithMissingFromDate(t *testing.T) {
 	var f strings.Builder
 
 	data := sheets.ValueRange{
@@ -106,13 +106,13 @@ func TestMakeTSVWithMissingFromDate(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'from' column, got %v", err)
 	}
 }
 
-func TestMakeTSVWithMissingToDate(t *testing.T) {
+func TestSheetToTSVWithMissingToDate(t *testing.T) {
 	var f strings.Builder
 
 	data := sheets.ValueRange{
@@ -121,13 +121,13 @@ func TestMakeTSVWithMissingToDate(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'to' column, got %v", err)
 	}
 }
 
-func TestMakeTSVWithDuplicatedColumn(t *testing.T) {
+func TestSheetToTSVWithDuplicatedColumn(t *testing.T) {
 	var f strings.Builder
 	var data = sheets.ValueRange{
 		Values: [][]interface{}{
@@ -137,13 +137,13 @@ func TestMakeTSVWithDuplicatedColumn(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err == nil {
 		t.Fatalf("Expected error return for duplicated column, got %v", err)
 	}
 }
 
-func TestMakeTSVWithInvalidCardNumber(t *testing.T) {
+func TestSheetToTSVWithInvalidCardNumber(t *testing.T) {
 	expected := `Card Number	From	To	Gate	Tower	Dungeon	Lair
 6001001	2020-01-01	2020-12-31	Y	N	N	Y
 6001003	2020-01-01	2020-12-31	Y	N	Y	N
@@ -159,9 +159,9 @@ func TestMakeTSVWithInvalidCardNumber(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTSV (%v)", err)
+		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
 
 	if f.String() != expected {
@@ -169,7 +169,7 @@ func TestMakeTSVWithInvalidCardNumber(t *testing.T) {
 	}
 }
 
-func TestMakeTSVWithInvalidFromDate(t *testing.T) {
+func TestSheetToTSVWithInvalidFromDate(t *testing.T) {
 	expected := `Card Number	From	To	Gate	Tower	Dungeon	Lair
 6001001	2020-01-01	2020-12-31	Y	N	N	Y
 6001003	2020-01-01	2020-12-31	Y	N	Y	N
@@ -185,9 +185,9 @@ func TestMakeTSVWithInvalidFromDate(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTSV (%v)", err)
+		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
 
 	if f.String() != expected {
@@ -195,7 +195,7 @@ func TestMakeTSVWithInvalidFromDate(t *testing.T) {
 	}
 }
 
-func TestMakeTSVWithInvalidToDate(t *testing.T) {
+func TestSheetToTSVWithInvalidToDate(t *testing.T) {
 	expected := `Card Number	From	To	Gate	Tower	Dungeon	Lair
 6001001	2020-01-01	2020-12-31	Y	N	N	Y
 6001003	2020-01-01	2020-12-31	Y	N	Y	N
@@ -211,9 +211,9 @@ func TestMakeTSVWithInvalidToDate(t *testing.T) {
 		},
 	}
 
-	err := MakeTSV(&f, &data)
+	err := sheetToTSV(&f, &data)
 	if err != nil {
-		t.Fatalf("Unexpected error returned from MakeTSV (%v)", err)
+		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
 
 	if f.String() != expected {
