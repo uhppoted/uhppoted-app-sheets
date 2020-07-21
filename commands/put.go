@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"google.golang.org/api/sheets/v4"
@@ -55,11 +56,16 @@ func (c *Put) Execute(ctx context.Context) error {
 		return fmt.Errorf("--range is a required option")
 	}
 
+	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(c.area)
+	if len(match) < 5 {
+		return fmt.Errorf("Invalid spreadsheet range '%s'", c.area)
+	}
+
 	if strings.TrimSpace(c.file) == "" {
 		return fmt.Errorf("--file is a required option")
 	}
 
-	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(c.url)
+	match = regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(c.url)
 	if len(match) < 2 {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
@@ -100,6 +106,10 @@ func (c *Put) Execute(ctx context.Context) error {
 		return fmt.Errorf("Invalid TSV file (%v)", err)
 	}
 
+	if err := c.clear(google, spreadsheet, ctx); err != nil {
+		return err
+	}
+
 	rq := sheets.BatchUpdateValuesRequest{
 		ValueInputOption: "USER_ENTERED",
 		Data:             []*sheets.ValueRange{header, data},
@@ -112,6 +122,22 @@ func (c *Put) Execute(ctx context.Context) error {
 	info(fmt.Sprintf("Uploaded TSV file %v to Google Sheets %v", c.file, c.area))
 
 	return nil
+}
+
+func (c *Put) clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ctx context.Context) error {
+	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(c.area)
+	if len(match) < 5 {
+		return fmt.Errorf("Invalid spreadsheet range '%s'", c.area)
+	}
+
+	name := match[1]
+	left := match[2]
+	top, _ := strconv.Atoi(match[3])
+	right := match[4]
+
+	data := fmt.Sprintf("%s!%s%v:%s", name, left, top+1, right)
+
+	return clear(google, spreadsheet, []string{data}, ctx)
 }
 
 func (c *Put) Name() string {
