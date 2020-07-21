@@ -2,7 +2,7 @@
 
 ## IN PROGRESS
 
-- [x] get-acl
+- [x] get
 - [x] Make Sheets/TSV column order less fixed
 - [x] load-acl
       - add duplicate cards to returned/logged errors
@@ -10,7 +10,7 @@
       - change report format to be more log-like 
 - [x] compare-acl
 - [x] upload-acl
-- [x] put-acl 
+- [x] put 
 - [x] update other ACL parsers to ignore duplicates
 - [x] Rename 'release' target to 'build-all' throughout
 - [ ] SystemDiff consolidation for e.g. added + updated ?

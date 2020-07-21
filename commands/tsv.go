@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strconv"
 	"time"
 
 	"google.golang.org/api/sheets/v4"
@@ -116,6 +117,16 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange) error {
 }
 
 func tsvToSheet(f io.Reader, area string) (*sheets.ValueRange, *sheets.ValueRange, error) {
+	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(area)
+	if len(match) < 5 {
+		return nil, nil, fmt.Errorf("Invalid spreadsheet range '%s'", area)
+	}
+
+	name := match[1]
+	left := match[2]
+	top, _ := strconv.Atoi(match[3])
+	right := match[4]
+
 	r := csv.NewReader(f)
 	r.Comma = '\t'
 
@@ -140,7 +151,7 @@ func tsvToSheet(f io.Reader, area string) (*sheets.ValueRange, *sheets.ValueRang
 	}
 
 	header := sheets.ValueRange{
-		Range:  area,
+		Range:  fmt.Sprintf("%s!%s%v:%s%v", name, left, top, right, top),
 		Values: [][]interface{}{h},
 	}
 
@@ -158,7 +169,7 @@ func tsvToSheet(f io.Reader, area string) (*sheets.ValueRange, *sheets.ValueRang
 	}
 
 	data := sheets.ValueRange{
-		Range:  "AsIs!A3:K",
+		Range:  fmt.Sprintf("%s!%s%v:%s", name, left, top+1, right),
 		Values: rows,
 	}
 

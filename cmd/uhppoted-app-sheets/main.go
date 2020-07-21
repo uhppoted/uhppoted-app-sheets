@@ -14,8 +14,8 @@ import (
 
 var cli = []uhppoted.Command{
 	&commands.VersionCmd,
-	&commands.GetACLCmd,
-	&commands.PutACLCmd,
+	&commands.GetCmd,
+	&commands.PutCmd,
 	&commands.LoadACLCmd,
 	&commands.CompareACLCmd,
 	&commands.UploadACLCmd,

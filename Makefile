@@ -54,11 +54,11 @@ release: build-all
 
 debug: build
 	$(CLI) help
-	$(CLI) help put-acl
-	$(CLI) put-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-                   --range "AsIs!A2:K"      \
-                   --credentials $(CREDENTIALS) \
-                   --file ../runtime/sheets/debug.acl
+	$(CLI) help put
+	$(CLI) put --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+               --range "AsIs!A2:K"      \
+               --credentials $(CREDENTIALS) \
+               --file ../runtime/sheets/debug.acl
 
 # GENERAL COMMANDS
 
@@ -67,7 +67,8 @@ usage: build
 
 help: build
 	$(CLI) help
-	$(CLI) help get-acl
+	$(CLI) help get
+	$(CLI) help put
 	$(CLI) help load-acl
 	$(CLI) help compare-acl
 	$(CLI) help upload-acl
@@ -77,16 +78,16 @@ version: build
 
 # ACL COMMANDS
 
-get-acl: build
-	$(CLI) get-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-	               --range "ACL!A2:K" \
-	               --file "../runtime/sheets/debug.acl"
+get: build
+	$(CLI) get --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	           --range "ACL!A2:K" \
+	           --file "../runtime/sheets/debug.acl"
 
-put-acl: build
-	$(CLI) put-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-                   --range "AsIs!A2:K"      \
-                   --credentials $(CREDENTIALS) \
-                   --file ../runtime/sheets/debug.acl
+put: build
+	$(CLI) put --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+               --range "AsIs!A2:K"      \
+               --credentials $(CREDENTIALS) \
+               --file ../runtime/sheets/debug.acl
 
 load-acl: build
 	$(CLI) load-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \

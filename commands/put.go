@@ -12,7 +12,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-var PutACLCmd = PutACL{
+var PutCmd = Put{
 	workdir:     DEFAULT_WORKDIR,
 	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
 	url:         "",
@@ -21,7 +21,7 @@ var PutACLCmd = PutACL{
 	debug:       false,
 }
 
-type PutACL struct {
+type Put struct {
 	workdir     string
 	credentials string
 	url         string
@@ -30,8 +30,8 @@ type PutACL struct {
 	debug       bool
 }
 
-func (c *PutACL) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("put-acl", flag.ExitOnError)
+func (c *Put) FlagSet() *flag.FlagSet {
+	flagset := flag.NewFlagSet("put", flag.ExitOnError)
 
 	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)'")
 	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")
@@ -42,7 +42,7 @@ func (c *PutACL) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (c *PutACL) Execute(ctx context.Context) error {
+func (c *Put) Execute(ctx context.Context) error {
 	if strings.TrimSpace(c.credentials) == "" {
 		return fmt.Errorf("--credentials is a required option")
 	}
@@ -114,23 +114,23 @@ func (c *PutACL) Execute(ctx context.Context) error {
 	return nil
 }
 
-func (c *PutACL) Name() string {
-	return "put-acl"
+func (c *Put) Name() string {
+	return "put"
 }
 
-func (c *PutACL) Description() string {
-	return "Uploads an access control list from a TSV file to a Google Sheets worksheet"
+func (c *Put) Description() string {
+	return "Uploads a TSV file to a Google Sheets worksheet"
 }
 
-func (c *PutACL) Usage() string {
+func (c *Put) Usage() string {
 	return "--credentials <file> --url <url> --file <file>"
 }
 
-func (c *PutACL) Help() {
+func (c *Put) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [options] put-acl --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
+	fmt.Printf("  Usage: %s [options] put --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
 	fmt.Println()
-	fmt.Println("  Uploads an access control list from a TSV file to a Google Sheets worksheet")
+	fmt.Println("  Uploads a TSV file to a Google Sheets worksheet")
 	fmt.Println()
 
 	c.FlagSet().VisitAll(func(f *flag.Flag) {
@@ -144,9 +144,9 @@ func (c *PutACL) Help() {
 	fmt.Println()
 	fmt.Println("  Examples:")
 	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --debug put-acl --credentials "credentials.json" \`)
-	fmt.Println(`                                       --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                       --range "ACL!A2:E" \`)
-	fmt.Println(`                                       --file "example.acl"`)
+	fmt.Println(`    uhppote-app-sheets --debug put --credentials "credentials.json" \`)
+	fmt.Println(`                                   --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                   --range "ACL!A2:E" \`)
+	fmt.Println(`                                   --file "example.tsv"`)
 	fmt.Println()
 }
