@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -29,13 +28,13 @@ var LoadACLCmd = LoadACL{
 	url:         "",
 	area:        "",
 
-	nolog:        false,
-	logRange:     "Log!A1:H",
-	logRetention: 30,
+	nolog:           false,
+	logRange:        "Log!A1:H",
+	reportRetention: 7,
+	logRetention:    30,
 
-	noreport:     false,
-	reportRange:  "Report!A1:E",
-	reportAlways: false,
+	noreport:    false,
+	reportRange: "Report!A1:E",
 
 	force:     false,
 	strict:    false,
@@ -56,9 +55,9 @@ type LoadACL struct {
 	logRange     string
 	logRetention uint
 
-	noreport     bool
-	reportAlways bool
-	reportRange  string
+	noreport        bool
+	reportRange     string
+	reportRetention uint
 
 	force     bool
 	strict    bool
@@ -146,8 +145,8 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
 
 	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
-	flagset.BoolVar(&l.reportAlways, "report-always", l.reportAlways, "Writes a report even if there were no changes or errors")
 	flagset.StringVar(&l.reportRange, "report-range", l.reportRange, "Spreadsheet range for load report")
+	flagset.UintVar(&l.reportRetention, "report-retention", l.reportRetention, "Report sheet records older than 'report-retention' days are automatically pruned")
 
 	flagset.StringVar(&l.workdir, "workdir", l.workdir, "Directory for working files (tokens, revisions, etc)")
 	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
@@ -254,13 +253,17 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 				return err
 			}
 
-			if err := l.pruneLogSheet(google, spreadsheet, ctx); err != nil {
+			if err := pruneSheet(google, spreadsheet, l.logRange, int(l.logRetention), ctx); err != nil {
 				return err
 			}
 		}
 
 		if !l.noreport {
 			if err := l.updateReportSheet(google, spreadsheet, rpt, ctx); err != nil {
+				return err
+			}
+
+			if err := pruneSheet(google, spreadsheet, l.reportRange, int(l.reportRetention), ctx); err != nil {
 				return err
 			}
 		}
@@ -428,10 +431,12 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
 	if err != nil {
-		return fmt.Errorf("Unable to retrieve column headers from Log sheet (%v)", err)
+		return fmt.Errorf("Unable to retrieve column headers from log sheet (%v)", err)
 	}
 
-	index, columns := buildLogIndex(response.Values)
+	fields := []string{"timestamp", "deviceid", "unchanged", "updated", "added", "deleted", "failed", "errors"}
+
+	index, columns := buildIndex(response.Values, fields)
 
 	summary := api.Summarize(rpt)
 	var rows = sheets.ValueRange{
@@ -492,29 +497,125 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 	return nil
 }
 
-func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ctx context.Context) error {
-	sheet, err := getSheet(spreadsheet, l.logRange)
+func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
+	info("Appending report to worksheet")
+
+	consolidated := api.Consolidate(rpt)
+	var rows = sheets.ValueRange{
+		Values: [][]interface{}{},
+	}
+
+	// ... write report
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
+	if err != nil {
+		return fmt.Errorf("Unable to retrieve column headers from report sheet (%v)", err)
+	}
+
+	fields := []string{"timestamp", "action", "cardnumber"}
+	index, columns := buildIndex(response.Values, fields)
+
+	timestamp := time.Now().Format("2006-01-02 15:04:05")
+	format := []struct {
+		Cards  []uint32
+		Action string
+	}{
+		{consolidated.Updated, "Updated"},
+		{consolidated.Added, "Added"},
+		{consolidated.Deleted, "Deleted"},
+		{consolidated.Failed, "Failed"},
+		{consolidated.Errored, "Error"},
+	}
+
+	for _, f := range format {
+		for _, card := range f.Cards {
+			row := make([]interface{}, columns)
+
+			for i := 0; i < columns; i++ {
+				row[i] = ""
+			}
+
+			if ix, ok := index["timestamp"]; ok {
+				row[ix] = timestamp
+			}
+
+			if ix, ok := index["action"]; ok {
+				row[ix] = f.Action
+			}
+
+			if ix, ok := index["cardnumber"]; ok {
+				row[ix] = card
+			}
+
+			rows.Values = append(rows.Values, row)
+		}
+	}
+
+	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.reportRange, &rows).
+		ValueInputOption("USER_ENTERED").
+		InsertDataOption("INSERT_ROWS").
+		Context(ctx).
+		Do(); err != nil {
+		return fmt.Errorf("Error writing log to Google Sheets (%w)", err)
+	}
+
+	return nil
+}
+
+func buildIndex(rows [][]interface{}, fields []string) (map[string]int, int) {
+	index := map[string]int{}
+
+	for ix, col := range fields {
+		index[col] = ix
+	}
+
+	if len(rows) > 0 {
+		header := rows[0]
+		index = map[string]int{}
+
+		for i, v := range header {
+			k := normalise(v.(string))
+			for _, f := range fields {
+				if k == f {
+					index[f] = i
+				}
+			}
+		}
+	}
+
+	columns := 0
+	for _, v := range index {
+		if v >= columns {
+			columns = v + 1
+		}
+	}
+
+	return index, columns
+}
+
+func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area string, retention int, ctx context.Context) error {
+	sheet, err := getSheet(spreadsheet, area)
 	if err != nil {
 		return err
 	}
 
-	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, area).Do()
 	if err != nil {
-		return fmt.Errorf("Unable to retrieve data from Log sheet (%v)", err)
+		return fmt.Errorf("Unable to retrieve data from %s (%v)", area, err)
 	}
 
-	index, _ := buildLogIndex(response.Values)
+	fields := []string{"timestamp"}
+	index, _ := buildIndex(response.Values, fields)
 
 	before := time.Now().
 		In(time.Local).
-		Add(time.Hour * time.Duration(-24*(int(l.logRetention)-1))).
+		Add(time.Hour * time.Duration(-24*(retention-1))).
 		Truncate(24 * time.Hour)
 
 	cutoff := time.Date(before.Year(), before.Month(), before.Day(), 0, 0, 0, 0, before.Location())
 	list := []int{}
 	deleted := 0
 
-	info(fmt.Sprintf("Pruning log records from before %v", cutoff.Format("2006-01-02")))
+	info(fmt.Sprintf("Pruning report records from before %v", cutoff.Format("2006-01-02")))
 
 	for row, record := range response.Values {
 		if ix, ok := index["timestamp"]; ok {
@@ -567,268 +668,7 @@ func (l *LoadACL) pruneLogSheet(google *sheets.Service, spreadsheet *sheets.Spre
 		}
 	}
 
-	info(fmt.Sprintf("Pruned %d log records from log sheet", deleted))
+	info(fmt.Sprintf("Pruned %d report records from log sheet", deleted))
 
 	return nil
-}
-
-func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
-	// ... anything interesting?
-	if !l.reportAlways {
-		interesting := false
-		for _, v := range rpt {
-			if len(v.Updated) > 0 || len(v.Added) > 0 || len(v.Deleted) > 0 || len(v.Failed) > 0 || len(v.Errored) > 0 {
-				interesting = true
-			}
-		}
-
-		if !interesting {
-			info("No interesting information in report - leaving existing report 'as is'")
-			return nil
-		}
-	}
-
-	// ... create report format
-	sheet, err := getSheet(spreadsheet, l.reportRange)
-	if err != nil {
-		return err
-	}
-
-	format, err := l.buildReportFormat(google, spreadsheet)
-	if err != nil {
-		return err
-	}
-
-	// ... clear existing report
-	info("Clearing existing report from worksheet")
-	if err := clear(google, spreadsheet, []string{format.title, format.data}, ctx); err != nil {
-		return err
-	}
-
-	if sheet.Properties.GridProperties.RowCount > format.top+16 {
-		prune := sheets.BatchUpdateSpreadsheetRequest{
-			Requests: []*sheets.Request{
-				&sheets.Request{
-					DeleteDimension: &sheets.DeleteDimensionRequest{
-						Range: &sheets.DimensionRange{
-							SheetId:    sheet.Properties.SheetId,
-							Dimension:  "ROWS",
-							StartIndex: int64(format.top + 2),
-						},
-					},
-				},
-			},
-		}
-
-		if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &prune).Context(ctx).Do(); err != nil {
-			return fmt.Errorf("Error pruning report worksheet (%w)", err)
-		}
-	}
-
-	// ... write report
-	info("Writing report to worksheet")
-
-	consolidated := api.Consolidate(rpt)
-
-	columns := map[string][]uint32{
-		"updated": consolidated.Updated,
-		"added":   consolidated.Added,
-		"deleted": consolidated.Deleted,
-		"failed":  consolidated.Failed,
-		"errors":  consolidated.Errored,
-	}
-
-	var timestamp = sheets.ValueRange{
-		Range: format.title,
-		Values: [][]interface{}{
-			[]interface{}{
-				time.Now().Format("2006-01-02 15:04:05"),
-			},
-		},
-	}
-
-	rq := sheets.BatchUpdateValuesRequest{
-		ValueInputOption: "USER_ENTERED",
-		Data:             []*sheets.ValueRange{&timestamp},
-	}
-
-	for k, v := range columns {
-		if r, ok := format.columns[k]; ok {
-			var values = sheets.ValueRange{
-				Range:  r,
-				Values: [][]interface{}{},
-			}
-
-			for _, card := range v {
-				values.Values = append(values.Values, []interface{}{fmt.Sprintf("%v", card)})
-			}
-
-			rq.Data = append(rq.Data, &values)
-		}
-	}
-
-	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
-		return err
-	}
-
-	// ... pad
-
-	var pad = sheets.ValueRange{
-		Values: [][]interface{}{[]interface{}{""}},
-	}
-
-	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.reportRange, &pad).
-		ValueInputOption("USER_ENTERED").
-		InsertDataOption("OVERWRITE").
-		Context(ctx).
-		Do(); err != nil {
-		return fmt.Errorf("Error padding report worksheet (%w)", err)
-	}
-
-	//	// ... (experimental)
-	//
-	//	updated := time.Now().Format("2006-01-02 15:04:05")
-	//	rq := sheets.BatchUpdateSpreadsheetRequest{
-	//		Requests: []*sheets.Request{
-	//			&sheets.Request{
-	//				UpdateCells: &sheets.UpdateCellsRequest{
-	//					Fields: "*",
-	//					Range: &sheets.GridRange{
-	//						SheetId:          sheet.Properties.SheetId,
-	//						StartColumnIndex: 7,
-	//						StartRowIndex:    1,
-	//						EndColumnIndex:   8,
-	//						EndRowIndex:      2,
-	//					},
-	//					Rows: []*sheets.RowData{
-	//						&sheets.RowData{
-	//							Values: []*sheets.CellData{
-	//								&sheets.CellData{
-	//									UserEnteredValue: &sheets.ExtendedValue{
-	//										StringValue: &updated,
-	//									},
-	//								},
-	//							},
-	//						},
-	//					},
-	//				},
-	//			},
-	//		},
-	//	}
-	//
-	//	if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
-	//		return err
-	//	}
-
-	return nil
-}
-
-func buildLogIndex(rows [][]interface{}) (map[string]int, int) {
-	index := map[string]int{
-		"timestamp": 0,
-		"deviceid":  1,
-		"unchanged": 2,
-		"updated":   3,
-		"added":     4,
-		"deleted":   5,
-		"failed":    6,
-		"errors":    7,
-	}
-
-	if len(rows) > 0 {
-		header := rows[0]
-		index = map[string]int{}
-
-		for i, v := range header {
-			k := normalise(v.(string))
-			switch k {
-			case "timestamp":
-				index["timestamp"] = i
-			case "deviceid":
-				index["deviceid"] = i
-			case "unchanged":
-				index["unchanged"] = i
-			case "updated":
-				index["updated"] = i
-			case "added":
-				index["added"] = i
-			case "deleted":
-				index["deleted"] = i
-			case "failed":
-				index["failed"] = i
-			case "errors":
-				index["errors"] = i
-			}
-		}
-	}
-
-	columns := 0
-	for _, v := range index {
-		if v >= columns {
-			columns = v + 1
-		}
-	}
-
-	return index, columns
-}
-
-func (l *LoadACL) buildReportFormat(google *sheets.Service, spreadsheet *sheets.Spreadsheet) (*report, error) {
-	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
-	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve data from report sheet (%v)", err)
-	}
-
-	rows := response.Values
-	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
-	name := match[1]
-	left := match[2]
-	top, _ := strconv.Atoi(match[3])
-	right := match[4]
-
-	index := map[string]string{
-		"unchanged": "A",
-		"added":     "B",
-		"deleted":   "C",
-		"failed":    "D",
-		"errors":    "E",
-	}
-
-	if len(rows) > 1 {
-		header := rows[1]
-		offset := colToI(left)
-		index = map[string]string{}
-
-		for i, v := range header {
-			k := normalise(v.(string))
-			switch k {
-			case "updated":
-				index["updated"] = iToCol(offset + i)
-			case "added":
-				index["added"] = iToCol(offset + i)
-			case "deleted":
-				index["deleted"] = iToCol(offset + i)
-			case "failed":
-				index["failed"] = iToCol(offset + i)
-			case "errors":
-				index["errors"] = iToCol(offset + i)
-			}
-		}
-	}
-
-	format := report{
-		top:     int64(top),
-		left:    left,
-		title:   fmt.Sprintf("%v!%v%v:%v%v", name, left, top, left, top),
-		data:    fmt.Sprintf("%v!%v%v:%v", name, left, top+2, right),
-		columns: map[string]string{},
-	}
-
-	columns := []string{"updated", "added", "deleted", "failed", "errors"}
-	for _, column := range columns {
-		if ix, ok := index[column]; ok {
-			format.columns[column] = fmt.Sprintf("%v!%v%v:%v", name, ix, top+2, ix)
-		}
-	}
-
-	return &format, nil
 }
