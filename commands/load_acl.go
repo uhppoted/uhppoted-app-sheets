@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -53,11 +54,11 @@ type LoadACL struct {
 
 	nolog        bool
 	logRange     string
-	logRetention uint
+	logRetention int
 
 	noreport        bool
 	reportRange     string
-	reportRetention uint
+	reportRetention int
 
 	force     bool
 	strict    bool
@@ -142,11 +143,11 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 
 	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
 	flagset.StringVar(&l.logRange, "log-range", l.logRange, "Spreadsheet range for logging result")
-	flagset.UintVar(&l.logRetention, "log-retention", l.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
+	flagset.IntVar(&l.logRetention, "log-retention", l.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
 
 	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
 	flagset.StringVar(&l.reportRange, "report-range", l.reportRange, "Spreadsheet range for load report")
-	flagset.UintVar(&l.reportRetention, "report-retention", l.reportRetention, "Report sheet records older than 'report-retention' days are automatically pruned")
+	flagset.IntVar(&l.reportRetention, "report-retention", l.reportRetention, "Report sheet records older than 'report-retention' days are automatically pruned")
 
 	flagset.StringVar(&l.workdir, "workdir", l.workdir, "Directory for working files (tokens, revisions, etc)")
 	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
@@ -253,17 +254,13 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 				return err
 			}
 
-			if err := pruneSheet(google, spreadsheet, l.logRange, int(l.logRetention), ctx); err != nil {
+			if err := pruneSheet(google, spreadsheet, l.logRange, l.logRetention, ctx); err != nil {
 				return err
 			}
 		}
 
 		if !l.noreport {
 			if err := l.updateReportSheet(google, spreadsheet, rpt, ctx); err != nil {
-				return err
-			}
-
-			if err := pruneSheet(google, spreadsheet, l.reportRange, int(l.reportRetention), ctx); err != nil {
 				return err
 			}
 		}
@@ -500,12 +497,29 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
 	info("Appending report to worksheet")
 
-	consolidated := api.Consolidate(rpt)
+	// ... include 'after cutoff' rows from existing report
+	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
+	if len(match) < 5 {
+		return fmt.Errorf("Invalid report range '%s'", l.reportRange)
+	}
+
+	name := match[1]
+	left := match[2]
+	top, _ := strconv.Atoi(match[3])
+	right := match[4]
+
 	var rows = sheets.ValueRange{
+		Range:  fmt.Sprintf("%s!%s%v:%s", name, left, top+1, right),
 		Values: [][]interface{}{},
 	}
 
-	// ... write report
+	before := time.Now().
+		In(time.Local).
+		Add(time.Hour * time.Duration(-24*(l.reportRetention-1))).
+		Truncate(24 * time.Hour)
+
+	cutoff := time.Date(before.Year(), before.Month(), before.Day(), 0, 0, 0, 0, before.Location())
+
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve column headers from report sheet (%v)", err)
@@ -514,6 +528,29 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	fields := []string{"timestamp", "action", "cardnumber"}
 	index, columns := buildIndex(response.Values, fields)
 
+	for _, record := range response.Values[1:] {
+		row := make([]interface{}, columns)
+		for i := 0; i < columns; i++ {
+			row[i] = ""
+		}
+
+		if ix, ok := index["timestamp"]; ok && ix < len(record) {
+			timestamp, err := time.ParseInLocation("2006-01-02 15:04:05", record[ix].(string), time.Local)
+			if err == nil && !timestamp.Before(cutoff) {
+				for _, f := range fields {
+					if ix, ok := index[f]; ok && ix < len(record) {
+						row[ix] = record[ix]
+					}
+				}
+
+				rows.Values = append(rows.Values, row)
+			}
+		}
+	}
+
+	// ... append new report
+
+	consolidated := api.Consolidate(rpt)
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
 	format := []struct {
 		Cards  []uint32
@@ -550,46 +587,36 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 		}
 	}
 
-	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.reportRange, &rows).
-		ValueInputOption("USER_ENTERED").
-		InsertDataOption("INSERT_ROWS").
-		Context(ctx).
-		Do(); err != nil {
-		return fmt.Errorf("Error writing log to Google Sheets (%w)", err)
+	// ... pad below
+	for i := 0; i < 2; i++ {
+		row := make([]interface{}, columns)
+
+		for i := 0; i < columns; i++ {
+			row[i] = ""
+		}
+
+		rows.Values = append(rows.Values, row)
+	}
+
+	// ... update worksheet
+	rq := sheets.BatchUpdateValuesRequest{
+		ValueInputOption: "USER_ENTERED",
+		Data:             []*sheets.ValueRange{&rows},
+	}
+
+	// TEENSY LITTLE HACK - top+len(rows.Values) relies on the padding below the report to avoid
+	//                      an error because the 'below' range is out of range
+	below := fmt.Sprintf("%s!%s%v:%s", name, left, top+len(rows.Values), right)
+
+	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
+		return err
+	}
+
+	if err := clear(google, spreadsheet, []string{below}, ctx); err != nil {
+		return err
 	}
 
 	return nil
-}
-
-func buildIndex(rows [][]interface{}, fields []string) (map[string]int, int) {
-	index := map[string]int{}
-
-	for ix, col := range fields {
-		index[col] = ix
-	}
-
-	if len(rows) > 0 {
-		header := rows[0]
-		index = map[string]int{}
-
-		for i, v := range header {
-			k := normalise(v.(string))
-			for _, f := range fields {
-				if k == f {
-					index[f] = i
-				}
-			}
-		}
-	}
-
-	columns := 0
-	for _, v := range index {
-		if v >= columns {
-			columns = v + 1
-		}
-	}
-
-	return index, columns
 }
 
 func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area string, retention int, ctx context.Context) error {

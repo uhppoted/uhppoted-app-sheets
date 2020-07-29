@@ -71,6 +71,37 @@ func getSheet(spreadsheet *sheets.Spreadsheet, area string) (*sheets.Sheet, erro
 	return nil, fmt.Errorf("Unable to identify worksheet for '%s'", area)
 }
 
+func buildIndex(rows [][]interface{}, fields []string) (map[string]int, int) {
+	index := map[string]int{}
+
+	for ix, col := range fields {
+		index[col] = ix
+	}
+
+	if len(rows) > 0 {
+		header := rows[0]
+		index = map[string]int{}
+
+		for i, v := range header {
+			k := normalise(v.(string))
+			for _, f := range fields {
+				if k == f {
+					index[f] = i
+				}
+			}
+		}
+	}
+
+	columns := 0
+	for _, v := range index {
+		if v >= columns {
+			columns = v + 1
+		}
+	}
+
+	return index, columns
+}
+
 func iToCol(index int) string {
 	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	N := len(columns)

@@ -5,7 +5,6 @@
 - [x] get
 - [x] Make Sheets/TSV column order less fixed
 - [x] load-acl
-      - replace report rows to leave formulae intact 
       - fetch all rows i.e. check response for more rows
       - check that compare is the right way around i.e. comparing source and destination correctly
       - add duplicate cards to returned/logged errors
