@@ -5,9 +5,10 @@
 - [x] get
 - [x] Make Sheets/TSV column order less fixed
 - [x] load-acl
-      - change report format to be more log-like 
-      - add duplicate cards to returned/logged errors
+      - replace report rows to leave formulae intact 
+      - fetch all rows i.e. check response for more rows
       - check that compare is the right way around i.e. comparing source and destination correctly
+      - add duplicate cards to returned/logged errors
 - [x] compare-acl
 - [x] upload-acl
 - [x] put 
@@ -28,3 +29,5 @@
 - [ ] Templates
       - Named ranges
       - Spreadsheet version/modified fields
+
+

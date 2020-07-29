@@ -615,10 +615,10 @@ func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area st
 	list := []int{}
 	deleted := 0
 
-	info(fmt.Sprintf("Pruning report records from before %v", cutoff.Format("2006-01-02")))
+	info(fmt.Sprintf("Pruning %s records from before %v", sheet.Properties.Title, cutoff.Format("2006-01-02")))
 
 	for row, record := range response.Values {
-		if ix, ok := index["timestamp"]; ok {
+		if ix, ok := index["timestamp"]; ok && ix < len(record) {
 			timestamp, err := time.ParseInLocation("2006-01-02 15:04:05", record[ix].(string), time.Local)
 			if err == nil && timestamp.Before(cutoff) {
 				list = append(list, row)
@@ -668,7 +668,7 @@ func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area st
 		}
 	}
 
-	info(fmt.Sprintf("Pruned %d report records from log sheet", deleted))
+	info(fmt.Sprintf("Pruned %d records from sheet '%s'", deleted, sheet.Properties.Title))
 
 	return nil
 }
