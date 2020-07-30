@@ -217,9 +217,13 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return err
 	}
 
-	list, err := l.getACL(google, spreadsheet, devices, ctx)
+	list, warnings, err := l.getACL(google, spreadsheet, devices, ctx)
 	if err != nil {
 		return err
+	}
+
+	for _, w := range warnings {
+		warn(w.Error())
 	}
 
 	for k, l := range *list {
@@ -237,10 +241,19 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 			return err
 		}
 
+		for _, w := range warnings {
+			if duplicate, ok := w.(*api.DuplicateCardError); ok {
+				for k, v := range rpt {
+					v.Errored = append(v.Errored, duplicate.CardNumber)
+					rpt[k] = v
+				}
+			}
+		}
+
 		summary := api.Summarize(rpt)
 		format := "%v  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
 		for _, v := range summary {
-			info(fmt.Sprintf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored))
+			info(fmt.Sprintf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored+len(warnings)))
 		}
 
 		for k, v := range rpt {
@@ -394,35 +407,31 @@ func (l *LoadACL) compare(u device.IDevice, devices []*uhppote.Device, list *api
 	return false, nil
 }
 
-func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []*uhppote.Device, ctx context.Context) (*api.ACL, error) {
+func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []*uhppote.Device, ctx context.Context) (*api.ACL, []error, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.area).Do()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
+		return nil, nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
 	}
 
 	if len(response.Values) == 0 {
-		return nil, fmt.Errorf("No data in spreadsheet/range")
+		return nil, nil, fmt.Errorf("No data in spreadsheet/range")
 	}
 
 	table, err := makeTable(response.Values)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
+		return nil, nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}
 
 	list, warnings, err := api.ParseTable(table, devices, l.strict)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if list == nil {
-		return nil, fmt.Errorf("Error creating ACL from worksheet (%v)", list)
+		return nil, nil, fmt.Errorf("Error creating ACL from worksheet (%v)", list)
 	}
 
-	for _, w := range warnings {
-		warn(w.Error())
-	}
-
-	return list, nil
+	return list, warnings, nil
 }
 
 func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
@@ -539,7 +548,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 			if err == nil && !timestamp.Before(cutoff) {
 				for _, f := range fields {
 					if ix, ok := index[f]; ok && ix < len(record) {
-						row[ix] = record[ix]
+						row[ix] = strings.TrimSpace(fmt.Sprintf("%v", record[ix]))
 					}
 				}
 
@@ -550,8 +559,10 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	// ... append new report
 
-	consolidated := api.Consolidate(rpt)
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
+
+	consolidated := api.Consolidate(rpt)
+
 	format := []struct {
 		Cards  []uint32
 		Action string

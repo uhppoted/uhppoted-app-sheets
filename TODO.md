@@ -5,7 +5,6 @@
 - [x] get
 - [x] Make Sheets/TSV column order less fixed
 - [x] load-acl
-      - add duplicate cards to returned/logged errors
 - [x] compare-acl
 - [x] upload-acl
 - [x] put 

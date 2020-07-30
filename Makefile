@@ -57,7 +57,7 @@ debug: build
 	                --range "ACL!A2:K" \
 	                --credentials $(CREDENTIALS) \
 	                --config ../runtime/sheets/uhppoted.conf \
-	                --report-range "Debug!A1:C" \
+	                --report-range "Report!A1:C" \
 	                --report-retention 1 \
 	                --log-range "Log!A1:H" \
 	                --log-retention 1 \
