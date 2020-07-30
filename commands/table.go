@@ -5,20 +5,18 @@ import (
 	"regexp"
 	"time"
 
-	"google.golang.org/api/sheets/v4"
-
 	api "github.com/uhppoted/uhppoted-api/acl"
 )
 
-func makeTable(data *sheets.ValueRange) (*api.Table, error) {
-	if len(data.Values) == 0 {
+func makeTable(rows [][]interface{}) (*api.Table, error) {
+	if len(rows) == 0 {
 		return nil, fmt.Errorf("Empty sheet")
 	}
 
 	// .. build index
 	index := map[string]int{}
-	row := data.Values[0]
-	for i, v := range row {
+	record := rows[0]
+	for i, v := range record {
 		k := normalise(v.(string))
 		if _, ok := index[k]; ok {
 			return nil, fmt.Errorf("Duplicate column name '%s'", v.(string))
@@ -28,22 +26,22 @@ func makeTable(data *sheets.ValueRange) (*api.Table, error) {
 	}
 
 	// ... header
-	row = data.Values[0]
+	record = rows[0]
 	header := []string{}
 
 	if ix, ok := index["cardnumber"]; ok {
-		header = append(header, clean(row[ix].(string)))
+		header = append(header, clean(record[ix].(string)))
 	}
 
 	if ix, ok := index["from"]; ok {
-		header = append(header, clean(row[ix].(string)))
+		header = append(header, clean(record[ix].(string)))
 	}
 
 	if ix, ok := index["to"]; ok {
-		header = append(header, clean(row[ix].(string)))
+		header = append(header, clean(record[ix].(string)))
 	}
 
-	for _, v := range row {
+	for _, v := range record {
 		k := normalise(v.(string))
 		if k != "cardnumber" && k != "from" && k != "to" {
 			header = append(header, clean(v.(string)))
@@ -68,7 +66,7 @@ func makeTable(data *sheets.ValueRange) (*api.Table, error) {
 
 	// ... records
 	records := [][]string{}
-	for _, row := range data.Values[1:] {
+	for _, row := range rows[1:] {
 		if cardnumber, ok := row[index["cardnumber"]].(string); !ok {
 			continue
 		} else if ok, err := regexp.Match(`^\s*[0-9]+\s*$`, []byte(cardnumber)); !ok || err != nil {

@@ -202,7 +202,7 @@ func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsh
 		return nil, fmt.Errorf("No data in spreadsheet/range")
 	}
 
-	table, err := makeTable(response)
+	table, err := makeTable(response.Values)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}

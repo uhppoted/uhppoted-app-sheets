@@ -380,7 +380,7 @@ func (l *LoadACL) compare(u device.IDevice, devices []*uhppote.Device, list *api
 		return false, err
 	}
 
-	diff, err := api.Compare(*list, current)
+	diff, err := api.Compare(current, *list)
 	if err != nil {
 		return false, err
 	}
@@ -404,7 +404,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 		return nil, fmt.Errorf("No data in spreadsheet/range")
 	}
 
-	table, err := makeTable(response)
+	table, err := makeTable(response.Values)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}
@@ -642,7 +642,7 @@ func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area st
 	list := []int{}
 	deleted := 0
 
-	info(fmt.Sprintf("Pruning %s records from before %v", sheet.Properties.Title, cutoff.Format("2006-01-02")))
+	info(fmt.Sprintf("Pruning records before %v from '%s' worksheet ", cutoff.Format("2006-01-02"), sheet.Properties.Title))
 
 	for row, record := range response.Values {
 		if ix, ok := index["timestamp"]; ok && ix < len(record) {
@@ -695,7 +695,7 @@ func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area st
 		}
 	}
 
-	info(fmt.Sprintf("Pruned %d records from sheet '%s'", deleted, sheet.Properties.Title))
+	info(fmt.Sprintf("Pruned %d records from '%s' worksheet", deleted, sheet.Properties.Title))
 
 	return nil
 }
