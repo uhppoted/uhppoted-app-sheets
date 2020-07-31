@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/uhppoted/uhppoted-api/command"
 	"github.com/uhppoted/uhppoted-app-sheets/commands"
@@ -22,17 +21,9 @@ var cli = []uhppoted.CommandV{
 }
 
 var options = struct {
-	credentials string
-	url         string
-	region      string
-	file        string
-	debug       bool
+	debug bool
 }{
-	credentials: "",
-	url:         "",
-	region:      "",
-	file:        time.Now().Format("2006-01-02T150405.acl"),
-	debug:       false,
+	debug: false,
 }
 
 var help = uhppoted.NewHelpV("uhppoted-app-sheets", cli, nil)
