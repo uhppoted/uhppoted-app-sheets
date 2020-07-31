@@ -20,7 +20,7 @@ func (c *Version) FlagSet() *flag.FlagSet {
 }
 
 // Execute prints the current 'uhppote' version
-func (c *Version) Execute(ctx context.Context) error {
+func (c *Version) Execute(ctx context.Context, options ...interface{}) error {
 	fmt.Printf("%s\n", uhppote.VERSION)
 
 	return nil

@@ -44,7 +44,14 @@ func (c *Get) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (c *Get) Execute(ctx context.Context) error {
+func (c *Get) Execute(ctx context.Context, options ...interface{}) error {
+	if len(options) > 0 {
+		if debug, ok := options[0].(bool); ok {
+			c.debug = debug
+		}
+	}
+
+	// ... check parameters
 	if strings.TrimSpace(c.credentials) == "" {
 		return fmt.Errorf("--credentials is a required option")
 	}

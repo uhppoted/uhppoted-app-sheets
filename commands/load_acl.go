@@ -155,14 +155,20 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (l *LoadACL) Execute(ctx context.Context) error {
+func (cmd *LoadACL) Execute(ctx context.Context, options ...interface{}) error {
+	if len(options) > 0 {
+		if debug, ok := options[0].(bool); ok {
+			cmd.debug = debug
+		}
+	}
+
 	// ... check parameters
-	if err := l.validate(); err != nil {
+	if err := cmd.validate(); err != nil {
 		return err
 	}
 
 	// ... locked?
-	lockfile, err := l.lock()
+	lockfile, err := cmd.lock()
 	if err != nil {
 		return err
 	} else {
@@ -174,35 +180,35 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 
 	// ... good to go!
 	conf := config.NewConfig()
-	if err := conf.Load(l.config); err != nil {
+	if err := conf.Load(cmd.config); err != nil {
 		return fmt.Errorf("WARN  Could not load configuration (%v)", err)
 	}
 
-	u, devices := getDevices(conf, l.debug)
+	u, devices := getDevices(conf, cmd.debug)
 
-	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(l.url))
+	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(cmd.url))
 	if len(match) < 2 {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheetId := match[1]
-	l.revisions = filepath.Join(l.workdir, ".google", fmt.Sprintf("%s.revision", spreadsheetId))
+	cmd.revisions = filepath.Join(cmd.workdir, ".google", fmt.Sprintf("%s.revision", spreadsheetId))
 
-	if l.debug {
-		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, l.area, l.logRange))
+	if cmd.debug {
+		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, cmd.area, cmd.logRange))
 	}
 
-	version, err := l.getRevision(spreadsheetId, ctx)
+	version, err := cmd.getRevision(spreadsheetId, ctx)
 	if err != nil {
 		fatal(err.Error())
 	}
 
-	if !l.force && !l.revised(version) {
+	if !cmd.force && !cmd.revised(version) {
 		info("Nothing to do")
 		return nil
 	}
 
-	client, err := authorize(l.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(l.workdir, ".google"))
+	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(cmd.workdir, ".google"))
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
@@ -217,7 +223,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		return err
 	}
 
-	list, warnings, err := l.getACL(google, spreadsheet, devices, ctx)
+	list, warnings, err := cmd.getACL(google, spreadsheet, devices, ctx)
 	if err != nil {
 		return err
 	}
@@ -230,13 +236,13 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 		info(fmt.Sprintf("%v  Downloaded %v records", k, len(l)))
 	}
 
-	updated, err := l.compare(&u, devices, list)
+	updated, err := cmd.compare(&u, devices, list)
 	if err != nil {
 		return err
 	}
 
-	if l.force || updated {
-		rpt, err := api.PutACL(&u, *list, l.dryrun)
+	if cmd.force || updated {
+		rpt, err := api.PutACL(&u, *list, cmd.dryrun)
 		if err != nil {
 			return err
 		}
@@ -262,18 +268,18 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 			}
 		}
 
-		if !l.nolog {
-			if err := l.updateLogSheet(google, spreadsheet, rpt, ctx); err != nil {
+		if !cmd.nolog {
+			if err := cmd.updateLogSheet(google, spreadsheet, rpt, ctx); err != nil {
 				return err
 			}
 
-			if err := pruneSheet(google, spreadsheet, l.logRange, l.logRetention, ctx); err != nil {
+			if err := pruneSheet(google, spreadsheet, cmd.logRange, cmd.logRetention, ctx); err != nil {
 				return err
 			}
 		}
 
-		if !l.noreport {
-			if err := l.updateReportSheet(google, spreadsheet, rpt, ctx); err != nil {
+		if !cmd.noreport {
+			if err := cmd.updateReportSheet(google, spreadsheet, rpt, ctx); err != nil {
 				return err
 			}
 		}
@@ -282,7 +288,7 @@ func (l *LoadACL) Execute(ctx context.Context) error {
 	}
 
 	if version != nil {
-		version.store(l.revisions)
+		version.store(cmd.revisions)
 	}
 
 	return nil

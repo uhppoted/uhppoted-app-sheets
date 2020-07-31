@@ -52,18 +52,22 @@ release: build-all
 	tar --directory=dist --exclude=".DS_Store" -cvzf dist/$(DIST).tar.gz $(DIST)
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
+debugx: build
+	$(CLI) --debug help
+
 debug: build
-	$(CLI) load-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-	                --range "ACL!A2:K" \
-	                --credentials $(CREDENTIALS) \
-	                --config ../runtime/sheets/uhppoted.conf \
-	                --report-range "Report!A1:C" \
-	                --report-retention 1 \
-	                --log-range "Log!A1:H" \
-	                --log-retention 1 \
-	                --dry-run \
-	                --force \
-	                --delay 5m
+	$(CLI) --debug load-acl \
+	                  --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	                  --range "ACL!A2:K" \
+	                  --credentials $(CREDENTIALS) \
+	                  --config ../runtime/sheets/uhppoted.conf \
+	                  --report-range "Report!A1:C" \
+	                  --report-retention 1 \
+	                  --log-range "Log!A1:H" \
+	                  --log-retention 1 \
+	                  --dry-run \
+	                  --force \
+	                  --delay 5m
 
 
 # GENERAL COMMANDS

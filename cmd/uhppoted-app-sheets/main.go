@@ -12,7 +12,7 @@ import (
 	"github.com/uhppoted/uhppoted-app-sheets/commands"
 )
 
-var cli = []uhppoted.Command{
+var cli = []uhppoted.CommandV{
 	&commands.VersionCmd,
 	&commands.GetCmd,
 	&commands.PutCmd,
@@ -35,13 +35,13 @@ var options = struct {
 	debug:       false,
 }
 
-var help = uhppoted.NewHelp("uhppoted-app-sheets", cli, nil)
+var help = uhppoted.NewHelpV("uhppoted-app-sheets", cli, nil)
 
 func main() {
 	flag.BoolVar(&options.debug, "debug", options.debug, "Enable debugging information")
 	flag.Parse()
 
-	cmd, err := uhppoted.Parse(cli, nil, help)
+	cmd, err := uhppoted.ParseV(cli, nil, help)
 	if err != nil {
 		fmt.Printf("\nError parsing command line: %v\n\n", err)
 		os.Exit(1)
@@ -54,9 +54,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = cmd.Execute(ctx); err != nil {
+	if err = cmd.Execute(ctx, options.debug); err != nil {
 		log.Fatalf("ERROR: %v", err)
 		os.Exit(1)
 	}
-
 }

@@ -10,9 +10,9 @@
 - [x] put 
 - [x] update other ACL parsers to ignore duplicates
 - [x] Rename 'release' target to 'build-all' throughout
-- [ ] SystemDiff consolidation for e.g. added + updated ?
 - [ ] Move --debug flag before command
 - [ ] Move --conf flag before command
+- [ ] SystemDiff consolidation for e.g. added + updated ?
 - [ ] Remove 'run' argument from uhppoted-api:command.Parse
 - [ ] Clean up reporting code
       - Move templates to report/diff

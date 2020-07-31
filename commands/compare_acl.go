@@ -93,7 +93,14 @@ func (c *CompareACL) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (c *CompareACL) Execute(ctx context.Context) error {
+func (c *CompareACL) Execute(ctx context.Context, options ...interface{}) error {
+	if len(options) > 0 {
+		if debug, ok := options[0].(bool); ok {
+			c.debug = debug
+		}
+	}
+
+	// ... check parameters
 	if err := c.validate(); err != nil {
 		return err
 	}
