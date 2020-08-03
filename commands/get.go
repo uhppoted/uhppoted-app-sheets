@@ -33,7 +33,7 @@ type Get struct {
 }
 
 func (c *Get) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("get-acl", flag.ExitOnError)
+	flagset := flag.NewFlagSet("get", flag.ExitOnError)
 
 	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)'")
 	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")

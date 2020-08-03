@@ -38,7 +38,6 @@ func helpOptions() string {
 
 	fmt.Fprintln(&options)
 	fmt.Fprintln(&options, "  Options:")
-	fmt.Fprintln(&options)
 
 	flag.VisitAll(func(f *flag.Flag) {
 		count++
