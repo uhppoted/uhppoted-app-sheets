@@ -139,7 +139,7 @@ func (c *Get) Usage() string {
 
 func (c *Get) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [options] get --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
+	fmt.Printf("  Usage: %s [--debug] get --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
 	fmt.Println()
 	fmt.Println("  Downloads a Google Sheets worksheet to a TSV file")
 	fmt.Println()
@@ -148,11 +148,8 @@ func (c *Get) Help() {
 		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
 	})
 
-	fmt.Println()
-	fmt.Println("  Options:")
-	fmt.Println()
-	fmt.Println("    --debug   Displays internal information for diagnosing errors")
-	fmt.Println()
+	fmt.Println(helpOptions())
+
 	fmt.Println("  Examples:")
 	fmt.Println()
 	fmt.Println(`    uhppote-app-sheets --debug get --credentials "credentials.json" \`)

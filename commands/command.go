@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"bytes"
+	"flag"
 	"fmt"
 	"log"
 	"regexp"
@@ -16,7 +18,8 @@ import (
 const APP = "uhppoted-app-sheets"
 
 type Options struct {
-	Debug bool
+	Config string
+	Debug  bool
 }
 
 type report struct {
@@ -27,6 +30,26 @@ type report struct {
 	data    string
 	columns map[string]string
 	xref    map[int]int
+}
+
+func helpOptions() string {
+	var options bytes.Buffer
+	var count = 0
+
+	fmt.Fprintln(&options)
+	fmt.Fprintln(&options, "  Options:")
+	fmt.Fprintln(&options)
+
+	flag.VisitAll(func(f *flag.Flag) {
+		count++
+		fmt.Fprintf(&options, "    --%-13s %s\n", f.Name, f.Usage)
+	})
+
+	if count > 0 {
+		return string(options.Bytes())
+	}
+
+	return ""
 }
 
 func getDevices(conf *config.Config, debug bool) (uhppote.UHPPOTE, []*uhppote.Device) {

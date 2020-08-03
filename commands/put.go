@@ -161,7 +161,7 @@ func (c *Put) Usage() string {
 
 func (c *Put) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [options] put --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
+	fmt.Printf("  Usage: %s [--debug] put --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
 	fmt.Println()
 	fmt.Println("  Uploads a TSV file to a Google Sheets worksheet")
 	fmt.Println()
@@ -170,11 +170,8 @@ func (c *Put) Help() {
 		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
 	})
 
-	fmt.Println()
-	fmt.Println("  Options:")
-	fmt.Println()
-	fmt.Println("    --debug Displays internal information for diagnosing errors")
-	fmt.Println()
+	fmt.Println(helpOptions())
+
 	fmt.Println("  Examples:")
 	fmt.Println()
 	fmt.Println(`    uhppote-app-sheets --debug put --credentials "credentials.json" \`)

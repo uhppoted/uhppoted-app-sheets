@@ -54,17 +54,13 @@ func (c *UploadACL) Help() {
 	fmt.Println()
 	fmt.Println("  Uploads the access permissions from a set of configured controllers to a Google Sheets worksheet access control list")
 	fmt.Println()
-	fmt.Println("    --config <file>  Path to controllers configuration file")
-	fmt.Println("    --debug          Displays internal information for diagnosing errors")
-	fmt.Println()
-	fmt.Println("  Options:")
-	fmt.Println()
 
 	c.FlagSet().VisitAll(func(f *flag.Flag) {
-		fmt.Printf("    --%-13s %s\n", f.Name, f.Usage)
+		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
 	})
 
-	fmt.Println()
+	fmt.Println(helpOptions())
+
 	fmt.Println("  Examples:")
 	fmt.Println()
 	fmt.Println(`    uhppote-app-sheets upload-acl --credentials "credentials.json" \`)
@@ -84,7 +80,6 @@ func (c *UploadACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&c.url, "url", c.url, "Spreadsheet URL")
 	flagset.StringVar(&c.acl, "range", c.acl, "Spreadsheet range e.g. 'Uploaded!A2:E'")
 	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)")
-	flagset.StringVar(&c.config, "config", c.config, "Configuration file path")
 
 	return flagset
 }
@@ -92,6 +87,7 @@ func (c *UploadACL) FlagSet() *flag.FlagSet {
 func (cmd *UploadACL) Execute(ctx context.Context, options ...interface{}) error {
 	if len(options) > 0 {
 		if opt, ok := options[0].(*Options); ok {
+			cmd.config = opt.Config
 			cmd.debug = opt.Debug
 		}
 	}

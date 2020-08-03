@@ -52,22 +52,18 @@ release: build-all
 	tar --directory=dist --exclude=".DS_Store" -cvzf dist/$(DIST).tar.gz $(DIST)
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
-debugx: build
-	$(CLI) --debug help
-
 debug: build
-	$(CLI) --debug load-acl \
-	                  --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-	                  --range "ACL!A2:K" \
-	                  --credentials $(CREDENTIALS) \
-	                  --config ../runtime/sheets/uhppoted.conf \
-	                  --report-range "Report!A1:C" \
-	                  --report-retention 1 \
-	                  --log-range "Log!A1:H" \
-	                  --log-retention 1 \
-	                  --dry-run \
-	                  --force \
-	                  --delay 5m
+	$(CLI) --debug --config ../runtime/sheets/uhppoted.conf load-acl \
+	       --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	       --range "ACL!A2:K" \
+	       --credentials $(CREDENTIALS) \
+	       --report-range "Report!A1:C" \
+	       --report-retention 1 \
+	       --log-range "Log!A1:H" \
+	       --log-retention 1 \
+	       --dry-run \
+	       --force \
+	       --delay 5m
 
 
 # GENERAL COMMANDS
@@ -100,27 +96,28 @@ put: build
                --file ../runtime/sheets/debug.acl
 
 load-acl: build
-	$(CLI) load-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-	                --range "ACL!A2:K" \
-	                --credentials $(CREDENTIALS) \
-	                --config ../runtime/sheets/uhppoted.conf \
-	                --report-range "Report!A1:C" \
-	                --report-retention 1 \
-	                --log-range "Log!A1:H" \
-	                --log-retention 1 \
-#	                --dry-run \
-#	                --force \
-	                --delay 5m
+	$(CLI) --debug --config ../runtime/sheets/uhppoted.conf load-acl \
+           --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	       --range "ACL!A2:K" \
+	       --credentials $(CREDENTIALS) \
+	       --report-range "Report!A1:C" \
+	       --report-retention 1 \
+	       --log-range "Log!A1:H" \
+	       --log-retention 1 \
+#	       --dry-run \
+#	       --force \
+	       --delay 5m
 
 compare-acl: build
-	$(CLI) compare-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-                       --range "ACL!A2:K" \
-                       --credentials $(CREDENTIALS) \
-                       --config ../runtime/sheets/uhppoted.conf \
-                       --report-range "Audit!A1:E"
+	$(CLI) --debug --config ../runtime/sheets/uhppoted.conf compare-acl \
+           --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+           --range "ACL!A2:K" \
+           --credentials $(CREDENTIALS) \
+           --report-range "Audit!A1:E"
 
 upload-acl: build
-	$(CLI) upload-acl --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
-                       --range "Uploaded!A1:K"      \
-                       --credentials $(CREDENTIALS) \
-                       --config ../runtime/sheets/uhppoted.conf
+	$(CLI) --debug --config ../runtime/sheets/uhppoted.conf upload-acl \
+           --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+           --range "Uploaded!A1:K"      \
+           --credentials $(CREDENTIALS)
+                       

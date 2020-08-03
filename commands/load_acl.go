@@ -107,17 +107,13 @@ func (c *LoadACL) Help() {
 	fmt.Println()
 	fmt.Println("  Duplicate card numbers are automatically deleted across the system unless the --strict option is provided to fail the load.")
 	fmt.Println()
-	fmt.Println("    --config <file>  Path to controllers configuration file")
-	fmt.Println("    --debug          Displays internal information for diagnosing errors")
-	fmt.Println()
-	fmt.Println("  Options:")
-	fmt.Println()
 
 	c.FlagSet().VisitAll(func(f *flag.Flag) {
 		fmt.Printf("    --%-13s %s\n", f.Name, f.Usage)
 	})
 
-	fmt.Println()
+	fmt.Println(helpOptions())
+
 	fmt.Println("  Examples:")
 	fmt.Println()
 	fmt.Println(`    uhppote-app-sheets load-acl --credentials "credentials.json" \`)
@@ -150,7 +146,6 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.IntVar(&l.reportRetention, "report-retention", l.reportRetention, "Report sheet records older than 'report-retention' days are automatically pruned")
 
 	flagset.StringVar(&l.workdir, "workdir", l.workdir, "Directory for working files (tokens, revisions, etc)")
-	flagset.StringVar(&l.config, "config", l.config, "Configuration file path")
 
 	return flagset
 }
@@ -158,6 +153,7 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 func (cmd *LoadACL) Execute(ctx context.Context, options ...interface{}) error {
 	if len(options) > 0 {
 		if opt, ok := options[0].(*Options); ok {
+			cmd.config = opt.Config
 			cmd.debug = opt.Debug
 		}
 	}
