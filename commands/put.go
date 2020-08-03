@@ -43,48 +43,48 @@ func (c *Put) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (c *Put) Execute(ctx context.Context, options ...interface{}) error {
+func (cmd *Put) Execute(ctx context.Context, options ...interface{}) error {
 	if len(options) > 0 {
-		if debug, ok := options[0].(bool); ok {
-			c.debug = debug
+		if opt, ok := options[0].(*Options); ok {
+			cmd.debug = opt.Debug
 		}
 	}
 
 	// ... check parameters
-	if strings.TrimSpace(c.credentials) == "" {
+	if strings.TrimSpace(cmd.credentials) == "" {
 		return fmt.Errorf("--credentials is a required option")
 	}
 
-	if strings.TrimSpace(c.url) == "" {
+	if strings.TrimSpace(cmd.url) == "" {
 		return fmt.Errorf("--url is a required option")
 	}
 
-	if strings.TrimSpace(c.area) == "" {
+	if strings.TrimSpace(cmd.area) == "" {
 		return fmt.Errorf("--range is a required option")
 	}
 
-	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(c.area)
+	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(cmd.area)
 	if len(match) < 5 {
-		return fmt.Errorf("Invalid spreadsheet range '%s'", c.area)
+		return fmt.Errorf("Invalid spreadsheet range '%s'", cmd.area)
 	}
 
-	if strings.TrimSpace(c.file) == "" {
+	if strings.TrimSpace(cmd.file) == "" {
 		return fmt.Errorf("--file is a required option")
 	}
 
-	match = regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(c.url)
+	match = regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(cmd.url)
 	if len(match) < 2 {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheetId := match[1]
-	region := c.area
+	region := cmd.area
 
-	if c.debug {
+	if cmd.debug {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheetId, region))
 	}
 
-	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(c.workdir, ".google"))
+	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(cmd.workdir, ".google"))
 	if err != nil {
 		return fmt.Errorf("Authentication/authorization error (%v)", err)
 	}
@@ -99,21 +99,21 @@ func (c *Put) Execute(ctx context.Context, options ...interface{}) error {
 		return err
 	}
 
-	f, err := os.Open(c.file)
+	f, err := os.Open(cmd.file)
 	if err != nil {
 		return err
 	}
 
 	defer f.Close()
 
-	header, data, err := tsvToSheet(f, c.area)
+	header, data, err := tsvToSheet(f, cmd.area)
 	if err != nil {
 		return err
 	} else if header == nil {
 		return fmt.Errorf("Invalid TSV file (%v)", err)
 	}
 
-	if err := c.clear(google, spreadsheet, ctx); err != nil {
+	if err := cmd.clear(google, spreadsheet, ctx); err != nil {
 		return err
 	}
 
@@ -126,7 +126,7 @@ func (c *Put) Execute(ctx context.Context, options ...interface{}) error {
 		return err
 	}
 
-	info(fmt.Sprintf("Uploaded TSV file %v to Google Sheets %v", c.file, c.area))
+	info(fmt.Sprintf("Uploaded TSV file %v to Google Sheets %v", cmd.file, cmd.area))
 
 	return nil
 }

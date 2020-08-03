@@ -93,37 +93,37 @@ func (c *CompareACL) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (c *CompareACL) Execute(ctx context.Context, options ...interface{}) error {
+func (cmd *CompareACL) Execute(ctx context.Context, options ...interface{}) error {
 	if len(options) > 0 {
-		if debug, ok := options[0].(bool); ok {
-			c.debug = debug
+		if opt, ok := options[0].(*Options); ok {
+			cmd.debug = opt.Debug
 		}
 	}
 
 	// ... check parameters
-	if err := c.validate(); err != nil {
+	if err := cmd.validate(); err != nil {
 		return err
 	}
 
 	conf := config.NewConfig()
-	if err := conf.Load(c.config); err != nil {
+	if err := conf.Load(cmd.config); err != nil {
 		return fmt.Errorf("WARN  Could not load configuration (%v)", err)
 	}
 
-	u, devices := getDevices(conf, c.debug)
+	u, devices := getDevices(conf, cmd.debug)
 
-	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(c.url))
+	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(cmd.url))
 	if len(match) < 2 {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheetId := match[1]
 
-	if c.debug {
-		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  audit:%s", spreadsheetId, c.acl, c.report))
+	if cmd.debug {
+		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  audit:%s", spreadsheetId, cmd.acl, cmd.report))
 	}
 
-	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(c.workdir, ".google"))
+	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(cmd.workdir, ".google"))
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
@@ -138,7 +138,7 @@ func (c *CompareACL) Execute(ctx context.Context, options ...interface{}) error 
 		return err
 	}
 
-	list, err := c.getACL(google, spreadsheet, devices, ctx)
+	list, err := cmd.getACL(google, spreadsheet, devices, ctx)
 	if err != nil {
 		return err
 	}
@@ -147,12 +147,12 @@ func (c *CompareACL) Execute(ctx context.Context, options ...interface{}) error 
 		info(fmt.Sprintf("%v  Downloaded %v records", k, len(l)))
 	}
 
-	diff, err := c.compare(&u, devices, list)
+	diff, err := cmd.compare(&u, devices, list)
 	if err != nil {
 		return err
 	}
 
-	if err := c.write(google, spreadsheet, diff, ctx); err != nil {
+	if err := cmd.write(google, spreadsheet, diff, ctx); err != nil {
 		return err
 	}
 

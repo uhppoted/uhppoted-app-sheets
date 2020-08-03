@@ -20,16 +20,14 @@ var cli = []uhppoted.CommandV{
 	&commands.UploadACLCmd,
 }
 
-var options = struct {
-	debug bool
-}{
-	debug: false,
+var options = commands.Options{
+	Debug: false,
 }
 
 var help = uhppoted.NewHelpV("uhppoted-app-sheets", cli, nil)
 
 func main() {
-	flag.BoolVar(&options.debug, "debug", options.debug, "Enable debugging information")
+	flag.BoolVar(&options.Debug, "debug", options.Debug, "Enable debugging information")
 	flag.Parse()
 
 	cmd, err := uhppoted.ParseV(cli, nil, help)
@@ -45,7 +43,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = cmd.Execute(ctx, options.debug); err != nil {
+	if err = cmd.Execute(ctx, &options); err != nil {
 		log.Fatalf("ERROR: %v", err)
 		os.Exit(1)
 	}

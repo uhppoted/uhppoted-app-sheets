@@ -44,39 +44,39 @@ func (c *Get) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (c *Get) Execute(ctx context.Context, options ...interface{}) error {
+func (cmd *Get) Execute(ctx context.Context, options ...interface{}) error {
 	if len(options) > 0 {
-		if debug, ok := options[0].(bool); ok {
-			c.debug = debug
+		if opt, ok := options[0].(*Options); ok {
+			cmd.debug = opt.Debug
 		}
 	}
 
 	// ... check parameters
-	if strings.TrimSpace(c.credentials) == "" {
+	if strings.TrimSpace(cmd.credentials) == "" {
 		return fmt.Errorf("--credentials is a required option")
 	}
 
-	if strings.TrimSpace(c.url) == "" {
+	if strings.TrimSpace(cmd.url) == "" {
 		return fmt.Errorf("--url is a required option")
 	}
 
-	if strings.TrimSpace(c.area) == "" {
+	if strings.TrimSpace(cmd.area) == "" {
 		return fmt.Errorf("--range is a required option")
 	}
 
-	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(c.url)
+	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(cmd.url)
 	if len(match) < 2 {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheet := match[1]
-	area := c.area
+	area := cmd.area
 
-	if c.debug {
+	if cmd.debug {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheet, area))
 	}
 
-	client, err := authorize(c.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(c.workdir, ".google"))
+	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(cmd.workdir, ".google"))
 	if err != nil {
 		return fmt.Errorf("Authentication/authorization error (%v)", err)
 	}
@@ -111,16 +111,16 @@ func (c *Get) Execute(ctx context.Context, options ...interface{}) error {
 
 	tmp.Close()
 
-	dir := filepath.Dir(c.file)
+	dir := filepath.Dir(cmd.file)
 	if err := os.MkdirAll(dir, 0770); err != nil {
 		return err
 	}
 
-	if err := os.Rename(tmp.Name(), c.file); err != nil {
+	if err := os.Rename(tmp.Name(), cmd.file); err != nil {
 		return err
 	}
 
-	info(fmt.Sprintf("Retrieved ACL to file %s\n", c.file))
+	info(fmt.Sprintf("Retrieved ACL to file %s\n", cmd.file))
 
 	return nil
 }

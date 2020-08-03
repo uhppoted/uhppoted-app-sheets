@@ -157,8 +157,8 @@ func (l *LoadACL) FlagSet() *flag.FlagSet {
 
 func (cmd *LoadACL) Execute(ctx context.Context, options ...interface{}) error {
 	if len(options) > 0 {
-		if debug, ok := options[0].(bool); ok {
-			cmd.debug = debug
+		if opt, ok := options[0].(*Options); ok {
+			cmd.debug = opt.Debug
 		}
 	}
 

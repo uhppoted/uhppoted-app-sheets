@@ -15,6 +15,10 @@ import (
 
 const APP = "uhppoted-app-sheets"
 
+type Options struct {
+	Debug bool
+}
+
 type report struct {
 	top     int64
 	left    string
