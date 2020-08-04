@@ -39,33 +39,29 @@ type CompareACL struct {
 	debug       bool
 }
 
-func (c *CompareACL) Name() string {
+func (cmd *CompareACL) Name() string {
 	return "compare-acl"
 }
 
-func (c *CompareACL) Description() string {
+func (cmd *CompareACL) Description() string {
 	return "Compare the access permission of a set of configured UHPPOTE access controllers to a Google Sheets worksheet"
 }
 
-func (c *CompareACL) Usage() string {
+func (cmd *CompareACL) Usage() string {
 	return "--credentials <file> --url <url>"
 }
 
-func (c *CompareACL) Help() {
+func (cmd *CompareACL) Help() {
 	fmt.Println()
 	fmt.Printf("  Usage: %s [--debug] [--config <configuration file>] compare-acl [options] --credentials <credentials> --url <URL> --range <range>\n", APP)
 	fmt.Println()
 	fmt.Println("  Compares the access permissions of a set of configured controllers to a Google Sheets worksheet access control list")
 	fmt.Println()
 
-	c.FlagSet().VisitAll(func(f *flag.Flag) {
-		fmt.Printf("    --%-13s %s\n", f.Name, f.Usage)
-	})
+	helpOptions(cmd.FlagSet())
 
-	fmt.Println(helpOptions())
-
-	fmt.Println("  Examples:")
 	fmt.Println()
+	fmt.Println("  Examples:")
 	fmt.Println(`    uhppote-app-sheets compare-acl --credentials "credentials.json" \`)
 	fmt.Println(`                                   --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
 	fmt.Println(`                                   --range "ACL!A2:E" \`)
@@ -76,14 +72,14 @@ func (c *CompareACL) Help() {
 	fmt.Println()
 }
 
-func (c *CompareACL) FlagSet() *flag.FlagSet {
+func (cmd *CompareACL) FlagSet() *flag.FlagSet {
 	flagset := flag.NewFlagSet("compare-acl", flag.ExitOnError)
 
-	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&c.url, "url", c.url, "Spreadsheet URL")
-	flagset.StringVar(&c.acl, "range", c.acl, "Spreadsheet range e.g. 'ACL!A2:E'")
-	flagset.StringVar(&c.report, "report-range", c.report, "Spreadsheet range for compare report")
-	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)")
+	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
+	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
+	flagset.StringVar(&cmd.acl, "range", cmd.acl, "Spreadsheet range e.g. 'ACL!A2:E'")
+	flagset.StringVar(&cmd.report, "report-range", cmd.report, "Spreadsheet range for compare report")
+	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)")
 
 	return flagset
 }

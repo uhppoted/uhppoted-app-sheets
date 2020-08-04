@@ -12,12 +12,9 @@
 - [x] Rename 'release' target to 'build-all' throughout
 - [x] Move --debug flag before command
 - [x] Move --config flag before command
-- [ ] SystemDiff consolidation for e.g. added + updated ?
-- [ ] Remove 'run' argument from uhppoted-api:command.Parse
+- [x] SystemDiff consolidation for e.g. added + updated ?
 - [ ] Clean up reporting code
       - Move templates to report/diff
-      - ReportSummary.String() (?)
-      - Update CLI, etc to use report.Summarize and report.Consolidate
 
 ## TODO
 

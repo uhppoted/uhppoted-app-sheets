@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -32,23 +31,23 @@ type report struct {
 	xref    map[int]int
 }
 
-func helpOptions() string {
-	var options bytes.Buffer
-	var count = 0
-
-	fmt.Fprintln(&options)
-	fmt.Fprintln(&options, "  Options:")
-
+func helpOptions(flagset *flag.FlagSet) {
+	count := 0
 	flag.VisitAll(func(f *flag.Flag) {
 		count++
-		fmt.Fprintf(&options, "    --%-13s %s\n", f.Name, f.Usage)
+	})
+
+	flagset.VisitAll(func(f *flag.Flag) {
+		fmt.Printf("    --%-13s %s\n", f.Name, f.Usage)
 	})
 
 	if count > 0 {
-		return string(options.Bytes())
+		fmt.Println()
+		fmt.Println("  Options:")
+		flag.VisitAll(func(f *flag.Flag) {
+			fmt.Printf("    --%-13s %s\n", f.Name, f.Usage)
+		})
 	}
-
-	return ""
 }
 
 func getDevices(conf *config.Config, debug bool) (uhppote.UHPPOTE, []*uhppote.Device) {

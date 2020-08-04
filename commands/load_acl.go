@@ -41,7 +41,7 @@ var LoadACLCmd = LoadACL{
 	strict:    false,
 	dryrun:    false,
 	debug:     false,
-	delay:     delay(15 * time.Minute),
+	delay:     15 * time.Minute,
 	revisions: filepath.Join(DEFAULT_WORKDIR, ".google", "uhppoted-app-sheets.revision"),
 }
 
@@ -64,40 +64,40 @@ type LoadACL struct {
 	strict    bool
 	dryrun    bool
 	debug     bool
-	delay     delay
+	delay     time.Duration
 	revisions string
 }
 
-type delay time.Duration
+//type delay time.Duration
+//
+//func (d delay) String() string {
+//	return time.Duration(d).String()
+//}
+//
+//func (d *delay) Set(s string) error {
+//	duration, err := time.ParseDuration(s)
+//	if err != nil {
+//		return err
+//	}
+//
+//	*d = delay(duration)
+//
+//	return nil
+//}
 
-func (d delay) String() string {
-	return time.Duration(d).String()
-}
-
-func (d *delay) Set(s string) error {
-	duration, err := time.ParseDuration(s)
-	if err != nil {
-		return err
-	}
-
-	*d = delay(duration)
-
-	return nil
-}
-
-func (c *LoadACL) Name() string {
+func (cmd *LoadACL) Name() string {
 	return "load-acl"
 }
 
-func (c *LoadACL) Description() string {
+func (cmd *LoadACL) Description() string {
 	return "Updates a set of configured UHPPOTE access controllers from a Google Sheets worksheet"
 }
 
-func (c *LoadACL) Usage() string {
+func (cmd *LoadACL) Usage() string {
 	return "--credentials <file> --url <url>"
 }
 
-func (c *LoadACL) Help() {
+func (cmd *LoadACL) Help() {
 	fmt.Println()
 	fmt.Printf("  Usage: %s [--debug] [--config <configuration>] load-acl [options] --credentials <credentials> --url <URL> --range <range>\n", APP)
 	fmt.Println()
@@ -108,14 +108,10 @@ func (c *LoadACL) Help() {
 	fmt.Println("  Duplicate card numbers are automatically deleted across the system unless the --strict option is provided to fail the load.")
 	fmt.Println()
 
-	c.FlagSet().VisitAll(func(f *flag.Flag) {
-		fmt.Printf("    --%-13s %s\n", f.Name, f.Usage)
-	})
+	helpOptions(cmd.FlagSet())
 
-	fmt.Println(helpOptions())
-
-	fmt.Println("  Examples:")
 	fmt.Println()
+	fmt.Println("  Examples:")
 	fmt.Println(`    uhppote-app-sheets load-acl --credentials "credentials.json" \`)
 	fmt.Println(`                                --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
 	fmt.Println(`                                --range "ACL!A2:E" \`)
@@ -126,26 +122,26 @@ func (c *LoadACL) Help() {
 	fmt.Println()
 }
 
-func (l *LoadACL) FlagSet() *flag.FlagSet {
+func (cmd *LoadACL) FlagSet() *flag.FlagSet {
 	flagset := flag.NewFlagSet("load-acl", flag.ExitOnError)
 
-	flagset.StringVar(&l.credentials, "credentials", l.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&l.url, "url", l.url, "Spreadsheet URL")
-	flagset.StringVar(&l.area, "range", l.area, "Spreadsheet range e.g. 'ACL!A2:E'")
-	flagset.BoolVar(&l.force, "force", l.force, "Forces an update, overriding the spreadsheet version and compare logic")
-	flagset.BoolVar(&l.strict, "strict", l.strict, "Fails with an error if the spreadsheet contains duplicate card numbers")
-	flagset.BoolVar(&l.dryrun, "dry-run", l.dryrun, "Simulates a load-acl without making any changes to the access controllers")
-	flagset.Var(&l.delay, "delay", "Sets the delay between when a spreadsheet is modified and when it is regarded as sufficiently stable to use")
+	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
+	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
+	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'ACL!A2:E'")
+	flagset.BoolVar(&cmd.force, "force", cmd.force, "Forces an update, overriding the spreadsheet version and compare logic")
+	flagset.BoolVar(&cmd.strict, "strict", cmd.strict, "Fails with an error if the spreadsheet contains duplicate card numbers")
+	flagset.BoolVar(&cmd.dryrun, "dry-run", cmd.dryrun, "Simulates a load-acl without making any changes to the access controllers")
+	flagset.DurationVar(&cmd.delay, "delay", cmd.delay, "Sets the delay between when a spreadsheet is modified and when it is regarded as sufficiently stable to use")
 
-	flagset.BoolVar(&l.nolog, "no-log", l.nolog, "Disables writing a summary to the 'log' worksheet")
-	flagset.StringVar(&l.logRange, "log-range", l.logRange, "Spreadsheet range for logging result")
-	flagset.IntVar(&l.logRetention, "log-retention", l.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
+	flagset.BoolVar(&cmd.nolog, "no-log", cmd.nolog, "Disables writing a summary to the 'log' worksheet")
+	flagset.StringVar(&cmd.logRange, "log-range", cmd.logRange, "Spreadsheet range for logging result")
+	flagset.IntVar(&cmd.logRetention, "log-retention", cmd.logRetention, "Log sheet records older than 'log-retention' days are automatically pruned")
 
-	flagset.BoolVar(&l.noreport, "no-report", l.noreport, "Disables writing a report to the 'report' worksheet")
-	flagset.StringVar(&l.reportRange, "report-range", l.reportRange, "Spreadsheet range for load report")
-	flagset.IntVar(&l.reportRetention, "report-retention", l.reportRetention, "Report sheet records older than 'report-retention' days are automatically pruned")
+	flagset.BoolVar(&cmd.noreport, "no-report", cmd.noreport, "Disables writing a report to the 'report' worksheet")
+	flagset.StringVar(&cmd.reportRange, "report-range", cmd.reportRange, "Spreadsheet range for load report")
+	flagset.IntVar(&cmd.reportRetention, "report-retention", cmd.reportRetention, "Report sheet records older than 'report-retention' days are automatically pruned")
 
-	flagset.StringVar(&l.workdir, "workdir", l.workdir, "Directory for working files (tokens, revisions, etc)")
+	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)")
 
 	return flagset
 }

@@ -32,14 +32,44 @@ type Get struct {
 	debug       bool
 }
 
-func (c *Get) FlagSet() *flag.FlagSet {
+func (cmd *Get) Name() string {
+	return "get"
+}
+
+func (cmd *Get) Description() string {
+	return "Retrieves an access control list from a Google Sheets worksheet and stores it to a local file"
+}
+
+func (cmd *Get) Usage() string {
+	return "--credentials <file> --url <url> --file <file>"
+}
+
+func (cmd *Get) Help() {
+	fmt.Println()
+	fmt.Printf("  Usage: %s [--debug] get --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
+	fmt.Println()
+	fmt.Println("  Downloads a Google Sheets worksheet to a TSV file")
+	fmt.Println()
+
+	helpOptions(cmd.FlagSet())
+
+	fmt.Println()
+	fmt.Println("  Examples:")
+	fmt.Println(`    uhppote-app-sheets --debug get --credentials "credentials.json" \`)
+	fmt.Println(`                                   --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                   --range "ACL!A2:E" \`)
+	fmt.Println(`                                   --file "example.tsv"`)
+	fmt.Println()
+}
+
+func (cmd *Get) FlagSet() *flag.FlagSet {
 	flagset := flag.NewFlagSet("get", flag.ExitOnError)
 
-	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)'")
-	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&c.url, "url", c.url, "Spreadsheet URL")
-	flagset.StringVar(&c.area, "range", c.area, "Spreadsheet range e.g. 'ACL!A2:E'")
-	flagset.StringVar(&c.file, "file", c.file, "TSV file name. Defaults to 'ACL - <yyyy-mm-dd HHmmss>.tsv'")
+	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)'")
+	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
+	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
+	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'ACL!A2:E'")
+	flagset.StringVar(&cmd.file, "file", cmd.file, "TSV file name. Defaults to 'ACL - <yyyy-mm-dd HHmmss>.tsv'")
 
 	return flagset
 }
@@ -123,38 +153,4 @@ func (cmd *Get) Execute(ctx context.Context, options ...interface{}) error {
 	info(fmt.Sprintf("Retrieved ACL to file %s\n", cmd.file))
 
 	return nil
-}
-
-func (c *Get) Name() string {
-	return "get"
-}
-
-func (c *Get) Description() string {
-	return "Retrieves an access control list from a Google Sheets worksheet and stores it to a local file"
-}
-
-func (c *Get) Usage() string {
-	return "--credentials <file> --url <url> --file <file>"
-}
-
-func (c *Get) Help() {
-	fmt.Println()
-	fmt.Printf("  Usage: %s [--debug] get --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
-	fmt.Println()
-	fmt.Println("  Downloads a Google Sheets worksheet to a TSV file")
-	fmt.Println()
-
-	c.FlagSet().VisitAll(func(f *flag.Flag) {
-		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
-	})
-
-	fmt.Println(helpOptions())
-
-	fmt.Println("  Examples:")
-	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --debug get --credentials "credentials.json" \`)
-	fmt.Println(`                                   --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                   --range "ACL!A2:E" \`)
-	fmt.Println(`                                   --file "example.tsv"`)
-	fmt.Println()
 }

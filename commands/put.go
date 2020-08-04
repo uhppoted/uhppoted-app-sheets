@@ -31,14 +31,44 @@ type Put struct {
 	debug       bool
 }
 
-func (c *Put) FlagSet() *flag.FlagSet {
+func (cmd *Put) Name() string {
+	return "put"
+}
+
+func (cmd *Put) Description() string {
+	return "Uploads a TSV file to a Google Sheets worksheet"
+}
+
+func (cmd *Put) Usage() string {
+	return "--credentials <file> --url <url> --file <file>"
+}
+
+func (cmd *Put) Help() {
+	fmt.Println()
+	fmt.Printf("  Usage: %s [--debug] put --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
+	fmt.Println()
+	fmt.Println("  Uploads a TSV file to a Google Sheets worksheet")
+	fmt.Println()
+
+	helpOptions(cmd.FlagSet())
+
+	fmt.Println()
+	fmt.Println("  Examples:")
+	fmt.Println(`    uhppote-app-sheets --debug put --credentials "credentials.json" \`)
+	fmt.Println(`                                   --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                   --range "ACL!A2:E" \`)
+	fmt.Println(`                                   --file "example.tsv"`)
+	fmt.Println()
+}
+
+func (cmd *Put) FlagSet() *flag.FlagSet {
 	flagset := flag.NewFlagSet("put", flag.ExitOnError)
 
-	flagset.StringVar(&c.workdir, "workdir", c.workdir, "Directory for working files (tokens, revisions, etc)'")
-	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&c.url, "url", c.url, "Spreadsheet URL")
-	flagset.StringVar(&c.area, "range", c.area, "Spreadsheet range e.g. 'AsIs!A2:E'")
-	flagset.StringVar(&c.file, "file", c.file, "TSV file")
+	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)'")
+	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
+	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
+	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'AsIs!A2:E'")
+	flagset.StringVar(&cmd.file, "file", cmd.file, "TSV file")
 
 	return flagset
 }
@@ -131,10 +161,10 @@ func (cmd *Put) Execute(ctx context.Context, options ...interface{}) error {
 	return nil
 }
 
-func (c *Put) clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ctx context.Context) error {
-	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(c.area)
+func (cmd *Put) clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ctx context.Context) error {
+	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(cmd.area)
 	if len(match) < 5 {
-		return fmt.Errorf("Invalid spreadsheet range '%s'", c.area)
+		return fmt.Errorf("Invalid spreadsheet range '%s'", cmd.area)
 	}
 
 	name := match[1]
@@ -145,38 +175,4 @@ func (c *Put) clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ctx
 	data := fmt.Sprintf("%s!%s%v:%s", name, left, top+1, right)
 
 	return clear(google, spreadsheet, []string{data}, ctx)
-}
-
-func (c *Put) Name() string {
-	return "put"
-}
-
-func (c *Put) Description() string {
-	return "Uploads a TSV file to a Google Sheets worksheet"
-}
-
-func (c *Put) Usage() string {
-	return "--credentials <file> --url <url> --file <file>"
-}
-
-func (c *Put) Help() {
-	fmt.Println()
-	fmt.Printf("  Usage: %s [--debug] put --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
-	fmt.Println()
-	fmt.Println("  Uploads a TSV file to a Google Sheets worksheet")
-	fmt.Println()
-
-	c.FlagSet().VisitAll(func(f *flag.Flag) {
-		fmt.Printf("    --%-12s %s\n", f.Name, f.Usage)
-	})
-
-	fmt.Println(helpOptions())
-
-	fmt.Println("  Examples:")
-	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --debug put --credentials "credentials.json" \`)
-	fmt.Println(`                                   --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                   --range "ACL!A2:E" \`)
-	fmt.Println(`                                   --file "example.tsv"`)
-	fmt.Println()
 }
