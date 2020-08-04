@@ -68,23 +68,6 @@ type LoadACL struct {
 	revisions string
 }
 
-//type delay time.Duration
-//
-//func (d delay) String() string {
-//	return time.Duration(d).String()
-//}
-//
-//func (d *delay) Set(s string) error {
-//	duration, err := time.ParseDuration(s)
-//	if err != nil {
-//		return err
-//	}
-//
-//	*d = delay(duration)
-//
-//	return nil
-//}
-
 func (cmd *LoadACL) Name() string {
 	return "load-acl"
 }

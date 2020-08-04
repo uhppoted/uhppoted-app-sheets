@@ -13,8 +13,7 @@
 - [x] Move --debug flag before command
 - [x] Move --config flag before command
 - [x] SystemDiff consolidation for e.g. added + updated ?
-- [ ] Clean up reporting code
-      - Move templates to report/diff
+- [ ] README
 
 ## TODO
 
