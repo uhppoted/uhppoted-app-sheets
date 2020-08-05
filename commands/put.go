@@ -45,7 +45,7 @@ func (cmd *Put) Usage() string {
 
 func (cmd *Put) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [--debug] put --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
+	fmt.Printf("  Usage: %s [--debug] put [options] --url <URL> --range <range> --file <file>\n", APP)
 	fmt.Println()
 	fmt.Println("  Uploads a TSV file to a Google Sheets worksheet")
 	fmt.Println()

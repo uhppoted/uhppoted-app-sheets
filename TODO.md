@@ -2,6 +2,8 @@
 
 ## IN PROGRESS
 
+- [x] README
+- [ ] 'Demo' spreadsheet
 - [x] get
 - [x] Make Sheets/TSV column order less fixed
 - [x] load-acl
@@ -13,7 +15,6 @@
 - [x] Move --debug flag before command
 - [x] Move --config flag before command
 - [x] SystemDiff consolidation for e.g. added + updated ?
-- [ ] README
 
 ## TODO
 

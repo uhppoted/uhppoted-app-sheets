@@ -82,7 +82,7 @@ func (cmd *LoadACL) Usage() string {
 
 func (cmd *LoadACL) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [--debug] [--config <configuration>] load-acl [options] --credentials <credentials> --url <URL> --range <range>\n", APP)
+	fmt.Printf("  Usage: %s [--debug] [--config <configuration>] load-acl [options] --url <URL> --range <range>\n", APP)
 	fmt.Println()
 	fmt.Println("  Updates the cards on a set of configured controllers from a Google Sheets worksheet access control list. Unless the --force option")
 	fmt.Println("  is specified updates will be silently ignored (no log and no report) if the spreadsheet revision has not changed or the updated")

@@ -19,7 +19,7 @@ var GetCmd = Get{
 	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
 	url:         "",
 	area:        "",
-	file:        time.Now().Format("2006-01-02T150405.acl"),
+	file:        time.Now().Format("2006-01-02T150405.tsv"),
 	debug:       false,
 }
 
@@ -46,7 +46,7 @@ func (cmd *Get) Usage() string {
 
 func (cmd *Get) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [--debug] get --credentials <credentials> --url <URL> --range <range> --file <file>\n", APP)
+	fmt.Printf("  Usage: %s [--debug] get [options] --url <URL> --range <range> --file <file>\n", APP)
 	fmt.Println()
 	fmt.Println("  Downloads a Google Sheets worksheet to a TSV file")
 	fmt.Println()

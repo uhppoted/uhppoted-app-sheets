@@ -36,6 +36,50 @@ type UploadACL struct {
 	debug       bool
 }
 
+func (cmd *UploadACL) Name() string {
+	return "upload-acl"
+}
+
+func (cmd *UploadACL) Description() string {
+	return "Uploads the access permissions from a set of configured UHPPOTE access controllers to a Google Sheets worksheet"
+}
+
+func (cmd *UploadACL) Usage() string {
+	return "--credentials <file> --url <url>"
+}
+
+func (cmd *UploadACL) Help() {
+	fmt.Println()
+	fmt.Printf("  Usage: %s [--debug] [--config <configuration>] upload-acl [options] --url <URL> --range <range>\n", APP)
+	fmt.Println()
+	fmt.Println("  Uploads the access permissions from a set of configured controllers to a Google Sheets worksheet access control list")
+	fmt.Println()
+
+	helpOptions(cmd.FlagSet())
+
+	fmt.Println()
+	fmt.Println("  Examples:")
+	fmt.Println(`    uhppote-app-sheets upload-acl --credentials "credentials.json" \`)
+	fmt.Println(`                                   --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                   --range "Uploaded!A2:E" \`)
+	fmt.Println()
+	fmt.Println(`    uhppote-app-sheets --debug --conf example.conf upload-acl --credentials "credentials.json" \`)
+	fmt.Println(`                                                               --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
+	fmt.Println(`                                                               --range "Uploaded!A2:E" \`)
+	fmt.Println()
+}
+
+func (cmd *UploadACL) FlagSet() *flag.FlagSet {
+	flagset := flag.NewFlagSet("upload-acl", flag.ExitOnError)
+
+	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
+	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
+	flagset.StringVar(&cmd.acl, "range", cmd.acl, "Spreadsheet range e.g. 'Uploaded!A2:E'")
+	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)")
+
+	return flagset
+}
+
 func (cmd *UploadACL) Execute(ctx context.Context, options ...interface{}) error {
 	if len(options) > 0 {
 		if opt, ok := options[0].(*Options); ok {
@@ -269,48 +313,4 @@ func (c *UploadACL) buildFormat(google *sheets.Service, spreadsheet *sheets.Spre
 	}
 
 	return &format, nil
-}
-
-func (cmd *UploadACL) Name() string {
-	return "upload-acl"
-}
-
-func (cmd *UploadACL) Description() string {
-	return "Uploads the access permissions from a set of configured UHPPOTE access controllers to a Google Sheets worksheet"
-}
-
-func (cmd *UploadACL) Usage() string {
-	return "--credentials <file> --url <url>"
-}
-
-func (cmd *UploadACL) Help() {
-	fmt.Println()
-	fmt.Printf("  Usage: %s [--debug] [--config <configuration>] upload-acl [options] --credentials <credentials> --url <URL> --range <range>\n", APP)
-	fmt.Println()
-	fmt.Println("  Uploads the access permissions from a set of configured controllers to a Google Sheets worksheet access control list")
-	fmt.Println()
-
-	helpOptions(cmd.FlagSet())
-
-	fmt.Println()
-	fmt.Println("  Examples:")
-	fmt.Println(`    uhppote-app-sheets upload-acl --credentials "credentials.json" \`)
-	fmt.Println(`                                   --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                   --range "Uploaded!A2:E" \`)
-	fmt.Println()
-	fmt.Println(`    uhppote-app-sheets --debug --conf example.conf upload-acl --credentials "credentials.json" \`)
-	fmt.Println(`                                                               --url "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" \`)
-	fmt.Println(`                                                               --range "Uploaded!A2:E" \`)
-	fmt.Println()
-}
-
-func (cmd *UploadACL) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("upload-acl", flag.ExitOnError)
-
-	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
-	flagset.StringVar(&cmd.acl, "range", cmd.acl, "Spreadsheet range e.g. 'Uploaded!A2:E'")
-	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)")
-
-	return flagset
 }

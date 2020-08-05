@@ -53,7 +53,7 @@ func (cmd *CompareACL) Usage() string {
 
 func (cmd *CompareACL) Help() {
 	fmt.Println()
-	fmt.Printf("  Usage: %s [--debug] [--config <configuration file>] compare-acl [options] --credentials <credentials> --url <URL> --range <range>\n", APP)
+	fmt.Printf("  Usage: %s [--debug] [--config <configuration file>] compare-acl [options] --url <URL> --range <range> --report-range <range>\n", APP)
 	fmt.Println()
 	fmt.Println("  Compares the access permissions of a set of configured controllers to a Google Sheets worksheet access control list")
 	fmt.Println()
@@ -78,7 +78,7 @@ func (cmd *CompareACL) FlagSet() *flag.FlagSet {
 	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
 	flagset.StringVar(&cmd.acl, "range", cmd.acl, "Spreadsheet range e.g. 'ACL!A2:E'")
-	flagset.StringVar(&cmd.report, "report-range", cmd.report, "Spreadsheet range for compare report")
+	flagset.StringVar(&cmd.report, "report-range", cmd.report, "Spreadsheet range for compare report e.g. 'Audit!A1:D'")
 	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)")
 
 	return flagset
