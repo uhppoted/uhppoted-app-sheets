@@ -2,8 +2,8 @@
 
 ## IN PROGRESS
 
+- [x] 'Demo' spreadsheet
 - [x] README
-- [ ] 'Demo' spreadsheet
 - [x] get
 - [x] Make Sheets/TSV column order less fixed
 - [x] load-acl

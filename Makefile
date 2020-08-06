@@ -3,6 +3,8 @@ LDFLAGS     = -ldflags "-X uhppote.VERSION=$(VERSION)"
 DIST       ?= development
 CLI         = ./bin/uhppoted-app-sheets
 CREDENTIALS = ../runtime/.uhppoted-test.json
+CONFIG      = ../runtime/sheets/uhppoted.conf
+URL         = https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9haiw-2UqY0kLwo_WTO8
 
 DATETIME  = $(shell date "+%Y-%m-%d %H:%M:%S")
 DEBUG    ?= --debug
@@ -53,8 +55,8 @@ release: build-all
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
 debug: build
-	$(CLI) --debug --config ../runtime/sheets/uhppoted.conf load-acl \
-	       --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	$(CLI) --config $(CONFIG) load-acl \
+	       --url $(URL) \
 	       --range "ACL!A2:K" \
 	       --credentials $(CREDENTIALS) \
 	       --report-range "Report!A1:C" \
@@ -85,39 +87,37 @@ version: build
 # ACL COMMANDS
 
 get: build
-	$(CLI) get --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	$(CLI) get --url $(URL) \
 	           --range "ACL!A2:K" \
 	           --file "../runtime/sheets/debug.acl"
 
 put: build
-	$(CLI) put --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	$(CLI) put --url $(URL) \
                --range "AsIs!A2:K"      \
                --credentials $(CREDENTIALS) \
                --file ../runtime/sheets/debug.acl
 
 load-acl: build
-	$(CLI) --debug --config ../runtime/sheets/uhppoted.conf load-acl \
-           --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	$(CLI) --config $(CONFIG) load-acl \
+           --url $(URL) \
 	       --range "ACL!A2:K" \
 	       --credentials $(CREDENTIALS) \
 	       --report-range "Report!A1:C" \
 	       --report-retention 1 \
 	       --log-range "Log!A1:H" \
 	       --log-retention 1 \
-#	       --dry-run \
-#	       --force \
 	       --delay 5m
 
 compare-acl: build
-	$(CLI) --debug --config ../runtime/sheets/uhppoted.conf compare-acl \
-           --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	$(CLI) --config $(CONFIG) compare-acl \
+           --url $(URL) \
            --range "ACL!A2:K" \
            --credentials $(CREDENTIALS) \
            --report-range "Audit!A1:E"
 
 upload-acl: build
-	$(CLI) --debug --config ../runtime/sheets/uhppoted.conf upload-acl \
-           --url "https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k" \
+	$(CLI) --config $(CONFIG) upload-acl \
+           --url $(URL) \
            --range "Uploaded!A1:K"      \
            --credentials $(CREDENTIALS)
                        
