@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -74,12 +73,10 @@ func (cmd *Get) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (cmd *Get) Execute(ctx context.Context, options ...interface{}) error {
-	if len(options) > 0 {
-		if opt, ok := options[0].(*Options); ok {
-			cmd.debug = opt.Debug
-		}
-	}
+func (cmd *Get) Execute(args ...interface{}) error {
+	options := args[1].(*Options)
+
+	cmd.debug = options.Debug
 
 	// ... check parameters
 	if strings.TrimSpace(cmd.credentials) == "" {

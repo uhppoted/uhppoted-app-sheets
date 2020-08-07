@@ -129,13 +129,12 @@ func (cmd *LoadACL) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (cmd *LoadACL) Execute(ctx context.Context, options ...interface{}) error {
-	if len(options) > 0 {
-		if opt, ok := options[0].(*Options); ok {
-			cmd.config = opt.Config
-			cmd.debug = opt.Debug
-		}
-	}
+func (cmd *LoadACL) Execute(args ...interface{}) error {
+	ctx := args[0].(context.Context)
+	options := args[1].(*Options)
+
+	cmd.config = options.Config
+	cmd.debug = options.Debug
 
 	// ... check parameters
 	if err := cmd.validate(); err != nil {

@@ -73,12 +73,11 @@ func (cmd *Put) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (cmd *Put) Execute(ctx context.Context, options ...interface{}) error {
-	if len(options) > 0 {
-		if opt, ok := options[0].(*Options); ok {
-			cmd.debug = opt.Debug
-		}
-	}
+func (cmd *Put) Execute(args ...interface{}) error {
+	ctx := args[0].(context.Context)
+	options := args[1].(*Options)
+
+	cmd.debug = options.Debug
 
 	// ... check parameters
 	if strings.TrimSpace(cmd.credentials) == "" {
