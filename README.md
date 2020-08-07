@@ -225,7 +225,7 @@ Command line:
   --config           File path to the uhppoted.conf file containing the access
                      controller configuration information. Defaults to:
                      - /etc/uhppoted/uhppoted.conf (Linux)
-                     - /usr/local/etc/com.github.twystd.uhppoted/uhppoted.conf (MacOS)
+                     - /usr/local/etc/com.github.uhppoted/uhppoted.conf (MacOS)
                      - ./uhppoted.conf (Windows)
 
   --debug            Displays verbose debugging information, in particular the 
@@ -264,7 +264,7 @@ Command line:
   --config      File path to the uhppoted.conf file containing the access controller 
                 configuration information. Defaults to:
                 - /etc/uhppoted/uhppoted.conf (Linux)
-                - /usr/local/etc/com.github.twystd.uhppoted/uhppoted.conf (MacOS)
+                - /usr/local/etc/com.github.uhppoted/uhppoted.conf (MacOS)
                 - ./uhppoted.conf (Windows)
 
   --debug       Displays verbose debugging information, in particular the communications 
@@ -300,7 +300,7 @@ Command line:
   --config        File path to the uhppoted.conf file containing the access controller 
                   configuration information. Defaults to:
                   - /etc/uhppoted/uhppoted.conf (Linux)
-                  - /usr/local/etc/com.github.twystd.uhppoted/uhppoted.conf (MacOS)
+                  - /usr/local/etc/com.github.uhppoted/uhppoted.conf (MacOS)
                   - ./uhppoted.conf (Windows)
 
   --debug         Displays verbose debugging information, in particular the 
