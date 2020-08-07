@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -39,14 +38,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx := context.Background()
-
 	if cmd == nil {
-		help.Execute(ctx)
+		help.Execute()
 		os.Exit(1)
 	}
 
-	if err = cmd.Execute(ctx, &options); err != nil {
+	if err = cmd.Execute(&options); err != nil {
 		log.Fatalf("ERROR: %v", err)
 		os.Exit(1)
 	}

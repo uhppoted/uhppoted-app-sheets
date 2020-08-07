@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -130,8 +129,7 @@ func (cmd *LoadACL) FlagSet() *flag.FlagSet {
 }
 
 func (cmd *LoadACL) Execute(args ...interface{}) error {
-	ctx := args[0].(context.Context)
-	options := args[1].(*Options)
+	options := args[0].(*Options)
 
 	cmd.config = options.Config
 	cmd.debug = options.Debug
@@ -172,7 +170,7 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, cmd.area, cmd.logRange))
 	}
 
-	version, err := cmd.getRevision(spreadsheetId, ctx)
+	version, err := cmd.getRevision(spreadsheetId)
 	if err != nil {
 		fatal(err.Error())
 	}
@@ -197,7 +195,7 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 		return err
 	}
 
-	list, warnings, err := cmd.getACL(google, spreadsheet, devices, ctx)
+	list, warnings, err := cmd.getACL(google, spreadsheet, devices)
 	if err != nil {
 		return err
 	}
@@ -243,17 +241,17 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 		}
 
 		if !cmd.nolog {
-			if err := cmd.updateLogSheet(google, spreadsheet, rpt, ctx); err != nil {
+			if err := cmd.updateLogSheet(google, spreadsheet, rpt); err != nil {
 				return err
 			}
 
-			if err := pruneSheet(google, spreadsheet, cmd.logRange, cmd.logRetention, ctx); err != nil {
+			if err := pruneSheet(google, spreadsheet, cmd.logRange, cmd.logRetention); err != nil {
 				return err
 			}
 		}
 
 		if !cmd.noreport {
-			if err := cmd.updateReportSheet(google, spreadsheet, rpt, ctx); err != nil {
+			if err := cmd.updateReportSheet(google, spreadsheet, rpt); err != nil {
 				return err
 			}
 		}
@@ -321,7 +319,7 @@ func (l *LoadACL) validate() error {
 	return nil
 }
 
-func (l *LoadACL) getRevision(spreadsheetId string, ctx context.Context) (*revision, error) {
+func (l *LoadACL) getRevision(spreadsheetId string) (*revision, error) {
 	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope, filepath.Join(l.workdir, ".google"))
 	if err != nil {
 		return nil, fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
@@ -332,7 +330,7 @@ func (l *LoadACL) getRevision(spreadsheetId string, ctx context.Context) (*revis
 		return nil, fmt.Errorf("Unable to create new Google Drive client (%w)", err)
 	}
 
-	version, err := getRevision(gdrive, spreadsheetId, ctx)
+	version, err := getRevision(gdrive, spreadsheetId)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve spreadsheet revision (%v)", err)
 	}
@@ -387,7 +385,7 @@ func (l *LoadACL) compare(u device.IDevice, devices []*uhppote.Device, list *api
 	return false, nil
 }
 
-func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []*uhppote.Device, ctx context.Context) (*api.ACL, []error, error) {
+func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []*uhppote.Device) (*api.ACL, []error, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.area).Do()
 	if err != nil {
 		return nil, nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
@@ -414,7 +412,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 	return list, warnings, nil
 }
 
-func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
+func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report) error {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve column headers from log sheet (%v)", err)
@@ -475,7 +473,6 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, l.logRange, &rows).
 		ValueInputOption("USER_ENTERED").
 		InsertDataOption("INSERT_ROWS").
-		Context(ctx).
 		Do(); err != nil {
 		return fmt.Errorf("Error writing log to Google Sheets (%w)", err)
 	}
@@ -483,7 +480,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 	return nil
 }
 
-func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report, ctx context.Context) error {
+func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report) error {
 	info("Appending report to worksheet")
 
 	// ... include 'after cutoff' rows from existing report
@@ -599,18 +596,18 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	//                      an error because the 'below' range is out of range
 	below := fmt.Sprintf("%s!%s%v:%s", name, left, top+len(rows.Values), right)
 
-	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
+	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Do(); err != nil {
 		return err
 	}
 
-	if err := clear(google, spreadsheet, []string{below}, ctx); err != nil {
+	if err := clear(google, spreadsheet, []string{below}); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area string, retention int, ctx context.Context) error {
+func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area string, retention int) error {
 	sheet, err := getSheet(spreadsheet, area)
 	if err != nil {
 		return err
@@ -680,7 +677,7 @@ func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area st
 				deleted += end - start + 1
 			}
 
-			if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
+			if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Do(); err != nil {
 				return err
 			}
 		}

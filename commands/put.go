@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -74,8 +73,7 @@ func (cmd *Put) FlagSet() *flag.FlagSet {
 }
 
 func (cmd *Put) Execute(args ...interface{}) error {
-	ctx := args[0].(context.Context)
-	options := args[1].(*Options)
+	options := args[0].(*Options)
 
 	cmd.debug = options.Debug
 
@@ -142,7 +140,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 		return fmt.Errorf("Invalid TSV file (%v)", err)
 	}
 
-	if err := cmd.clear(google, spreadsheet, ctx); err != nil {
+	if err := cmd.clear(google, spreadsheet); err != nil {
 		return err
 	}
 
@@ -151,7 +149,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 		Data:             []*sheets.ValueRange{header, data},
 	}
 
-	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
+	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Do(); err != nil {
 		return err
 	}
 
@@ -160,7 +158,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 	return nil
 }
 
-func (cmd *Put) clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ctx context.Context) error {
+func (cmd *Put) clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet) error {
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(cmd.area)
 	if len(match) < 5 {
 		return fmt.Errorf("Invalid spreadsheet range '%s'", cmd.area)
@@ -173,5 +171,5 @@ func (cmd *Put) clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet, c
 
 	data := fmt.Sprintf("%s!%s%v:%s", name, left, top+1, right)
 
-	return clear(google, spreadsheet, []string{data}, ctx)
+	return clear(google, spreadsheet, []string{data})
 }

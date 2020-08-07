@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"path/filepath"
@@ -81,8 +80,7 @@ func (cmd *UploadACL) FlagSet() *flag.FlagSet {
 }
 
 func (cmd *UploadACL) Execute(args ...interface{}) error {
-	ctx := args[0].(context.Context)
-	options := args[1].(*Options)
+	options := args[0].(*Options)
 
 	cmd.config = options.Config
 	cmd.debug = options.Debug
@@ -135,7 +133,7 @@ func (cmd *UploadACL) Execute(args ...interface{}) error {
 		return err
 	}
 
-	if err := cmd.upload(google, spreadsheet, table, ctx); err != nil {
+	if err := cmd.upload(google, spreadsheet, table); err != nil {
 		return err
 	}
 
@@ -171,7 +169,7 @@ func (c *UploadACL) get(u device.IDevice, devices []*uhppote.Device) (api.ACL, e
 	return current, nil
 }
 
-func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadsheet, table *api.Table, ctx context.Context) error {
+func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadsheet, table *api.Table) error {
 	sheet, err := getSheet(spreadsheet, c.acl)
 	if err != nil {
 		return err
@@ -184,7 +182,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 
 	// ... clear existing ACL
 	info("Clearing existing ACL from worksheet")
-	if err := clear(google, spreadsheet, []string{format.title, format.data}, ctx); err != nil {
+	if err := clear(google, spreadsheet, []string{format.title, format.data}); err != nil {
 		return err
 	}
 
@@ -203,7 +201,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 			},
 		}
 
-		if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &prune).Context(ctx).Do(); err != nil {
+		if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &prune).Do(); err != nil {
 			return fmt.Errorf("Error pruning report worksheet (%w)", err)
 		}
 	}
@@ -252,7 +250,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		Data:             []*sheets.ValueRange{&timestamp, &values},
 	}
 
-	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
+	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Do(); err != nil {
 		return err
 	}
 
@@ -265,7 +263,6 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, c.acl, &pad).
 		ValueInputOption("USER_ENTERED").
 		InsertDataOption("OVERWRITE").
-		Context(ctx).
 		Do(); err != nil {
 		return fmt.Errorf("Error padding report worksheet (%w)", err)
 	}

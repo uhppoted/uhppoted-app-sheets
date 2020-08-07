@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -60,7 +59,7 @@ func (r *revision) sameAs(v *revision) bool {
 	return reflect.DeepEqual(r, v)
 }
 
-func getRevision(gdrive *drive.Service, fileId string, ctx context.Context) (*revision, error) {
+func getRevision(gdrive *drive.Service, fileId string) (*revision, error) {
 	page := ""
 	latest := revision{
 		FileID:   fileId,
@@ -103,12 +102,12 @@ func getRevision(gdrive *drive.Service, fileId string, ctx context.Context) (*re
 	return &latest, nil
 }
 
-func clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ranges []string, ctx context.Context) error {
+func clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet, ranges []string) error {
 	rq := sheets.BatchClearValuesRequest{
 		Ranges: ranges,
 	}
 
-	if _, err := google.Spreadsheets.Values.BatchClear(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
+	if _, err := google.Spreadsheets.Values.BatchClear(spreadsheet.SpreadsheetId, &rq).Do(); err != nil {
 		return err
 	}
 

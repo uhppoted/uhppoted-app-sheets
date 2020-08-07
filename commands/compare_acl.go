@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"path/filepath"
@@ -85,8 +84,7 @@ func (cmd *CompareACL) FlagSet() *flag.FlagSet {
 }
 
 func (cmd *CompareACL) Execute(args ...interface{}) error {
-	ctx := args[0].(context.Context)
-	options := args[1].(*Options)
+	options := args[0].(*Options)
 
 	cmd.config = options.Config
 	cmd.debug = options.Debug
@@ -129,7 +127,7 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 		return err
 	}
 
-	list, err := cmd.getACL(google, spreadsheet, devices, ctx)
+	list, err := cmd.getACL(google, spreadsheet, devices)
 	if err != nil {
 		return err
 	}
@@ -143,7 +141,7 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 		return err
 	}
 
-	if err := cmd.write(google, spreadsheet, diff, ctx); err != nil {
+	if err := cmd.write(google, spreadsheet, diff); err != nil {
 		return err
 	}
 
@@ -190,7 +188,7 @@ func (c *CompareACL) compare(u device.IDevice, devices []*uhppote.Device, list *
 	return &diff, nil
 }
 
-func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []*uhppote.Device, ctx context.Context) (*api.ACL, error) {
+func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []*uhppote.Device) (*api.ACL, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, c.acl).Do()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
@@ -221,7 +219,7 @@ func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsh
 	return list, nil
 }
 
-func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadsheet, diff *api.SystemDiff, ctx context.Context) error {
+func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadsheet, diff *api.SystemDiff) error {
 	// ... create report format
 	sheet, err := getSheet(spreadsheet, c.report)
 	if err != nil {
@@ -235,7 +233,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 
 	// ... clear existing report
 	info("Clearing existing report from worksheet")
-	if err := clear(google, spreadsheet, []string{format.title, format.data}, ctx); err != nil {
+	if err := clear(google, spreadsheet, []string{format.title, format.data}); err != nil {
 		return err
 	}
 
@@ -254,7 +252,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 			},
 		}
 
-		if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &prune).Context(ctx).Do(); err != nil {
+		if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &prune).Do(); err != nil {
 			return fmt.Errorf("Error pruning report worksheet (%w)", err)
 		}
 	}
@@ -319,7 +317,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		Data:             []*sheets.ValueRange{&timestamp, &values},
 	}
 
-	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Context(ctx).Do(); err != nil {
+	if _, err := google.Spreadsheets.Values.BatchUpdate(spreadsheet.SpreadsheetId, &rq).Do(); err != nil {
 		return err
 	}
 
@@ -332,7 +330,6 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, c.report, &pad).
 		ValueInputOption("USER_ENTERED").
 		InsertDataOption("OVERWRITE").
-		Context(ctx).
 		Do(); err != nil {
 		return fmt.Errorf("Error padding report worksheet (%w)", err)
 	}
