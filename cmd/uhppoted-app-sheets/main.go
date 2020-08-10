@@ -6,18 +6,22 @@ import (
 	"log"
 	"os"
 
+	"github.com/uhppoted/uhppote-core/uhppote"
 	"github.com/uhppoted/uhppoted-api/command"
 	"github.com/uhppoted/uhppoted-api/config"
 	"github.com/uhppoted/uhppoted-app-sheets/commands"
 )
 
 var cli = []uhppoted.CommandV{
-	&commands.VersionCmd,
 	&commands.GetCmd,
 	&commands.PutCmd,
 	&commands.LoadACLCmd,
 	&commands.CompareACLCmd,
 	&commands.UploadACLCmd,
+	&uhppoted.VersionV{
+		Application: commands.APP,
+		Version:     uhppote.VERSION,
+	},
 }
 
 var options = commands.Options{
