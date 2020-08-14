@@ -9,6 +9,8 @@ URL         = https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9ha
 DATETIME  = $(shell date "+%Y-%m-%d %H:%M:%S")
 DEBUG    ?= --debug
 
+.PHONY: bump
+
 all: test      \
 	 benchmark \
      coverage
@@ -53,6 +55,14 @@ release: build-all
 	find . -name ".DS_Store" -delete
 	tar --directory=dist --exclude=".DS_Store" -cvzf dist/$(DIST).tar.gz $(DIST)
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
+
+bump:
+	go get -u github.com/uhppoted/uhppote-core
+	go get -u github.com/uhppoted/uhppoted-api
+	go get -u golang.org/x/net
+	go get -u golang.org/x/oauth2
+	go get -u golang.org/x/sys
+	go get -u google.golang.org/api
 
 debug: build
 	$(CLI) --config $(CONFIG) load-acl \
