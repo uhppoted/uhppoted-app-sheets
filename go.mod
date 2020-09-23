@@ -11,3 +11,8 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/api v0.30.0
 )
+
+replace (
+	github.com/uhppoted/uhppote-core => ../uhppote-core
+	github.com/uhppoted/uhppoted-api => ../uhppoted-api
+)
