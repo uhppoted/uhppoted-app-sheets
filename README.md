@@ -17,9 +17,10 @@ _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google
 
 ## Releases
 
-| *Version* | *Description*                                                            |
-| --------- | ------------------------------------------------------------------------ |
-| v0.6.4    | Initial release                                                          |
+| *Version* | *Description*                                                                  |
+| --------- | ------------------------------------------------------------------------------ |
+| v0.6.5    | Maintenance release for version compatibility with `node-red-contrib-uhppoted` |
+| v0.6.4    | Initial release                                                                |
 
 ## Installation
 
