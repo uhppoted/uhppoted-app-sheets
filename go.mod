@@ -1,11 +1,11 @@
 module github.com/uhppoted/uhppoted-app-sheets
 
-go 1.14
+go 1.15
 
 require (
 	github.com/golang/protobuf v1.4.3 // indirect
-	github.com/uhppoted/uhppote-core v0.6.5
-	github.com/uhppoted/uhppoted-api v0.6.5
+	github.com/uhppoted/uhppote-core v0.6.6-0.20201231203202-5eebca2ae38a
+	github.com/uhppoted/uhppoted-api v0.6.6-0.20201231213247-e9ff9917e127
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	golang.org/x/sys v0.0.0-20201110211018-35f3e6cf4a65
