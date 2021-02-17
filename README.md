@@ -3,7 +3,6 @@
 # uhppoted-app-sheets
 
 ```cron```'able command line utility to transfer access control lists and events between a Google Sheets worksheet and a set of UHPPOTE UTO311-L0x access controllers.
-access controller boards. 
 
 It originated out of a need for a cheap-and-nasty access management system for a non-profit after budget constraints caused by the Covid-19 pandemic precluded a commercial offering. And turned out to be surprisingly usable!
 
@@ -19,6 +18,7 @@ _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google
 
 | *Version* | *Description*                                                                  |
 | --------- | ------------------------------------------------------------------------------ |
+| v0.6.10   | Maintenance release for version compatibility with `uhppoted-app-wild-apricot`            |
 | v0.6.8    | Maintenance release for version compatibility with `uhppote-core` `v.0.6.8`    |
 | v0.6.7    | Maintenance release for version compatibility with `uhppoted-api` `v.0.6.7`    |
 | v0.6.5    | Maintenance release for version compatibility with `node-red-contrib-uhppoted` |
