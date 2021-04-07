@@ -161,9 +161,9 @@ func (c *UploadACL) validate() error {
 }
 
 func (c *UploadACL) get(u device.IDevice, devices []*uhppote.Device) (api.ACL, error) {
-	current, err := api.GetACL(u, devices)
-	if err != nil {
-		return nil, err
+	current, errors := api.GetACL(u, devices)
+	if len(errors) > 0 {
+		return nil, fmt.Errorf("%v", errors)
 	}
 
 	return current, nil

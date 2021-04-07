@@ -1,8 +1,8 @@
-VERSION     = v0.6.10
+VERSION     = v0.6.x
 LDFLAGS     = -ldflags "-X uhppote.VERSION=$(VERSION)" 
 DIST       ?= development
 CLI         = ./bin/uhppoted-app-sheets
-CREDENTIALS = ../runtime/.uhppoted-test.json
+CREDENTIALS = ../runtime/sheets/.google.json
 CONFIG      = ../runtime/sheets/uhppoted.conf
 URL         = https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9haiw-2UqY0kLwo_WTO8
 
@@ -98,8 +98,9 @@ version: build
 
 get: build
 	$(CLI) get --url $(URL) \
-	           --range "ACL!A2:K" \
-	           --file "../runtime/sheets/debug.acl"
+               --range "ACL!A2:K" \
+               --credentials $(CREDENTIALS) \
+               --file "../runtime/sheets/debug.acl"
 
 put: build
 	$(CLI) put --url $(URL) \

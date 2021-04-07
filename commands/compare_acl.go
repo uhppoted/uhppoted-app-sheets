@@ -173,9 +173,9 @@ func (c *CompareACL) validate() error {
 }
 
 func (c *CompareACL) compare(u device.IDevice, devices []*uhppote.Device, list *api.ACL) (*api.SystemDiff, error) {
-	current, err := api.GetACL(u, devices)
-	if err != nil {
-		return nil, err
+	current, errors := api.GetACL(u, devices)
+	if len(errors) > 0 {
+		return nil, fmt.Errorf("%v", errors)
 	}
 
 	d, err := api.Compare(current, *list)

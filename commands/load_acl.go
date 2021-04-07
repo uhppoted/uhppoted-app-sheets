@@ -214,9 +214,9 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	}
 
 	if cmd.force || updated {
-		rpt, err := api.PutACL(&u, *list, cmd.dryrun)
-		if err != nil {
-			return err
+		rpt, errors := api.PutACL(&u, *list, cmd.dryrun)
+		if len(errors) > 0 {
+			return fmt.Errorf("%v", errors)
 		}
 
 		for _, w := range warnings {
@@ -366,9 +366,9 @@ func (l *LoadACL) revised(version *revision) bool {
 }
 
 func (l *LoadACL) compare(u device.IDevice, devices []*uhppote.Device, list *api.ACL) (bool, error) {
-	current, err := api.GetACL(u, devices)
-	if err != nil {
-		return false, err
+	current, errors := api.GetACL(u, devices)
+	if len(errors) > 0 {
+		return false, fmt.Errorf("%v", errors)
 	}
 
 	diff, err := api.Compare(current, *list)
