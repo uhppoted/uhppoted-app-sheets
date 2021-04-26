@@ -4,8 +4,8 @@ go 1.16
 
 require (
 	github.com/golang/protobuf v1.4.3 // indirect
-	github.com/uhppoted/uhppote-core v0.6.11-0.20210415175657-979d155e011f
-	github.com/uhppoted/uhppoted-api v0.6.11-0.20210415181619-6a38d135c11f
+	github.com/uhppoted/uhppote-core v0.6.11-0.20210426175238-bffb5018bad2
+	github.com/uhppoted/uhppoted-api v0.6.11-0.20210426181519-7a5fd26b61e5
 	golang.org/x/mod v0.4.1 // indirect
 	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11
 	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
