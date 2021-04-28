@@ -16,13 +16,14 @@ _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google
 
 ## Releases
 
-| *Version* | *Description*                                                                  |
-| --------- | ------------------------------------------------------------------------------ |
-| v0.6.10   | Maintenance release for version compatibility with `uhppoted-app-wild-apricot`            |
-| v0.6.8    | Maintenance release for version compatibility with `uhppote-core` `v.0.6.8`    |
-| v0.6.7    | Maintenance release for version compatibility with `uhppoted-api` `v.0.6.7`    |
-| v0.6.5    | Maintenance release for version compatibility with `node-red-contrib-uhppoted` |
-| v0.6.4    | Initial release                                                                |
+| *Version* | *Description*                                                                   |
+| --------- | ------------------------------------------------------------------------------- |
+| v0.6.12   | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-api` |
+| v0.6.10   | Maintenance release for version compatibility with `uhppoted-app-wild-apricot`  |
+| v0.6.8    | Maintenance release for version compatibility with `uhppote-core` `v.0.6.8`     |
+| v0.6.7    | Maintenance release for version compatibility with `uhppoted-api` `v.0.6.7`     |
+| v0.6.5    | Maintenance release for version compatibility with `node-red-contrib-uhppoted`  |
+| v0.6.4    | Initial release                                                                 |
 
 ## Installation
 
