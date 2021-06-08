@@ -11,7 +11,6 @@ import (
 
 	"google.golang.org/api/sheets/v4"
 
-	"github.com/uhppoted/uhppote-core/device"
 	"github.com/uhppoted/uhppote-core/uhppote"
 	api "github.com/uhppoted/uhppoted-api/acl"
 	"github.com/uhppoted/uhppoted-api/config"
@@ -123,7 +122,7 @@ func (cmd *UploadACL) Execute(args ...interface{}) error {
 		return err
 	}
 
-	acl, err := cmd.get(&u, devices)
+	acl, err := cmd.get(u, devices)
 	if err != nil {
 		return err
 	}
@@ -160,7 +159,7 @@ func (c *UploadACL) validate() error {
 	return nil
 }
 
-func (c *UploadACL) get(u device.IDevice, devices []*uhppote.Device) (api.ACL, error) {
+func (c *UploadACL) get(u uhppote.IUHPPOTE, devices []uhppote.Device) (api.ACL, error) {
 	current, errors := api.GetACL(u, devices)
 	if len(errors) > 0 {
 		return nil, fmt.Errorf("%v", errors)

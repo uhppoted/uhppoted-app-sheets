@@ -141,8 +141,12 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/uhppoted/uhppote-core v0.6.12 h1:So53J2LaVdJ80YJWOKjmaudrcjUwSJN1GsVLGhiu4pc=
 github.com/uhppoted/uhppote-core v0.6.12/go.mod h1:trhONXGxYU0V5kOzBShTedYcRY98p9uV99JBZ7F1M0k=
+github.com/uhppoted/uhppote-core v0.6.13-0.20210608173129-01558a7d3430 h1:YvuNZtwz/dEvS0n8mph8FXV5ow1h8T8Cwpbd7GrkCAg=
+github.com/uhppoted/uhppote-core v0.6.13-0.20210608173129-01558a7d3430/go.mod h1:trhONXGxYU0V5kOzBShTedYcRY98p9uV99JBZ7F1M0k=
 github.com/uhppoted/uhppoted-api v0.6.12 h1:yZ4xzMFXHSd9bevj5/pLQ59B8kvPWjH76bAMKBjvLtE=
 github.com/uhppoted/uhppoted-api v0.6.12/go.mod h1:CiprOVtqNMDwRcFcszQ3ub1rqTT0sNjQfxX6Z+XkghE=
+github.com/uhppoted/uhppoted-api v0.6.13-0.20210608173423-fca12dfcd076 h1:91LWWDg/So0GVvK1HVIzQA24y1OGzKmmpmY0czQ1C9Y=
+github.com/uhppoted/uhppoted-api v0.6.13-0.20210608173423-fca12dfcd076/go.mod h1:SKX07DPv1NUJvB3CUkLgq5v1LWgFzDHeJuDObqyLTDU=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

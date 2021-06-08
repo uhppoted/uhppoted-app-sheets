@@ -12,7 +12,6 @@ import (
 
 	"google.golang.org/api/sheets/v4"
 
-	"github.com/uhppoted/uhppote-core/device"
 	"github.com/uhppoted/uhppote-core/uhppote"
 	api "github.com/uhppoted/uhppoted-api/acl"
 	"github.com/uhppoted/uhppoted-api/config"
@@ -136,7 +135,7 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 		info(fmt.Sprintf("%v  Downloaded %v records", k, len(l)))
 	}
 
-	diff, err := cmd.compare(&u, devices, list)
+	diff, err := cmd.compare(u, devices, list)
 	if err != nil {
 		return err
 	}
@@ -172,7 +171,7 @@ func (c *CompareACL) validate() error {
 	return nil
 }
 
-func (c *CompareACL) compare(u device.IDevice, devices []*uhppote.Device, list *api.ACL) (*api.SystemDiff, error) {
+func (c *CompareACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *api.ACL) (*api.SystemDiff, error) {
 	current, errors := api.GetACL(u, devices)
 	if len(errors) > 0 {
 		return nil, fmt.Errorf("%v", errors)
@@ -188,7 +187,7 @@ func (c *CompareACL) compare(u device.IDevice, devices []*uhppote.Device, list *
 	return &diff, nil
 }
 
-func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []*uhppote.Device) (*api.ACL, error) {
+func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*api.ACL, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, c.acl).Do()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
