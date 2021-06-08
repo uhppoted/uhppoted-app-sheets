@@ -3,7 +3,7 @@ LDFLAGS     = -ldflags "-X uhppote.VERSION=$(VERSION)"
 DIST       ?= development
 CLI         = ./bin/uhppoted-app-sheets
 CREDENTIALS = ../runtime/sheets/.google.json
-CONFIG      = ../runtime/sheets/uhppoted.conf
+CONFIG      = /usr/local/etc/com.github.uhppoted/uhppoted.conf
 URL         = https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9haiw-2UqY0kLwo_WTO8
 
 DATETIME  = $(shell date "+%Y-%m-%d %H:%M:%S")
@@ -117,6 +117,7 @@ load-acl: build
 	       --report-retention 1 \
 	       --log-range "Log!A1:H" \
 	       --log-retention 1 \
+	       --force \
 	       --delay 5m
 
 compare-acl: build
