@@ -1,6 +1,4 @@
-## v0.6.12
-
-### IN PROGRESS
+## v0.7.0
 
 - [x] Implement _time profiles_ for `compare-acl`
 - [x] Implement _time profiles_ for `upload-acl`
