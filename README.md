@@ -82,11 +82,11 @@ The above commands build the `uhppoted-app-sheets` executable to the `bin` direc
 | *Dependency*                                                                 | *Description*                              |
 | ---------------------------------------------------------------------------- | ------------------------------------------ |
 | [com.github/uhppoted/uhppote-core](https://github.com/uhppoted/uhppote-core) | Device level API implementation            |
-| [com.github/uhppoted/uhppoted-api](https://github.com/uhppoted/uhppoted-api) | Common API for external applications       |
+| [com.github/uhppoted/uhppoted-lib](https://github.com/uhppoted/uhppoted-lib) | Shared application library                 |
 | [google.golang.org/api](https://google.golang.org/api)                       | Google Sheets API v4 Go library            |
-| golang.org/x/net                                                             | Google Sheets API library dependency              |
-| golang.org/x/oauth2                                                          | Google Sheets API library dependency              |
-| golang.org/x/sys                                                             | Google Sheets API library dependency              |
+| golang.org/x/net                                                             | Google Sheets API library dependency       |
+| golang.org/x/oauth2                                                          | Google Sheets API library dependency       |
+| golang.org/x/sys                                                             | Google Sheets API library dependency       |
 | golang.org/x/lint/golint                                                     | Additional *lint* check for release builds |
 
 ## uhppoted-app-sheets

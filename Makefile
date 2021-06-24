@@ -1,4 +1,4 @@
-VERSION     = v0.7.0
+VERSION     = v0.7.x
 LDFLAGS     = -ldflags "-X uhppote.VERSION=$(VERSION)" 
 DIST       ?= development
 CLI         = ./bin/uhppoted-app-sheets
@@ -58,7 +58,7 @@ release: build-all
 
 bump:
 	go get -u github.com/uhppoted/uhppote-core
-	go get -u github.com/uhppoted/uhppoted-api
+	go get -u github.com/uhppoted/uhppoted-lib
 	go get -u golang.org/x/net
 	go get -u golang.org/x/oauth2
 	go get -u golang.org/x/sys

@@ -1,11 +1,6 @@
-## v0.7.0
+## v0.7.x
 
-- [x] Implement _time profiles_ for `compare-acl`
-- [x] Implement _time profiles_ for `upload-acl`
-- [x] Implement _time profiles_ for `load-acl`
-- [x] Implement _time profiles_ for `put`
-- [x] Implement _time profiles_ for `get`
-- [x] Update to latest `uhppote-core` and `uhppoted-api`
+- [x] Update to latest `uhppote-core` and `uhppoted-lib`
 
 ## TODO
 

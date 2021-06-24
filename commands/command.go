@@ -11,7 +11,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
-	"github.com/uhppoted/uhppoted-api/config"
+	"github.com/uhppoted/uhppoted-lib/config"
 )
 
 const APP = "uhppoted-app-sheets"

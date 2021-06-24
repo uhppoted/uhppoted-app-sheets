@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	api "github.com/uhppoted/uhppoted-api/acl"
+	api "github.com/uhppoted/uhppoted-lib/acl"
 )
 
 func TestMakeTable(t *testing.T) {
