@@ -18,6 +18,7 @@ _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google
 
 | *Version* | *Description*                                                                   |
 | --------- | ------------------------------------------------------------------------------- |
+| v0.7.1    | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-lib`           |
 | v0.7.0    | Added support for time profiles from the extended API                           |
 | v0.6.12   | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-api` |
 | v0.6.10   | Maintenance release for version compatibility with `uhppoted-app-wild-apricot`  |
