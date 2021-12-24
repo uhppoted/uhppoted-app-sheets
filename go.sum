@@ -151,6 +151,8 @@ github.com/uhppoted/uhppote-core v0.7.1 h1:r4e79MBB12Vt32lxax1QQDpuieaOjW6jOITxD
 github.com/uhppoted/uhppote-core v0.7.1/go.mod h1:trhONXGxYU0V5kOzBShTedYcRY98p9uV99JBZ7F1M0k=
 github.com/uhppoted/uhppote-core v0.7.2-0.20210811170233-d186259f6717 h1:0yFGnoUECKuyvh4TO8VKBANZkyqWCfBqyBkOrRskWF4=
 github.com/uhppoted/uhppote-core v0.7.2-0.20210811170233-d186259f6717/go.mod h1:trhONXGxYU0V5kOzBShTedYcRY98p9uV99JBZ7F1M0k=
+github.com/uhppoted/uhppote-core v0.7.2-0.20211215203102-362824451fb5 h1:wrnIpsH7xgvsBoagR2hZrfpKuIkbq5Fh1OUyW/2S2jo=
+github.com/uhppoted/uhppote-core v0.7.2-0.20211215203102-362824451fb5/go.mod h1:trhONXGxYU0V5kOzBShTedYcRY98p9uV99JBZ7F1M0k=
 github.com/uhppoted/uhppoted-api v0.6.12 h1:yZ4xzMFXHSd9bevj5/pLQ59B8kvPWjH76bAMKBjvLtE=
 github.com/uhppoted/uhppoted-api v0.6.12/go.mod h1:CiprOVtqNMDwRcFcszQ3ub1rqTT0sNjQfxX6Z+XkghE=
 github.com/uhppoted/uhppoted-api v0.6.13-0.20210608173423-fca12dfcd076 h1:91LWWDg/So0GVvK1HVIzQA24y1OGzKmmpmY0czQ1C9Y=
@@ -163,6 +165,8 @@ github.com/uhppoted/uhppoted-lib v0.7.1 h1:tCSvTGim5JAL+wmbspLyrnO0J/0nmryZXO50I
 github.com/uhppoted/uhppoted-lib v0.7.1/go.mod h1:VjDc/vURtSiiJzvh/cDmusQLEnl8GVgVq5Y4p64X5gE=
 github.com/uhppoted/uhppoted-lib v0.7.2-0.20210811170403-9af6f580e1ce h1:6auD1ygG0JR1EkRUf+SDgnf1lsvL+4NV+IgcRaJAFBE=
 github.com/uhppoted/uhppoted-lib v0.7.2-0.20210811170403-9af6f580e1ce/go.mod h1:3osV973tStk9IVahiFWXjiVbJvBbGnAE4Mu76qkE/aA=
+github.com/uhppoted/uhppoted-lib v0.7.2-0.20211224201334-8da3188434b1 h1:08BfT6dPVEKusDfTzSHaPOa8se8QHyN1KMcGAGncOVg=
+github.com/uhppoted/uhppoted-lib v0.7.2-0.20211224201334-8da3188434b1/go.mod h1:mHZ6NP2i5omGoZaDIfRnKJGavvzV3+dCqaSq6bINkjY=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
