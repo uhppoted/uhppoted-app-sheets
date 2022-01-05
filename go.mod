@@ -3,10 +3,10 @@ module github.com/uhppoted/uhppoted-app-sheets
 go 1.16
 
 require (
-	github.com/uhppoted/uhppote-core v0.7.2-0.20211215203102-362824451fb5
-	github.com/uhppoted/uhppoted-lib v0.7.2-0.20211224201334-8da3188434b1 // indirect
-	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
-	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
-	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887
-	google.golang.org/api v0.45.0
+	github.com/uhppoted/uhppote-core v0.7.2-0.20211231212401-366db0b80d0c
+	github.com/uhppoted/uhppoted-lib v0.7.2-0.20220105224044-ef89b59c2a15
+	golang.org/x/net v0.0.0-20220105145211-5b0dc2dfae98
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+	google.golang.org/api v0.63.0
 )

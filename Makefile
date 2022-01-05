@@ -7,7 +7,9 @@ URL         = https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9ha
 DATETIME  = $(shell date "+%Y-%m-%d %H:%M:%S")
 DEBUG    ?= --debug
 
-.PHONY: bump
+.PHONY: clean
+.PHONY: update
+.PHONY: update-release
 
 all: test      \
 	 benchmark \
@@ -16,6 +18,24 @@ all: test      \
 clean:
 	go clean
 	rm -rf bin
+
+update:
+	go get -u github.com/uhppoted/uhppote-core@master
+	go get -u github.com/uhppoted/uhppoted-lib@master
+	go get -u golang.org/x/net
+	go get -u golang.org/x/oauth2
+	go get -u golang.org/x/sys
+	go get -u google.golang.org/api
+	go mod tidy
+
+update-release:
+	go get -u github.com/uhppoted/uhppote-core
+	go get -u github.com/uhppoted/uhppoted-lib
+	go get -u golang.org/x/net
+	go get -u golang.org/x/oauth2
+	go get -u golang.org/x/sys
+	go get -u google.golang.org/api
+	go mod tidy
 
 format: 
 	go fmt ./...
@@ -49,7 +69,7 @@ build-all: test vet
 	env GOOS=darwin  GOARCH=amd64         go build -o dist/$(DIST)/darwin  ./...
 	env GOOS=windows GOARCH=amd64         go build -o dist/$(DIST)/windows ./...
 
-release: build-all
+release: update-release build-all
 	find . -name ".DS_Store" -delete
 	tar --directory=dist --exclude=".DS_Store" -cvzf dist/$(DIST).tar.gz $(DIST)
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
