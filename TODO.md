@@ -1,4 +1,4 @@
-## v0.7.1
+## v0.7.2
 
 - [x] Update to latest `uhppote-core` and `uhppoted-lib`
 
