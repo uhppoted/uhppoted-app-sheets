@@ -74,7 +74,7 @@ If you prefer not to use `make`:
 git clone https://github.com/uhppoted/uhppoted-app-sheets.git
 cd uhppoted-app-sheets
 mkdir bin
-go build -o bin ./...
+go build -trimpath -o bin ./...
 ```
 
 The above commands build the `uhppoted-app-sheets` executable to the `bin` directory.

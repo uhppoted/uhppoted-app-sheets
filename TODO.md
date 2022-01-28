@@ -1,6 +1,6 @@
-## v0.7.2
+## v0.7.x
 
-- [x] Update to latest `uhppote-core` and `uhppoted-lib`
+- [x] Add -trimpath to `go build`
 
 ## TODO
 

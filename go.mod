@@ -3,12 +3,12 @@ module github.com/uhppoted/uhppoted-app-sheets
 go 1.17
 
 require (
-	github.com/uhppoted/uhppote-core v0.7.2
-	github.com/uhppoted/uhppoted-lib v0.7.2
-	golang.org/x/net v0.0.0-20220127074510-2fabfed7e28f
+	github.com/uhppoted/uhppote-core v0.7.3-0.20220128210550-3b400bfbaabf
+	github.com/uhppoted/uhppoted-lib v0.7.3-0.20220128210643-c4d9a4bc1660
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
-	google.golang.org/api v0.65.0
+	google.golang.org/api v0.66.0
 )
 
 require (
@@ -19,7 +19,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220107163113-42d7afdf6368 // indirect
+	google.golang.org/genproto v0.0.0-20220114231437-d2e6a121cae0 // indirect
 	google.golang.org/grpc v1.40.1 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
