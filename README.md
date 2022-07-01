@@ -18,6 +18,7 @@ _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google
 
 | *Version* | *Description*                                                                   |
 | --------- | ------------------------------------------------------------------------------- |
+| v0.8.0    | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-lib` |
 | v0.7.3    | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-lib` |
 | v0.7.2    | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-lib` |
 | v0.7.1    | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-lib` |
