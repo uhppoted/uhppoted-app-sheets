@@ -3,12 +3,12 @@ module github.com/uhppoted/uhppoted-app-sheets
 go 1.18
 
 require (
-	github.com/uhppoted/uhppote-core v0.8.0
-	github.com/uhppoted/uhppoted-lib v0.8.0
-	golang.org/x/net v0.0.0-20220630215102-69896b714898
-	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0
-	golang.org/x/sys v0.0.0-20220627191245-f75cf1eec38b
-	google.golang.org/api v0.86.0
+	github.com/uhppoted/uhppote-core v0.8.1
+	github.com/uhppoted/uhppoted-lib v0.8.1
+	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462
+	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c
+	golang.org/x/sys v0.0.0-20220731174439-a90be440212d
+	google.golang.org/api v0.90.0
 )
 
 require (
@@ -23,5 +23,5 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220624142145-8cd45d7dbd1f // indirect
 	google.golang.org/grpc v1.47.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 )

@@ -1,5 +1,11 @@
 ## CHANGELOG
 
+## [v0.8.1] - 2022-08-01
+
+### Changed
+1. Updated for compatibility with [uhppoted-lib](https://github.com/uhppoted/uhppoted-lib) v0.8.1
+
+
 ## [v0.8.0] - 2022-07-01
 
 ### Changed
