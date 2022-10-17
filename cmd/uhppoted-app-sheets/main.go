@@ -13,6 +13,7 @@ import (
 )
 
 var cli = []uhppoted.Command{
+	&commands.AuthoriseCmd,
 	&commands.GetCmd,
 	&commands.PutCmd,
 	&commands.LoadACLCmd,

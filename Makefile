@@ -74,27 +74,23 @@ release: update-release build-all
 	tar --directory=dist --exclude=".DS_Store" -cvzf dist/$(DIST).tar.gz $(DIST)
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
-bump:
-	go get -u github.com/uhppoted/uhppote-core
-	go get -u github.com/uhppoted/uhppoted-lib
-	go get -u golang.org/x/net
-	go get -u golang.org/x/oauth2
-	go get -u golang.org/x/sys
-	go get -u google.golang.org/api
-
 debug: build
-	$(CLI) --config $(CONFIG) load-acl \
-	       --url $(URL) \
-	       --range "ACL!A2:K" \
-	       --credentials $(CREDENTIALS) \
-	       --report-range "Report!A1:C" \
-	       --report-retention 1 \
-	       --log-range "Log!A1:H" \
-	       --log-retention 1 \
-	       --dry-run \
-	       --force \
-	       --delay 5m
+	# $(CLI) --config $(CONFIG) load-acl \
+	#        --url $(URL) \
+	#        --range "ACL!A2:K" \
+	#        --credentials ../runtime/sheets/chris/.google.json \
+	#        --report-range "Report!A1:C" \
+	#        --report-retention 1 \
+	#        --log-range "Log!A1:H" \
+	#        --log-retention 1 \
+	#        --dry-run \
+	#        --force \
+	#        --delay 5m
 
+	$(CLI) get --url $(URL) \
+               --range "ACL!A2:K" \
+               --credentials ../runtime/sheets/chris/.google.json \
+               --file "../runtime/sheets/debug.acl"
 
 # GENERAL COMMANDS
 
@@ -103,6 +99,7 @@ usage: build
 
 help: build
 	$(CLI) help
+	$(CLI) help auth
 	$(CLI) help get
 	$(CLI) help put
 	$(CLI) help load-acl
@@ -114,11 +111,20 @@ version: build
 
 # ACL COMMANDS
 
+auth: build
+	$(CLI) authorise --credentials ../runtime/sheets/chris/.google/credentials.json --url $(URL)
+	# $(CLI) authorize --credentials ../runtime/sheets/chris/.google.json --url $(URL)
+
 get: build
-	$(CLI) get --url $(URL) \
-               --range "ACL!A2:K" \
-               --credentials $(CREDENTIALS) \
-               --file "../runtime/sheets/debug.acl"
+#	$(CLI) get --url $(URL) \
+#	           --range "ACL!A2:K" \
+#	           --credentials $(CREDENTIALS) \
+#	           --file "../runtime/sheets/debug.acl"
+	$(CLI) get --workdir ../runtime/sheets/chris \
+	           --credentials ../runtime/sheets/chris/.google/credentials.json  \
+	           --url $(URL) \
+	           --range "ACL!A2:K" \
+	           --file "../runtime/sheets/chris/ACL.tsv"
 
 put: build
 	$(CLI) put --url $(URL) \

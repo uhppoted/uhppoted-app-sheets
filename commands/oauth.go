@@ -15,6 +15,9 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
+const SHEETS = "https://www.googleapis.com/auth/spreadsheets"
+const DRIVE = "https://www.googleapis.com/auth/drive"
+
 func authorize(credentials, scope, workdir string) (*http.Client, error) {
 	b, err := ioutil.ReadFile(credentials)
 	if err != nil {
@@ -30,9 +33,14 @@ func authorize(credentials, scope, workdir string) (*http.Client, error) {
 	name := strings.TrimSuffix(file, filepath.Ext(file))
 	tokens := ""
 
-	if strings.HasPrefix(scope, "https://www.googleapis.com/auth/drive") {
+	switch {
+	case strings.HasPrefix(scope, DRIVE):
 		tokens = filepath.Join(workdir, fmt.Sprintf("%s.drive", name))
-	} else {
+
+	case strings.HasPrefix(scope, SHEETS):
+		tokens = filepath.Join(workdir, fmt.Sprintf("%s.sheets", name))
+
+	default:
 		tokens = filepath.Join(workdir, fmt.Sprintf("%s.tokens", name))
 	}
 

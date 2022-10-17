@@ -61,7 +61,7 @@ On the first invocation of any of the commands you will be prompted to grant rea
 eventually be) documented in [uhppoted](https://github.com/uhppoted/uhppoted). `uhppoted-app-sheets` requires the 
 _devices_ section to resolve non-local controller IP addresses and door to controller door identities.
 
-A sample _[uhppoted.conf](https://github.com/uhppoted/uhppoted/blob/master/app-notes/google-sheets/uhppoted.conf)_ file is included in the `uhppoted` distribution.
+A sample _[uhppoted.conf](https://github.com/uhppoted/uhppoted/blob/master/cookbook/google-sheets/uhppoted.conf)_ file is included in the `uhppoted` distribution.
 
 ### Building from source
 
