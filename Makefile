@@ -22,10 +22,10 @@ clean:
 update:
 	go get -u github.com/uhppoted/uhppote-core@master
 	go get -u github.com/uhppoted/uhppoted-lib@master
-	go get -u golang.org/x/net
-	go get -u golang.org/x/oauth2
-	go get -u golang.org/x/sys
-	go get -u google.golang.org/api
+	# go get -u golang.org/x/net
+	# go get -u golang.org/x/oauth2
+	# go get -u golang.org/x/sys
+	# go get -u google.golang.org/api
 	go mod tidy
 
 update-release:
