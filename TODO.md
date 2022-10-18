@@ -2,7 +2,7 @@
 
 ### IN PROGRESS
 
-- [ ] Move default repo to 'main'
+- [x] Move default repo to 'main'
 
 - [ ] Fix README
       - [x] Update link to uhppoted.conf in README
