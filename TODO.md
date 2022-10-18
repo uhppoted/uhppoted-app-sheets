@@ -2,7 +2,10 @@
 
 ### IN PROGRESS
 
-- [x] Update link to uhppoted.conf in README
+- [ ] Move default repo to 'main'
+
+- [ ] Fix README
+      - [x] Update link to uhppoted.conf in README
       - [ ] More detail on what's required and how it all fits together i.e. ACL matches door names to controller+door
       - [ ] Change DEVICES to CONTROLLERS
       - [ ] Put notice on README about Google's perfidy
