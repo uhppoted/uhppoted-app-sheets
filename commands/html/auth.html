@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>uhppoted-app-sheets: Authorisation</title>
+    <meta charset="UTF-8">
+    <link rel="manifest"   href="./manifest.json">
+    <link rel="icon"       href="./images/favicon.svg">
+    <link rel="stylesheet" href="./css/auth.css" type="text/css" id="css_auth">
+  </head>
+
+  <body> 
+    <div id="content">
+      <header>
+        <img id="logo" src="./images/logo.png"  />
+      </header>
+
+      <main>
+        <div id="instructions">
+          <div class="prompt">
+            Please open the links below to give <em>uhppoted-app-sheets</em> the
+            <br/>
+            permissions needed to access to the spreadsheet
+          </div>
+          <div class="explanation">
+            <em>For the curious:</em>
+            <ul>
+              <li> the <em>Google Sheets</em> permission grants permission to access the spreadsheet data</li>
+              <li> the <em>Google Drive</em> permissions grants permission to access the spreadsheet revision information</li>
+            </ul>
+            <div class="warning">
+              Both of the above authorisations are more permissive than is really desirable - please use a Google account
+              that is separate from anything deemed valuable.
+            </div>
+          </div>
+          
+          <div class="links">
+            <span><em>Google Sheets</em></span><a href="{{ .sheets }}" target="_blank" class="link">{{ .sheets }}</a>
+            <span><em>Google Drive</em></span><a  href="{{ .drive  }}" target="_blank" class="link">{{ .drive }}</a>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+      </footer>
+
+    </div>
+  </body>
+
+  <script>
+  </script>
+</html>
+
+

@@ -1,12 +1,15 @@
 package commands
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"regexp"
@@ -14,6 +17,8 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+
+	"github.com/uhppoted/uhppoted-app-sheets/commands/html"
 )
 
 var AuthoriseCmd = Authorise{
@@ -122,11 +127,22 @@ func authenticate(credentials, scope, workdir string) (err error) {
 
 	// ... start HTTP server on localhost
 
+	fs := filesystem{
+		FileSystem: http.FS(html.HTML),
+	}
+
 	authorised := make(chan string)
 	mux := http.NewServeMux()
+	sheets := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+
+	mux.Handle("/css/", http.FileServer(fs))
+	mux.Handle("/images/", http.FileServer(fs))
+	mux.Handle("/fonts/", http.FileServer(fs))
+	mux.Handle("/manifest.json", http.FileServer(fs))
+	mux.Handle("/favicon.ico", http.FileServer(fs))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, rq *http.Request) {
-		fmt.Printf("RQ:  %+v\n", rq)
+		fmt.Printf("RQ:  %+v\n", rq.URL)
 
 		state := rq.FormValue("state")
 		code := rq.FormValue("code")
@@ -139,6 +155,27 @@ func authenticate(credentials, scope, workdir string) (err error) {
 		if state == "state-token" && code != "" && (scope == SHEETS || scope == DRIVE) {
 			authorised <- code
 		}
+	})
+
+	mux.HandleFunc("/auth.html", func(w http.ResponseWriter, rq *http.Request) {
+		page := map[string]any{
+			"sheets": sheets,
+			"drive":  "<coming soon>",
+		}
+
+		t, err := template.New("auth.html").ParseFS(html.HTML, "auth.html")
+		if err != nil {
+			http.Error(w, "Internal error formatting page", http.StatusInternalServerError)
+			return
+		}
+
+		var b bytes.Buffer
+		if err := t.Execute(&b, page); err != nil {
+			http.Error(w, "Error formatting page", http.StatusInternalServerError)
+			return
+		}
+
+		w.Write(b.Bytes())
 	})
 
 	srv := &http.Server{
@@ -158,9 +195,12 @@ func authenticate(credentials, scope, workdir string) (err error) {
 	signal.Notify(interrupt, os.Interrupt)
 
 	// ... open OAuth2 URL in browser
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the authorization code: \n%v\n", authURL)
+	command := exec.Command("open", "http://localhost/auth.html")
+	if _, err := command.CombinedOutput(); err != nil {
+		fmt.Println("Could not open authorisation page in your browser - please open http://localhost manually")
+	}
 
+	// ... wait for authorisation
 	select {
 	case <-interrupt:
 		fmt.Printf("\n.. cancelled\n\n")

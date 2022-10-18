@@ -1,0 +1,159 @@
+@font-face {
+  font-family: "Lato";
+  font-style: normal;
+  font-weight: bold;
+  src: url('../fonts/Lato-Bold.woff2');
+}
+
+@font-face {
+  font-family: "Lato";
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/Lato-SemiBold.woff2');
+}
+
+@font-face {
+  font-family: "Lato";
+  font-style: normal;
+  font-weight: normal;
+  src: url('../fonts/Lato-Regular.woff2');
+}
+
+* {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  font-family: "Lato";
+  box-sizing: border-box;
+}
+
+html {
+  background: #fdf6e3;
+  height: 100%;
+}
+
+body {
+  background: #fdf6e3;
+  height: 100%;
+  padding: 0px;
+}
+
+#content {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 120px 1fr 120px;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "header header header" "left  content right" "footer footer footer";
+}
+
+header {
+  grid-area: header;
+  overflow: hidden;
+}
+
+main {
+  grid-area: content;
+  overflow: hidden;
+}
+
+#instructions {
+  background: #eee8d5;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  padding-left: 32px;
+  padding-right: 32px;
+  border: none;
+  border-radius: 12px;
+}
+
+.prompt {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 32px;
+  max-width: 600px;
+  text-align: center; 
+  font-weight: 700;
+  font-size: 1.1em;
+  line-height: 1.5em;
+}
+
+.prompt em {
+  display: inline-block;
+  font-style: italic;
+}
+
+.explanation {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 800px;
+  text-align: left; 
+  font-size: 0.95em;
+}
+
+.explanation em {
+  font-style: italic;
+}
+
+ul {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  margin-left: 24px;
+  list-style: square outside;
+}
+
+ul li {
+  margin-bottom: 1px;
+}
+
+.warning {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.links {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  grid-column-gap: 32px;
+  grid-row-gap: 8px;
+  margin-top: 32px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 800px;
+  padding-left: 32px;
+}
+
+.link {
+  max-width: 600px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.link {
+    text-decoration: none;
+    color:#0063b2;
+}
+
+a:visited.link {
+   color: #0063b2;
+}
+
+footer {
+  grid-area: footer;
+  height: auto;
+  overflow: hidden;
+}
+
+#logo {
+  width: 88px;
+  height: 88px;
+  padding-left: 12px;
+  padding-top: 12px;
+  padding-right: 12px;
+}

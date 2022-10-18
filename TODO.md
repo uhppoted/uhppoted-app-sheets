@@ -4,13 +4,6 @@
 
 - [x] Move default repo to 'main'
 
-- [ ] Fix README
-      - [x] Update link to uhppoted.conf in README
-      - [ ] More detail on what's required and how it all fits together i.e. ACL matches door names to controller+door
-      - [ ] Change DEVICES to CONTROLLERS
-      - [ ] Put notice on README about Google's perfidy
-            - https://developers.google.com/identity/protocols/oauth2/resources/oob-migration
-
 - [ ] Update auth flow for new Google OOB requests
       - [x] Sheets
       - [ ] Drive
@@ -18,6 +11,13 @@
       - [ ] Update browser page on response 
       - [ ] Authorize (with a 'z')
       - [ ] Default credentials should be in _etc_ folder
+
+- [ ] Fix README
+      - [x] Update link to uhppoted.conf in README
+      - [ ] More detail on what's required and how it all fits together i.e. ACL matches door names to controller+door
+      - [ ] Change DEVICES to CONTROLLERS
+      - [ ] Put notice on README about Google's perfidy
+            - https://developers.google.com/identity/protocols/oauth2/resources/oob-migration
 
 - [ ] HOWTO
       - https://developers.google.com/sheets/api/quickstart/go#set_up_the_sample
