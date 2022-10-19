@@ -3,3 +3,5 @@ bin
 runtime
 dist
 ubcs
+go.work
+go.work.sum

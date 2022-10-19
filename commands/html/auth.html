@@ -35,8 +35,13 @@
           </div>
           
           <div class="links">
-            <span><em>Google Sheets</em></span><a href="{{ .sheets }}" target="_blank" class="link">{{ .sheets }}</a>
-            <span><em>Google Drive</em></span><a  href="{{ .drive  }}" target="_blank" class="link">{{ .drive }}</a>
+            <div><em>Google Sheets</em></div>
+            <a href="{{ .sheets }}" target="_blank" class="link">{{ .sheets }}</a>
+            <div id="status-sheets" class="status">Authorised</div>
+            
+            <div><em>Google Drive</em></div>
+            <a  href="{{ .drive  }}" target="_blank" class="link">{{ .drive }}</a>
+            <div id="status-drive" class="status">Authorised</div>
           </div>
         </div>
       </main>
@@ -48,6 +53,32 @@
   </body>
 
   <script>
+    const refresh = function() {
+      fetch('/status')
+        .then((response) => {
+          if (response.ok) {
+            return response.json()
+          }
+        })
+        .then((reply) => {
+          if (reply && reply.authorised && reply.authorised.sheets) {
+            document.querySelector("#status-sheets").classList.add('authorised')
+          }
+
+          if (reply && reply.authorised && reply.authorised.drive) {
+            document.querySelector("#status-drive").classList.add('authorised')
+          }
+
+          if (reply && reply.authorised && reply.authorised.sheets && reply.authorised.drive) {
+            clearInterval(refreshTimer)
+          }
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+    }
+
+    const refreshTimer = setInterval(refresh, 1000)
   </script>
 </html>
 

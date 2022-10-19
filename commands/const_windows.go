@@ -1,5 +1,9 @@
 package commands
 
+import (
+	"path/filepath"
+)
+
 var _etc = workdir()
 var _var = workdir()
 

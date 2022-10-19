@@ -3,6 +3,7 @@ package commands
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html/template"
@@ -14,6 +15,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -142,11 +144,12 @@ func authenticate(credentials, workdir string) error {
 	}
 
 	// ... start HTTP server on localhost
-
 	fs := filesystem{
 		FileSystem: http.FS(html.HTML),
 	}
 
+	received := map[string]bool{}
+	notified := make(chan bool)
 	authorised := make(chan struct {
 		scope string
 		code  string
@@ -159,6 +162,36 @@ func authenticate(credentials, workdir string) error {
 	mux.Handle("/fonts/", http.FileServer(fs))
 	mux.Handle("/manifest.json", http.FileServer(fs))
 	mux.Handle("/favicon.ico", http.FileServer(fs))
+
+	mux.HandleFunc("/status", func(w http.ResponseWriter, rq *http.Request) {
+		reply := struct {
+			Authorised struct {
+				Sheets bool `json:"sheets"`
+				Drive  bool `json:"drive"`
+			} `json:"authorised"`
+		}{
+			Authorised: struct {
+				Sheets bool `json:"sheets"`
+				Drive  bool `json:"drive"`
+			}{
+				Sheets: received[SHEETS],
+				Drive:  received[DRIVE],
+			},
+		}
+
+		if b, err := json.Marshal(reply); err != nil {
+			http.Error(w, "Error formatting status reply", http.StatusInternalServerError)
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(b)
+
+			if received[SHEETS] && received[DRIVE] {
+				time.AfterFunc(1000*time.Millisecond, func() {
+					notified <- true
+				})
+			}
+		}
+	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, rq *http.Request) {
 		state := rq.FormValue("state")
@@ -221,8 +254,6 @@ func authenticate(credentials, workdir string) error {
 
 	// ... wait for authorisation
 
-	received := map[string]bool{}
-
 loop:
 	for {
 		select {
@@ -237,9 +268,8 @@ loop:
 				received[auth.scope] = save(auth.scope, token)
 			}
 
-			if received[SHEETS] && received[DRIVE] {
-				break loop
-			}
+		case <-notified:
+			break loop
 		}
 	}
 

@@ -117,7 +117,7 @@ ul li {
 
 .links {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   grid-template-rows: auto auto;
   grid-column-gap: 32px;
   grid-row-gap: 8px;
@@ -142,6 +142,17 @@ a.link {
 
 a:visited.link {
    color: #0063b2;
+}
+
+.status {
+  font-variant: small-caps;
+  font-variant-caps: all-small-caps;
+  font-size: 0.9em;
+  visibility: hidden;
+}
+
+.status.authorised {
+  visibility: visible;
 }
 
 footer {
