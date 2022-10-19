@@ -14,7 +14,7 @@ import (
 
 var PutCmd = Put{
 	workdir:     DEFAULT_WORKDIR,
-	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
+	credentials: DEFAULT_CREDENTIALS,
 	url:         "",
 	area:        "",
 	file:        "",

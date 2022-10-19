@@ -8,9 +8,9 @@
       - [x] Sheets
       - [x] Drive
       - [x] auth.html
-      - [ ] Update browser page on response 
+      - [x] Default credentials should be in _etc_ folder
       - [ ] Authorize (with a 'z')
-      - [ ] Default credentials should be in _etc_ folder
+      - [ ] Update browser page on response 
 
 - [ ] Fix README
       - [x] Update link to uhppoted.conf in README

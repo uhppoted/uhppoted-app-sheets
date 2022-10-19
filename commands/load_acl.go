@@ -22,8 +22,8 @@ import (
 
 var LoadACLCmd = LoadACL{
 	workdir:     DEFAULT_WORKDIR,
+	credentials: DEFAULT_CREDENTIALS,
 	config:      config.DefaultConfig,
-	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
 	url:         "",
 	area:        "",
 

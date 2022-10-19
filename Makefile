@@ -112,6 +112,7 @@ version: build
 # ACL COMMANDS
 
 auth: build
+	# $(CLI) authorise --url $(URL)
 	$(CLI) authorise --credentials ../runtime/sheets/chris/.google/credentials.json --url $(URL)
 	# $(CLI) authorize --credentials ../runtime/sheets/chris/.google.json --url $(URL)
 

@@ -23,7 +23,7 @@ import (
 
 var AuthoriseCmd = Authorise{
 	workdir:     DEFAULT_WORKDIR,
-	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
+	credentials: DEFAULT_CREDENTIALS,
 	url:         "",
 	debug:       false,
 }
@@ -95,7 +95,7 @@ func (cmd *Authorise) Execute(args ...any) error {
 		return fmt.Errorf("Authorisation error (%v)", err)
 	}
 
-	return fmt.Errorf("NOT IMPLEMENTED")
+	return nil
 }
 
 func authenticate(credentials, workdir string) error {
@@ -228,6 +228,7 @@ loop:
 		select {
 		case <-interrupt:
 			fmt.Printf("\n.. cancelled\n\n")
+			break loop
 
 		case auth := <-authorised:
 			if token, err := sheets.Exchange(context.TODO(), auth.code); err != nil {

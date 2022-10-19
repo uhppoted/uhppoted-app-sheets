@@ -15,7 +15,7 @@ import (
 
 var GetCmd = Get{
 	workdir:     DEFAULT_WORKDIR,
-	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
+	credentials: DEFAULT_CREDENTIALS,
 	url:         "",
 	area:        "",
 	file:        time.Now().Format("2006-01-02T150405.tsv"),

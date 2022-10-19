@@ -19,8 +19,8 @@ import (
 
 var CompareACLCmd = CompareACL{
 	workdir:     DEFAULT_WORKDIR,
+	credentials: DEFAULT_CREDENTIALS,
 	config:      config.DefaultConfig,
-	credentials: filepath.Join(DEFAULT_WORKDIR, ".google", "credentials.json"),
 	url:         "",
 	acl:         "",
 	report:      "Audit!A1:D",
