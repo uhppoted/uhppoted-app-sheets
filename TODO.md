@@ -6,8 +6,8 @@
 
 - [ ] Update auth flow for new Google OOB requests
       - [x] Sheets
-      - [ ] Drive
-      - [ ] index.html
+      - [x] Drive
+      - [x] auth.html
       - [ ] Update browser page on response 
       - [ ] Authorize (with a 'z')
       - [ ] Default credentials should be in _etc_ folder

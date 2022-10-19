@@ -91,38 +91,54 @@ func (cmd *Authorise) Execute(args ...any) error {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
-	if err := authenticate(cmd.credentials, SHEETS, cmd.workdir); err != nil {
+	if err := authenticate(cmd.credentials, cmd.workdir); err != nil {
 		return fmt.Errorf("Authorisation error (%v)", err)
 	}
 
 	return fmt.Errorf("NOT IMPLEMENTED")
 }
 
-func authenticate(credentials, scope, workdir string) (err error) {
-	// ... get OAuth2 configuration
-	var config *oauth2.Config
-	var b []byte
+func authenticate(credentials, workdir string) error {
+	// ... token file
+	save := func(scope string, token *oauth2.Token) bool {
+		_, file := filepath.Split(credentials)
+		basename := strings.TrimSuffix(file, filepath.Ext(file))
 
-	if b, err = ioutil.ReadFile(credentials); err != nil {
-		return
-	} else if config, err = google.ConfigFromJSON(b, scope); err != nil {
-		return
+		switch scope {
+		case SHEETS:
+			saveToken(filepath.Join(workdir, basename+".sheets"), token)
+			return true
+
+		case DRIVE:
+			saveToken(filepath.Join(workdir, basename+".drive"), token)
+			return true
+
+		default:
+			return false
+		}
 	}
 
-	// ... get tokens file
-	_, file := filepath.Split(credentials)
-	name := strings.TrimSuffix(file, filepath.Ext(file))
-	tokens := ""
+	// ... get OAuth2 configuration
+	var sheets *oauth2.Config
+	var drive *oauth2.Config
+	var buffer []byte
 
-	switch {
-	case strings.HasPrefix(scope, SHEETS):
-		tokens = filepath.Join(workdir, fmt.Sprintf("%s.sheets", name))
+	if b, err := ioutil.ReadFile(credentials); err != nil {
+		return err
+	} else {
+		buffer = b
+	}
 
-	case strings.HasPrefix(scope, DRIVE):
-		tokens = filepath.Join(workdir, fmt.Sprintf("%s.drive", name))
+	if config, err := google.ConfigFromJSON(buffer, SHEETS); err != nil {
+		return err
+	} else {
+		sheets = config
+	}
 
-	default:
-		tokens = filepath.Join(workdir, fmt.Sprintf("%s.tokens", name))
+	if config, err := google.ConfigFromJSON(buffer, DRIVE); err != nil {
+		return err
+	} else {
+		drive = config
 	}
 
 	// ... start HTTP server on localhost
@@ -131,9 +147,12 @@ func authenticate(credentials, scope, workdir string) (err error) {
 		FileSystem: http.FS(html.HTML),
 	}
 
-	authorised := make(chan string)
+	authorised := make(chan struct {
+		scope string
+		code  string
+	})
+
 	mux := http.NewServeMux()
-	sheets := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 
 	mux.Handle("/css/", http.FileServer(fs))
 	mux.Handle("/images/", http.FileServer(fs))
@@ -142,25 +161,25 @@ func authenticate(credentials, scope, workdir string) (err error) {
 	mux.Handle("/favicon.ico", http.FileServer(fs))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, rq *http.Request) {
-		fmt.Printf("RQ:  %+v\n", rq.URL)
-
 		state := rq.FormValue("state")
 		code := rq.FormValue("code")
 		scope := rq.FormValue("scope")
 
-		fmt.Printf("state: %v\n", state)
-		fmt.Printf("code:  %v\n", code)
-		fmt.Printf("scope: %v\n", scope)
-
 		if state == "state-token" && code != "" && (scope == SHEETS || scope == DRIVE) {
-			authorised <- code
+			authorised <- struct {
+				scope string
+				code  string
+			}{
+				scope: scope,
+				code:  code,
+			}
 		}
 	})
 
 	mux.HandleFunc("/auth.html", func(w http.ResponseWriter, rq *http.Request) {
 		page := map[string]any{
-			"sheets": sheets,
-			"drive":  "<coming soon>",
+			"sheets": sheets.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
+			"drive":  drive.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
 		}
 
 		t, err := template.New("auth.html").ParseFS(html.HTML, "auth.html")
@@ -194,22 +213,32 @@ func authenticate(credentials, scope, workdir string) (err error) {
 
 	signal.Notify(interrupt, os.Interrupt)
 
-	// ... open OAuth2 URL in browser
+	// ... open auth.html URL in browser
 	command := exec.Command("open", "http://localhost/auth.html")
 	if _, err := command.CombinedOutput(); err != nil {
 		fmt.Println("Could not open authorisation page in your browser - please open http://localhost manually")
 	}
 
 	// ... wait for authorisation
-	select {
-	case <-interrupt:
-		fmt.Printf("\n.. cancelled\n\n")
 
-	case code := <-authorised:
-		if token, err := config.Exchange(context.TODO(), code); err != nil {
-			panic(fmt.Sprintf("Unable to retrieve token from web: %v", err))
-		} else {
-			saveToken(tokens, token)
+	received := map[string]bool{}
+
+loop:
+	for {
+		select {
+		case <-interrupt:
+			fmt.Printf("\n.. cancelled\n\n")
+
+		case auth := <-authorised:
+			if token, err := sheets.Exchange(context.TODO(), auth.code); err != nil {
+				panic(fmt.Sprintf("Unable to retrieve token from web: %v", err))
+			} else {
+				received[auth.scope] = save(auth.scope, token)
+			}
+
+			if received[SHEETS] && received[DRIVE] {
+				break loop
+			}
 		}
 	}
 
