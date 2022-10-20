@@ -4,7 +4,7 @@
 
 ```cron```'able command line utility to transfer access control lists and events between a Google Sheets worksheet and a set of UHPPOTE UTO311-L0x access controllers.
 
-It originated out of a need for a cheap-and-nasty access management system for a non-profit after budget constraints caused by the Covid-19 pandemic precluded a commercial offering. And turned out to be surprisingly usable!
+It originated out of a need for a cheap-and-nasty access management system for a non-profit after budget constraints caused by the Covid-19 pandemic precluded a commercial offering. And turned out to be surprisingly usable.
 
 Supported operating systems:
 - Linux
@@ -40,6 +40,7 @@ Installation is straightforward - download the archive and extract it to a direc
 files:
 
 - `uhppoted.conf`
+- `credentials.json` (see [HOWTO: Authorisation](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md))
 
 As of [3 October 2022](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration), read and write
 authorisation for _uhppoted-app-sheets_ to access the _Google Sheet_ spreadsheet now requires a fairly involved setup 

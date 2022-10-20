@@ -12,13 +12,13 @@ in the [README](https://github.com/uhppoted/uhppoted-app-sheets)*.
 
 This _HOWTO_ describes the (somewhat) tortuous process of giving _uhppoted-app-sheets_ access to a _Google Sheets_ spreadsheet. In broad outline, it describes the steps to create:
 
-- a _placeholder_ Google Cloud project (GCP) to identify your specific instance of _uhppoted-app-sheets_. These are
+- a _Google Cloud_ project (GCP) to identify your specific instance of _uhppoted-app-sheets_. These are
   free (up to a reasonable limit) and only require a Google account.
 
-  The GCP project requires
-   - a configured OAuth2 consent screen for the project
-   - the Google Sheets API to be enabled
-   - the Google Drive API to be enabled
+  The GCP project should be configured with:
+   - an OAuth2 consent screen for the project
+   - Google Sheets API enabled
+   - Google Drive API enabled
    
 - a set of GCP credentials for your instance of _uhppoted-app-sheets_
 - a set of authorisation tokens for _Google Sheets_ and _Google Drive_
@@ -87,7 +87,7 @@ Having installed (or built) _uhppoted-app-sheets_, the next step is to _authoris
 ```
 uhppoted-app-sheets authorise --url <spreadsheet>
 
-Where <spreadsheet> is a Google Docs URL:
+where <spreadsheet> is a Google Docs URL:
 
    https://docs.google.com/spreadsheets/d/<spreadsheet ID>
 
@@ -96,9 +96,9 @@ e.g. https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9haiw-2UqY0k
 The spreadsheet ID can be copied from the URL in the browser.
 ```
 
-2. Open [http://localhost/auth.html](http://localhost/auth.html) in your browser (the `authorise` command should open this automatically but systems vary wildly so you may need to open it manually).
+2. Open [http://localhost/auth.html](http://localhost/auth.html) in your browser - the `authorise` command should open this automatically but systems vary wildly so you may need to open it manually.
 
-3. Follow both the _Google Sheets_ and the _Google Drive_ links provided to authorise access to the spreadsheet data and version information.
+3. Follow the provided _Google Sheets_ and the _Google Drive_ links to authorise access to the spreadsheet data and the version information.
 
 4. On completion of the above you should have a working set of credentials and authorisation tokens for _uhppoted-app-sheets_ on your system. 
  
@@ -120,7 +120,7 @@ The spreadsheet ID can be copied from the URL in the browser.
 
 ## Reference Documentation
 
-1. [Google Sheets API: Setup the sample]https://developers.google.com/sheets/api/quickstart/go#set_up_the_sample
+1. [Google Sheets API: Setup the sample](https://developers.google.com/sheets/api/quickstart/go#set_up_the_sample)
 2. [Google Identity: Using OAuth 2.0 to Access Google APIs](https://developers.google.com/identity/protocols/oauth2)
 3. [Google Workspace: Create access credentials](https://developers.google.com/workspace/guides/create-credentials#desktop-app)
 4. [Troubleshoot authentication & authorization issues](https://developers.google.com/sheets/api/troubleshoot-authentication-authorization)
