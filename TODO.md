@@ -3,6 +3,7 @@
 ### IN PROGRESS
 
 - [x] Move default repo to 'main'
+- [x] HOWTO
 
 - [ ] Update auth flow for new Google OOB requests
       - [x] Sheets
@@ -13,13 +14,6 @@
       - [x] Browser message on completion 
       - [ ] Authorize (with a 'z')
       - [ ] --tokens <dir>
-
-- [ ] HOWTO
-      - https://developers.google.com/sheets/api/quickstart/go#set_up_the_sample
-      - https://developers.google.com/identity/protocols/oauth2
-      - https://developers.google.com/workspace/guides/create-credentials#desktop-app
-      - https://developers.google.com/sheets/api/troubleshoot-authentication-authorization
-      - https://stackoverflow.com/questions/5246292/open-local-folder-from-link/5246334#5246334
 
 - [ ] Fix README
       - [x] Update link to uhppoted.conf in README
@@ -45,4 +39,7 @@
       - Named ranges
       - Spreadsheet version/modified fields
 
+## Notes
+
+1. https://stackoverflow.com/questions/5246292/open-local-folder-from-link/5246334#5246334
 
