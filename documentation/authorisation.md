@@ -3,11 +3,11 @@
 ---
 #### NOTE
 
-**The terminal implementation of Google's OAuth2 flow was deprecated completely on 3 October 2022 (see [OOB Migration](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration)).**
+__The terminal implementation of Google's OAuth2 flow was deprecated completely on 3 October 2022 (see [OOB Migration](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration)).__
 
+*_uhppoted-app-sheets_ has been updated for the new _OAuth2_ flow but the changes are only in the current development version. To build the development version please see [Building from source](https://github.com/uhppoted/uhppoted-app-sheets#building-from-source)
+in the [README](https://github.com/uhppoted/uhppoted-app-sheets)*.
 
-_uhppoted-app-sheets_ has been updated for the new _OAuth2_ flow but the changes are only in the current development version. To build the development version please see [Building from source](https://github.com/uhppoted/uhppoted-app-sheets#building-from-source)
-in the [README](https://github.com/uhppoted/uhppoted-app-sheets).
 ---
 
 This _HOWTO_ describes the (somewhat) tortuous process of giving _uhppoted-app-sheets_ access to a _Google Sheets_ spreadsheet. In broad outline, it describes the steps to create:

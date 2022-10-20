@@ -41,18 +41,15 @@ files:
 
 - `uhppoted.conf`
 
-On the first invocation of any of the commands you will be prompted to grant read/write access to a worksheet:
-
-1. Open the URL provided at the prompt
-2. Grant access to the application
-3. Copy-and-paste the code provided by Google back into the command prompt
-4. You're good to go.
-
-`load-acl` additionally requires read access to Google Drive to retrieve the worksheet version (the same procedure applies).
+As of [3 October 2022](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration), read and write
+authorisation for _uhppoted-app-sheets_ to access the _Google Sheet_ spreadsheet now requires a fairly involved setup 
+process, which is documented in more detail in [HOWTO: Authorisation](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md).
 
 **NOTE:** 
 
-*`uhppoted-app-sheets` requires read permission for Google Drive and read/write for Google Sheets. Google access permissions are granted for the whole account, not just the worksheet in use. It is **highly** recommended that a dedicated account be created for use with `uhppoted-app-sheets`, with access only to the worksheets required for maintaining the access controllers.*
+*`uhppoted-app-sheets` requires read permission for _Google Drive_ and read/write for _Google Sheets_.*
+
+*The access permissions are granted for the whole account, not just the worksheet in use. It is **highly** recommended that a dedicated account be created for use with `uhppoted-app-sheets`, with access only to the spreadsheets required for maintaining the access controllers.*
 
 
 ### `uhppoted.conf`
@@ -103,6 +100,7 @@ Supported commands:
 
 - `help`
 - `version`
+- `authorise`
 - `get`
 - `put`
 - `load-acl`
@@ -126,6 +124,35 @@ Displays the current version of the command.
 Command line:
 
 ```uhppoted-app-sheets version```
+
+
+### `authorise`
+
+Opens a web page with the links required to authorise read and write access to the spreadsheet.. 
+
+Command line:
+
+```uhppoted-app-sheets authorise --url <url>``` 
+
+```uhppoted-app-sheets [--debug] authorise [--workdir <dir>] [--credentials <file>] --url <url>```
+
+```
+  --url         Google Sheets worksheet URL from which to fetch the data 
+                e.g. https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k
+  
+  --workdir     Directory for working files, in particular the tokens, revisions, etc
+                that provide access to Google Sheets. Defaults to:
+                - `/var/uhppoted` on Linux
+                - `/usr/local/var/com.github.uhppoted` on MacOS
+                - `./uhppoted` or `\Program Data\uhppoted` on Microsoft Windows
+
+  --credentials Path for the Google Docs credentials file. 
+                Defaults to <workdir>/sheets/.google/credentials.json
+  
+  --debug       Displays verbose debugging information, in particular the communications
+                with the UHPPOTE controllers
+```
+
 
 ### `get`
 
@@ -151,7 +178,7 @@ Command line:
                 - /usr/local/var/com.github.uhppoted on MacOS
                 - ./uhppoted on Microsoft Windows
   --credentials Path for the Google Docs credentials file. 
-                Defaults to <workdir>/.google/credentials.json
+                Defaults to <workdir>/sheets/.google/credentials.json
   
   --debug       Displays verbose debugging information, in particular the communications
                 with the UHPPOTE controllers
@@ -181,7 +208,7 @@ Command line:
                 - /usr/local/var/com.github.uhppoted on MacOS
                 - ./uhppoted on Microsoft Windows
   --credentials Path for the Google Docs credentials file. 
-                Defaults to <workdir>/.google/credentials.json
+                Defaults to <workdir>/sheets/.google/credentials.json
   
   --debug       Displays verbose debugging information, in particular the communications
                 with the UHPPOTE controllers
@@ -221,7 +248,7 @@ Command line:
                      - /usr/local/var/com.github.uhppoted on MacOS
                      - ./uhppoted on Microsoft Windows
   --credentials      Path for the Google Docs credentials file. 
-                     Defaults to <workdir>/.google/credentials.json
+                     Defaults to <workdir>/sheets/.google/credentials.json
 
   --no-log           Disables the creation of log entries on the 'log' worksheet
   --log-range        Worksheet range (e.g. Log!A2:H) for log entries. Defaults to Log!A1:H
@@ -270,7 +297,7 @@ Command line:
                 - /usr/local/var/com.github.uhppoted on MacOS
                 - ./uhppoted on Microsoft Windows
   --credentials Path for the Google Docs credentials file. 
-                Defaults to <workdir>/.google/credentials.json
+                Defaults to <workdir>/sheets/.google/credentials.json
 
   --config      File path to the uhppoted.conf file containing the access controller 
                 configuration information. Defaults to:
@@ -306,7 +333,7 @@ Command line:
                   - /usr/local/var/com.github.uhppoted on MacOS
                   - ./uhppoted on Microsoft Windows
   --credentials   Path for the Google Docs credentials file. 
-                  Defaults to <workdir>/.google/credentials.json
+                  Defaults to <workdir>/sheets/.google/credentials.json
 
   --config        File path to the uhppoted.conf file containing the access controller 
                   configuration information. Defaults to:
