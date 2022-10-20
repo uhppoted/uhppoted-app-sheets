@@ -16,32 +16,49 @@
       </header>
 
       <main>
-        <div id="instructions">
-          <div class="prompt">
-            Please open the links below to give <em>uhppoted-app-sheets</em> the
-            <br/>
-            permissions needed to access to the spreadsheet
-          </div>
-          <div class="explanation">
-            <em>For the curious:</em>
-            <ul>
-              <li> the <em>Google Sheets</em> permission grants permission to access the spreadsheet data</li>
-              <li> the <em>Google Drive</em> permissions grants permission to access the spreadsheet revision information</li>
-            </ul>
-            <div class="warning">
-              Both of the above authorisations are more permissive than is really desirable - please use a Google account
-              that is separate from anything deemed valuable.
+        <div class="content">
+          <div id="instructions" class="blob">
+            <div class="prompt">
+              Please open the links below to give <em>uhppoted-app-sheets</em> the
+              <br/>
+              permissions needed to access to the spreadsheet
+            </div>
+            <div class="explanation">
+              <em>For the curious:</em>
+              <ul>
+                <li> the <em>Google Sheets</em> permission grants permission to access the spreadsheet data</li>
+                <li> the <em>Google Drive</em> permissions grants permission to access the spreadsheet revision information</li>
+              </ul>
+              <div class="warning">
+                Both of the above authorisations are more permissive than is really desirable - please use a Google account
+                that is separate from anything deemed valuable.
+              </div>
+            </div>
+            
+            <div class="links">
+              <div><em>Google Sheets</em></div>
+              <a href="{{ .Sheets.URL }}" target="_blank" class="link">{{ .Sheets.URL }}</a>
+              <div id="status-sheets" class="status">Authorised</div>
+              
+              <div><em>Google Drive</em></div>
+              <a  href="{{ .Drive.URL  }}" target="_blank" class="link">{{ .Drive.URL }}</a>
+              <div id="status-drive" class="status">Authorised</div>
             </div>
           </div>
-          
-          <div class="links">
-            <div><em>Google Sheets</em></div>
-            <a href="{{ .sheets }}" target="_blank" class="link">{{ .sheets }}</a>
-            <div id="status-sheets" class="status">Authorised</div>
-            
-            <div><em>Google Drive</em></div>
-            <a  href="{{ .drive  }}" target="_blank" class="link">{{ .drive }}</a>
-            <div id="status-drive" class="status">Authorised</div>
+  
+          <div id="wrapup" class="blob">
+            The authorisations have been stored in:
+            <ul>
+              <li class="file">{{ .Sheets.File }}</li>
+              <li class="file">{{ .Drive.File }}</li>
+            </ul>
+            If this is not the target system, please copy the files to the <em>var</em> folder on the 
+            target system:
+            <div id="folders">
+              <div class="platform">Linux</div><div class="folder">/var/uhppoted/sheets/.google/</div>
+              <div class="platform">MacOS</div><div class="folder">/usr/local/var/com.github.uhppoted/sheets/.google/</div>
+              <div class="platform">Windows</div><div class="folder">/Program Data/uhppoted/sheets/.google/</div>
+            </div>
           </div>
         </div>
       </main>
@@ -71,6 +88,7 @@
 
           if (reply && reply.authorised && reply.authorised.sheets && reply.authorised.drive) {
             clearInterval(refreshTimer)
+            document.querySelector(`#wrapup`).classList.add('visible')
           }
         })
         .catch((error) => {

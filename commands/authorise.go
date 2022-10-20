@@ -67,7 +67,9 @@ func (cmd *Authorise) Help() {
 func (cmd *Authorise) FlagSet() *flag.FlagSet {
 	flagset := flag.NewFlagSet("get", flag.ExitOnError)
 
-	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)'")
+	workdir := filepath.Join(DEFAULT_WORKDIR, "sheets", ".google")
+
+	flagset.StringVar(&cmd.workdir, "workdir", workdir, "Directory for working files (tokens, revisions, etc)'")
 	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
 	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
 
@@ -101,23 +103,12 @@ func (cmd *Authorise) Execute(args ...any) error {
 }
 
 func authenticate(credentials, workdir string) error {
-	// ... token file
-	save := func(scope string, token *oauth2.Token) bool {
-		_, file := filepath.Split(credentials)
-		basename := strings.TrimSuffix(file, filepath.Ext(file))
+	_, file := filepath.Split(credentials)
+	basename := strings.TrimSuffix(file, filepath.Ext(file))
 
-		switch scope {
-		case SHEETS:
-			saveToken(filepath.Join(workdir, basename+".sheets"), token)
-			return true
-
-		case DRIVE:
-			saveToken(filepath.Join(workdir, basename+".drive"), token)
-			return true
-
-		default:
-			return false
-		}
+	type component struct {
+		URL  string
+		File string
 	}
 
 	// ... get OAuth2 configuration
@@ -141,6 +132,37 @@ func authenticate(credentials, workdir string) error {
 		return err
 	} else {
 		drive = config
+	}
+
+	// ... page template info
+	page := struct {
+		Sheets component
+		Drive  component
+	}{
+		Sheets: component{
+			URL:  sheets.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
+			File: filepath.Join(workdir, basename+".sheets"),
+		},
+		Drive: component{
+			URL:  drive.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
+			File: filepath.Join(workdir, basename+".drive"),
+		},
+	}
+
+	// ... token file handler
+	save := func(scope string, token *oauth2.Token) bool {
+		switch scope {
+		case SHEETS:
+			saveToken(page.Sheets.File, token)
+			return true
+
+		case DRIVE:
+			saveToken(page.Drive.File, token)
+			return true
+
+		default:
+			return false
+		}
 	}
 
 	// ... start HTTP server on localhost
@@ -210,11 +232,6 @@ func authenticate(credentials, workdir string) error {
 	})
 
 	mux.HandleFunc("/auth.html", func(w http.ResponseWriter, rq *http.Request) {
-		page := map[string]any{
-			"sheets": sheets.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
-			"drive":  drive.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
-		}
-
 		t, err := template.New("auth.html").ParseFS(html.HTML, "auth.html")
 		if err != nil {
 			http.Error(w, "Internal error formatting page", http.StatusInternalServerError)
@@ -249,7 +266,7 @@ func authenticate(credentials, workdir string) error {
 	// ... open auth.html URL in browser
 	command := exec.Command("open", "http://localhost/auth.html")
 	if _, err := command.CombinedOutput(); err != nil {
-		fmt.Println("Could not open authorisation page in your browser - please open http://localhost manually")
+		fmt.Println("Could not open authorisation page - please open http://localhost/auth.html in your browser")
 	}
 
 	// ... wait for authorisation

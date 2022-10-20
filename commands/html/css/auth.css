@@ -44,7 +44,7 @@ body {
   display: grid;
   grid-template-columns: 120px 1fr 120px;
   grid-template-rows: auto 1fr auto;
-  grid-template-areas: "header header header" "left  content right" "footer footer footer";
+  grid-template-areas: "header content unused1" "header content unused2" "footer footer footer";
 }
 
 header {
@@ -55,19 +55,53 @@ header {
 main {
   grid-area: content;
   overflow: hidden;
+  padding-top: 80px;
 }
 
-#instructions {
-  background: #eee8d5;
+footer {
+  grid-area: footer;
+  height: auto;
+  overflow: hidden;
+}
+
+#logo {
+  width: 88px;
+  height: 88px;
+  padding-left: 12px;
+  padding-top: 12px;
+  padding-right: 12px;
+}
+
+.content {
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
-  padding-top: 32px;
-  padding-bottom: 32px;
+}
+
+.blob {
+  background: #eee8d5;
   padding-left: 32px;
   padding-right: 32px;
   border: none;
   border-radius: 12px;
+}
+
+#instructions {
+  width: fit-content;
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+#wrapup {
+  margin-top:16px;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  font-size: 0.95em;
+  display: none;
+}
+
+#wrapup.visible {
+  display: block;
 }
 
 .prompt {
@@ -121,7 +155,7 @@ ul li {
   grid-template-rows: auto auto;
   grid-column-gap: 32px;
   grid-row-gap: 8px;
-  margin-top: 32px;
+  margin-top: 24px;
   margin-left: auto;
   margin-right: auto;
   max-width: 800px;
@@ -130,6 +164,7 @@ ul li {
 
 .link {
   max-width: 600px;
+  font-size: 0.95em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -155,16 +190,45 @@ a:visited.link {
   visibility: visible;
 }
 
-footer {
-  grid-area: footer;
-  height: auto;
-  overflow: hidden;
+#wrapup ul {
+  margin-bottom: 16px;
 }
 
-#logo {
-  width: 88px;
-  height: 88px;
-  padding-left: 12px;
-  padding-top: 12px;
-  padding-right: 12px;
+#folders {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto auto;
+  grid-column-gap: 32px;
+  grid-row-gap: 8px;
+  margin-top: 16px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 800px;
+  padding-left: 32px;
+}
+
+.file {
+  font-family: monospace;
+  font-size: 1em;  
+}
+
+.file a {
+    text-decoration: none;
+    color:#444444;
+}
+
+.file a:visited {
+   color: #0063b2;
+}
+
+
+
+.platform {
+  font-style: italic;
+  font-size: 0.95em;  
+}
+
+.folder {
+  font-family: monospace;
+  font-size: 0.95em;  
 }

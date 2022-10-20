@@ -111,7 +111,8 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  audit:%s", spreadsheetId, cmd.acl, cmd.report))
 	}
 
-	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(cmd.workdir, ".google"))
+	tokens := filepath.Join(cmd.workdir, "sheets", ".google")
+	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", tokens)
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}

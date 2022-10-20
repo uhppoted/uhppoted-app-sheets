@@ -179,7 +179,8 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 		return nil
 	}
 
-	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(cmd.workdir, ".google"))
+	tokens := filepath.Join(cmd.workdir, "sheets", ".google")
+	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", tokens)
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
@@ -319,7 +320,8 @@ func (l *LoadACL) validate() error {
 }
 
 func (l *LoadACL) getRevision(spreadsheetId string) (*revision, error) {
-	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope, filepath.Join(l.workdir, ".google"))
+	tokens := filepath.Join(l.workdir, "sheets", ".google")
+	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope, tokens)
 	if err != nil {
 		return nil, fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
 	}

@@ -10,15 +10,16 @@
       - [x] auth.html
       - [x] Default credentials should be in _etc_ folder
       - [x] Update browser page on response 
-      - [ ] Browser message on completion 
-            - _Go do your thing..._
+      - [x] Browser message on completion 
       - [ ] Authorize (with a 'z')
+      - [ ] --tokens <dir>
 
 - [ ] HOWTO
       - https://developers.google.com/sheets/api/quickstart/go#set_up_the_sample
       - https://developers.google.com/identity/protocols/oauth2
       - https://developers.google.com/workspace/guides/create-credentials#desktop-app
       - https://developers.google.com/sheets/api/troubleshoot-authentication-authorization
+      - https://stackoverflow.com/questions/5246292/open-local-folder-from-link/5246334#5246334
 
 - [ ] Fix README
       - [x] Update link to uhppoted.conf in README

@@ -111,7 +111,8 @@ func (cmd *Put) Execute(args ...interface{}) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheetId, region))
 	}
 
-	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", filepath.Join(cmd.workdir, ".google"))
+	tokens := filepath.Join(cmd.workdir, "sheets", ".google")
+	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", tokens)
 	if err != nil {
 		return fmt.Errorf("Authentication/authorization error (%v)", err)
 	}
