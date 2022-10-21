@@ -4,7 +4,8 @@
 
 - [x] Move default repo to 'main'
 - [x] HOWTO
-      - https://www.googleapis.com/auth/drive.metadata.readonly
+      - Google Sheets API       .../auth/spreadsheets
+      - Google Drive API  .../auth/drive.metadata.readonly
 
 - [x] Update auth flow for new Google OOB requests
       - [x] Sheets
@@ -15,6 +16,7 @@
       - [x] Browser message on completion 
       - [x] Authorize (with a 'z')
       - [x] --tokens <dir>
+      - [x] Restrict Google Drive auth to https://www.googleapis.com/auth/drive.metadata.readonly
 
 - [ ] Fix README
       - [x] Update link to uhppoted.conf in README

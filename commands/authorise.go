@@ -19,6 +19,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	gdrive "google.golang.org/api/drive/v3"
 
 	"github.com/uhppoted/uhppoted-app-sheets/commands/html"
 )
@@ -126,7 +127,7 @@ func authenticate(credentials, tokens string) error {
 		sheets = config
 	}
 
-	if config, err := google.ConfigFromJSON(buffer, DRIVE); err != nil {
+	if config, err := google.ConfigFromJSON(buffer, gdrive.DriveMetadataReadonlyScope); err != nil {
 		return err
 	} else {
 		drive = config
@@ -149,12 +150,12 @@ func authenticate(credentials, tokens string) error {
 
 	// ... token file handler
 	save := func(scope string, token *oauth2.Token) bool {
-		switch scope {
-		case SHEETS:
+		switch {
+		case strings.HasPrefix(scope, SHEETS):
 			saveToken(page.Sheets.File, token)
 			return true
 
-		case DRIVE:
+		case strings.HasPrefix(scope, DRIVE):
 			saveToken(page.Drive.File, token)
 			return true
 
@@ -218,7 +219,7 @@ func authenticate(credentials, tokens string) error {
 		code := rq.FormValue("code")
 		scope := rq.FormValue("scope")
 
-		if state == "state-token" && code != "" && (scope == SHEETS || scope == DRIVE) {
+		if state == "state-token" && code != "" && (strings.HasPrefix(scope, SHEETS) || strings.HasPrefix(scope, DRIVE)) {
 			authorised <- struct {
 				scope string
 				code  string
@@ -280,7 +281,13 @@ loop:
 			if token, err := sheets.Exchange(context.TODO(), auth.code); err != nil {
 				panic(fmt.Sprintf("Unable to retrieve token from web: %v", err))
 			} else {
-				received[auth.scope] = save(auth.scope, token)
+				switch {
+				case strings.HasPrefix(auth.scope, SHEETS):
+					received[SHEETS] = save(auth.scope, token)
+
+				case strings.HasPrefix(auth.scope, DRIVE):
+					received[DRIVE] = save(auth.scope, token)
+				}
 			}
 
 		case <-notified:

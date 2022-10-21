@@ -54,7 +54,10 @@ Once the APIs are enabled, it's time to configure _OAuth2 consent screen_:
     - _App logo_: (ignore)
     - _Developer contact information_: _\<your email address\>_
 5. Click _Save and continue_
-6. Ignore the _Scopes_ page and click _Save and continue_
+6. On the _Scopes_ page, optionally restrict permissions to:
+    - _Google Sheets API_: `.../auth/spreadsheets`
+    - _Google Drive API_:  `.../auth/drive.metadata.readonly`
+    - Click _Save and continue_
 7. On the _Test users_ page:
     - Add the email addresses of the account that is going to authorise access to the spreadsheet
     - Click _Save and continue_

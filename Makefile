@@ -75,8 +75,8 @@ release: update-release build-all
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
 debug: build
-	# $(CLI) authorise --url $(URL) \
-	#                  --tokens ../runtime/sheets/.google
+	$(CLI) authorise --url $(URL) \
+	                 --tokens ../runtime/sheets/.google
 	$(CLI) get --url $(URL) \
 	           --credentials $(CREDENTIALS) \
 	           --tokens ../runtime/sheets/.google \
