@@ -13,21 +13,22 @@ import (
 )
 
 var PutCmd = Put{
-	workdir:     DEFAULT_WORKDIR,
-	credentials: DEFAULT_CREDENTIALS,
-	url:         "",
-	area:        "",
-	file:        "",
-	debug:       false,
+	command: command{
+		workdir:     DEFAULT_WORKDIR,
+		credentials: DEFAULT_CREDENTIALS,
+		tokens:      "",
+		url:         "",
+		debug:       false,
+	},
+
+	area: "",
+	file: "",
 }
 
 type Put struct {
-	workdir     string
-	credentials string
-	url         string
-	area        string
-	file        string
-	debug       bool
+	command
+	area string
+	file string
 }
 
 func (cmd *Put) Name() string {
@@ -61,11 +62,8 @@ func (cmd *Put) Help() {
 }
 
 func (cmd *Put) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("put", flag.ExitOnError)
+	flagset := cmd.flagset("put")
 
-	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)'")
-	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
 	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'AsIs!A2:E'")
 	flagset.StringVar(&cmd.file, "file", cmd.file, "TSV file")
 
@@ -111,8 +109,13 @@ func (cmd *Put) Execute(args ...interface{}) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheetId, region))
 	}
 
-	tokens := filepath.Join(cmd.workdir, "sheets", ".google")
-	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", tokens)
+	// ... authorise
+	tokens := cmd.tokens
+	if tokens == "" {
+		tokens = filepath.Join(cmd.workdir, ".google")
+	}
+
+	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
 		return fmt.Errorf("Authentication/authorization error (%v)", err)
 	}

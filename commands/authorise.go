@@ -24,17 +24,17 @@ import (
 )
 
 var AuthoriseCmd = Authorise{
-	workdir:     DEFAULT_WORKDIR,
-	credentials: DEFAULT_CREDENTIALS,
-	url:         "",
-	debug:       false,
+	command{
+		workdir:     DEFAULT_WORKDIR,
+		credentials: DEFAULT_CREDENTIALS,
+		tokens:      "",
+		url:         "",
+		debug:       false,
+	},
 }
 
 type Authorise struct {
-	workdir     string
-	credentials string
-	url         string
-	debug       bool
+	command
 }
 
 func (cmd *Authorise) Name() string {
@@ -65,15 +65,7 @@ func (cmd *Authorise) Help() {
 }
 
 func (cmd *Authorise) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("authorise", flag.ExitOnError)
-
-	workdir := filepath.Join(DEFAULT_WORKDIR, "sheets", ".google")
-
-	flagset.StringVar(&cmd.workdir, "workdir", workdir, "Directory for working files (tokens, revisions, etc)'")
-	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
-
-	return flagset
+	return cmd.flagset("authorise")
 }
 
 func (cmd *Authorise) Execute(args ...any) error {
@@ -95,14 +87,20 @@ func (cmd *Authorise) Execute(args ...any) error {
 		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
-	if err := authenticate(cmd.credentials, cmd.workdir); err != nil {
+	// ... authenticate
+	tokens := cmd.tokens
+	if tokens == "" {
+		tokens = filepath.Join(cmd.workdir, ".google")
+	}
+
+	if err := authenticate(cmd.credentials, tokens); err != nil {
 		return fmt.Errorf("Authorisation error (%v)", err)
 	}
 
 	return nil
 }
 
-func authenticate(credentials, workdir string) error {
+func authenticate(credentials, tokens string) error {
 	_, file := filepath.Split(credentials)
 	basename := strings.TrimSuffix(file, filepath.Ext(file))
 
@@ -141,11 +139,11 @@ func authenticate(credentials, workdir string) error {
 	}{
 		Sheets: component{
 			URL:  sheets.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
-			File: filepath.Join(workdir, basename+".sheets"),
+			File: filepath.Join(tokens, basename+".sheets"),
 		},
 		Drive: component{
 			URL:  drive.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
-			File: filepath.Join(workdir, basename+".drive"),
+			File: filepath.Join(tokens, basename+".drive"),
 		},
 	}
 

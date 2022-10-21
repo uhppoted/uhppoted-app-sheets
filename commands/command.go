@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -19,6 +20,26 @@ const APP = "uhppoted-app-sheets"
 type Options struct {
 	Config string
 	Debug  bool
+}
+
+type command struct {
+	workdir     string
+	credentials string
+	tokens      string
+	url         string
+	debug       bool
+}
+
+func (c *command) flagset(name string) *flag.FlagSet {
+	flagset := flag.NewFlagSet(name, flag.ExitOnError)
+	workdir := filepath.Join(DEFAULT_WORKDIR, "sheets")
+
+	flagset.StringVar(&c.workdir, "workdir", workdir, "Directory for working files (tokens, revisions, etc)'")
+	flagset.StringVar(&c.credentials, "credentials", c.credentials, "Path for the 'credentials.json' file")
+	flagset.StringVar(&c.tokens, "tokens", c.tokens, "Directory for the authorisation tokens. Default to the <workdir>/sheets/.google")
+	flagset.StringVar(&c.url, "url", c.url, "Spreadsheet URL")
+
+	return flagset
 }
 
 type report struct {

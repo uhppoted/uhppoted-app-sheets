@@ -18,23 +18,24 @@ import (
 )
 
 var CompareACLCmd = CompareACL{
-	workdir:     DEFAULT_WORKDIR,
-	credentials: DEFAULT_CREDENTIALS,
-	config:      config.DefaultConfig,
-	url:         "",
-	acl:         "",
-	report:      "Audit!A1:D",
-	debug:       false,
+	command: command{
+		workdir:     DEFAULT_WORKDIR,
+		credentials: DEFAULT_CREDENTIALS,
+		tokens:      "",
+		url:         "",
+		debug:       false,
+	},
+
+	config: config.DefaultConfig,
+	acl:    "",
+	report: "Audit!A1:D",
 }
 
 type CompareACL struct {
-	workdir     string
-	config      string
-	credentials string
-	url         string
-	acl         string
-	report      string
-	debug       bool
+	command
+	config string
+	acl    string
+	report string
 }
 
 func (cmd *CompareACL) Name() string {
@@ -71,13 +72,10 @@ func (cmd *CompareACL) Help() {
 }
 
 func (cmd *CompareACL) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("compare-acl", flag.ExitOnError)
+	flagset := cmd.flagset("compare-acl")
 
-	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
 	flagset.StringVar(&cmd.acl, "range", cmd.acl, "Spreadsheet range e.g. 'ACL!A2:E'")
 	flagset.StringVar(&cmd.report, "report-range", cmd.report, "Spreadsheet range for compare report e.g. 'Audit!A1:D'")
-	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)")
 
 	return flagset
 }
@@ -111,8 +109,13 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  audit:%s", spreadsheetId, cmd.acl, cmd.report))
 	}
 
-	tokens := filepath.Join(cmd.workdir, "sheets", ".google")
-	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", tokens)
+	// ... authorise
+	tokens := cmd.tokens
+	if tokens == "" {
+		tokens = filepath.Join(cmd.workdir, ".google")
+	}
+
+	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}

@@ -14,21 +14,22 @@ import (
 )
 
 var GetCmd = Get{
-	workdir:     DEFAULT_WORKDIR,
-	credentials: DEFAULT_CREDENTIALS,
-	url:         "",
-	area:        "",
-	file:        time.Now().Format("2006-01-02T150405.tsv"),
-	debug:       false,
+	command: command{
+		workdir:     DEFAULT_WORKDIR,
+		credentials: DEFAULT_CREDENTIALS,
+		tokens:      "",
+		url:         "",
+		debug:       false,
+	},
+
+	area: "",
+	file: time.Now().Format("2006-01-02T150405.tsv"),
 }
 
 type Get struct {
-	workdir     string
-	credentials string
-	url         string
-	area        string
-	file        string
-	debug       bool
+	command
+	area string
+	file string
 }
 
 func (cmd *Get) Name() string {
@@ -62,11 +63,8 @@ func (cmd *Get) Help() {
 }
 
 func (cmd *Get) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("get", flag.ExitOnError)
+	flagset := cmd.flagset("get")
 
-	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)'")
-	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
 	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'ACL!A2:E'")
 	flagset.StringVar(&cmd.file, "file", cmd.file, "TSV file name. Defaults to 'ACL - <yyyy-mm-dd HHmmss>.tsv'")
 
@@ -103,8 +101,13 @@ func (cmd *Get) Execute(args ...interface{}) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheet, area))
 	}
 
-	tokens := filepath.Join(cmd.workdir, "sheets", ".google")
-	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", tokens)
+	// ... authorise
+	tokens := cmd.tokens
+	if tokens == "" {
+		tokens = filepath.Join(cmd.workdir, ".google")
+	}
+
+	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
 		return fmt.Errorf("Authentication/authorization error (%v)", err)
 	}

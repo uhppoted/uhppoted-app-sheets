@@ -17,21 +17,22 @@ import (
 )
 
 var UploadACLCmd = UploadACL{
-	workdir:     DEFAULT_WORKDIR,
-	credentials: DEFAULT_CREDENTIALS,
-	config:      config.DefaultConfig,
-	url:         "",
-	acl:         "",
-	debug:       false,
+	command: command{
+		workdir:     DEFAULT_WORKDIR,
+		credentials: DEFAULT_CREDENTIALS,
+		tokens:      "",
+		url:         "",
+		debug:       false,
+	},
+
+	config: config.DefaultConfig,
+	acl:    "",
 }
 
 type UploadACL struct {
-	workdir     string
-	config      string
-	credentials string
-	url         string
-	acl         string
-	debug       bool
+	command
+	config string
+	acl    string
 }
 
 func (cmd *UploadACL) Name() string {
@@ -68,12 +69,9 @@ func (cmd *UploadACL) Help() {
 }
 
 func (cmd *UploadACL) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("upload-acl", flag.ExitOnError)
+	flagset := cmd.flagset("upload-acl")
 
-	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
 	flagset.StringVar(&cmd.acl, "range", cmd.acl, "Spreadsheet range e.g. 'Uploaded!A2:E'")
-	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)")
 
 	return flagset
 }
@@ -107,8 +105,13 @@ func (cmd *UploadACL) Execute(args ...interface{}) error {
 		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheetId, cmd.acl))
 	}
 
-	tokens := filepath.Join(cmd.workdir, "sheets", ".google")
-	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", tokens)
+	// ... authorise
+	tokens := cmd.tokens
+	if tokens == "" {
+		tokens = filepath.Join(cmd.workdir, ".google")
+	}
+
+	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}

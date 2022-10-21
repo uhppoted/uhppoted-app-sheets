@@ -18,7 +18,7 @@ import (
 const SHEETS = "https://www.googleapis.com/auth/spreadsheets"
 const DRIVE = "https://www.googleapis.com/auth/drive"
 
-func authorize(credentials, scope, workdir string) (*http.Client, error) {
+func authorize(credentials, scope, dir string) (*http.Client, error) {
 	b, err := ioutil.ReadFile(credentials)
 	if err != nil {
 		return nil, err
@@ -29,22 +29,22 @@ func authorize(credentials, scope, workdir string) (*http.Client, error) {
 		return nil, err
 	}
 
-	_, file := filepath.Split(credentials)
-	name := strings.TrimSuffix(file, filepath.Ext(file))
-	tokens := ""
+	_, filename := filepath.Split(credentials)
+	name := strings.TrimSuffix(filename, filepath.Ext(filename))
+	file := ""
 
 	switch {
 	case strings.HasPrefix(scope, DRIVE):
-		tokens = filepath.Join(workdir, fmt.Sprintf("%s.drive", name))
+		file = filepath.Join(dir, fmt.Sprintf("%s.drive", name))
 
 	case strings.HasPrefix(scope, SHEETS):
-		tokens = filepath.Join(workdir, fmt.Sprintf("%s.sheets", name))
+		file = filepath.Join(dir, fmt.Sprintf("%s.sheets", name))
 
 	default:
-		tokens = filepath.Join(workdir, fmt.Sprintf("%s.tokens", name))
+		file = filepath.Join(dir, fmt.Sprintf("%s.tokens", name))
 	}
 
-	return getClient(tokens, config), nil
+	return getClient(file, config), nil
 }
 
 // Retrieve a token, saves the token, then returns the generated client.

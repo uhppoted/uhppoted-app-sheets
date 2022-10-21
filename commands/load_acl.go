@@ -21,11 +21,16 @@ import (
 )
 
 var LoadACLCmd = LoadACL{
-	workdir:     DEFAULT_WORKDIR,
-	credentials: DEFAULT_CREDENTIALS,
-	config:      config.DefaultConfig,
-	url:         "",
-	area:        "",
+	command: command{
+		workdir:     DEFAULT_WORKDIR,
+		credentials: DEFAULT_CREDENTIALS,
+		tokens:      "",
+		url:         "",
+		debug:       false,
+	},
+
+	config: config.DefaultConfig,
+	area:   "",
 
 	nolog:           false,
 	logRange:        "Log!A1:H",
@@ -38,32 +43,26 @@ var LoadACLCmd = LoadACL{
 	force:     false,
 	strict:    false,
 	dryrun:    false,
-	debug:     false,
 	delay:     15 * time.Minute,
 	revisions: filepath.Join(DEFAULT_WORKDIR, ".google", "uhppoted-app-sheets.revision"),
 }
 
 type LoadACL struct {
-	workdir     string
-	config      string
-	credentials string
-	url         string
-	area        string
+	command
 
-	nolog        bool
-	logRange     string
-	logRetention int
-
+	config          string
+	area            string
+	nolog           bool
+	logRange        string
+	logRetention    int
 	noreport        bool
 	reportRange     string
 	reportRetention int
-
-	force     bool
-	strict    bool
-	dryrun    bool
-	debug     bool
-	delay     time.Duration
-	revisions string
+	force           bool
+	strict          bool
+	dryrun          bool
+	delay           time.Duration
+	revisions       string
 }
 
 func (cmd *LoadACL) Name() string {
@@ -104,10 +103,8 @@ func (cmd *LoadACL) Help() {
 }
 
 func (cmd *LoadACL) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("load-acl", flag.ExitOnError)
+	flagset := cmd.flagset("load-acl")
 
-	flagset.StringVar(&cmd.credentials, "credentials", cmd.credentials, "Path for the 'credentials.json' file")
-	flagset.StringVar(&cmd.url, "url", cmd.url, "Spreadsheet URL")
 	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'ACL!A2:E'")
 	flagset.BoolVar(&cmd.force, "force", cmd.force, "Forces an update, overriding the spreadsheet version and compare logic")
 	flagset.BoolVar(&cmd.strict, "strict", cmd.strict, "Fails with an error if the spreadsheet contains duplicate card numbers")
@@ -121,8 +118,6 @@ func (cmd *LoadACL) FlagSet() *flag.FlagSet {
 	flagset.BoolVar(&cmd.noreport, "no-report", cmd.noreport, "Disables writing a report to the 'report' worksheet")
 	flagset.StringVar(&cmd.reportRange, "report-range", cmd.reportRange, "Spreadsheet range for load report")
 	flagset.IntVar(&cmd.reportRetention, "report-retention", cmd.reportRetention, "Report sheet records older than 'report-retention' days are automatically pruned")
-
-	flagset.StringVar(&cmd.workdir, "workdir", cmd.workdir, "Directory for working files (tokens, revisions, etc)")
 
 	return flagset
 }
@@ -142,12 +137,12 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	lockfile, err := cmd.lock()
 	if err != nil {
 		return err
-	} else {
-		defer func() {
-			info(fmt.Sprintf("Removing lockfile '%v'", lockfile))
-			os.Remove(lockfile)
-		}()
 	}
+
+	defer func() {
+		info(fmt.Sprintf("Removing lockfile '%v'", lockfile))
+		os.Remove(lockfile)
+	}()
 
 	// ... good to go!
 	conf := config.NewConfig()
@@ -179,8 +174,13 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 		return nil
 	}
 
-	tokens := filepath.Join(cmd.workdir, "sheets", ".google")
-	client, err := authorize(cmd.credentials, "https://www.googleapis.com/auth/spreadsheets", tokens)
+	// ... authorise
+	tokens := cmd.tokens
+	if tokens == "" {
+		tokens = filepath.Join(cmd.workdir, ".google")
+	}
+
+	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
@@ -319,9 +319,13 @@ func (l *LoadACL) validate() error {
 	return nil
 }
 
-func (l *LoadACL) getRevision(spreadsheetId string) (*revision, error) {
-	tokens := filepath.Join(l.workdir, "sheets", ".google")
-	client, err := authorize(l.credentials, drive.DriveMetadataReadonlyScope, tokens)
+func (cmd *LoadACL) getRevision(spreadsheetId string) (*revision, error) {
+	tokens := cmd.tokens
+	if tokens == "" {
+		tokens = filepath.Join(cmd.workdir, ".google")
+	}
+
+	client, err := authorize(cmd.credentials, drive.DriveMetadataReadonlyScope, tokens)
 	if err != nil {
 		return nil, fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
 	}

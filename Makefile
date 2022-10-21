@@ -1,6 +1,6 @@
 DIST       ?= development
 CLI         = ./bin/uhppoted-app-sheets
-CREDENTIALS = ../runtime/sheets/.google.json
+CREDENTIALS = /usr/local/etc/com.github.uhppoted/sheets/.google/credentials.json
 CONFIG      = /usr/local/etc/com.github.uhppoted/uhppoted.conf
 URL         = https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9haiw-2UqY0kLwo_WTO8
 
@@ -75,57 +75,13 @@ release: update-release build-all
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
 debug: build
-#	(CLI) --config $(CONFIG) load-acl \
-#	      --url $(URL) \
-#	      --range "ACL!A2:K" \
-#	      --credentials ../runtime/sheets/chris/.google.json \
-#	      --report-range "Report!A1:C" \
-#	      --report-retention 1 \
-#	      --log-range "Log!A1:H" \
-#	      --log-retention 1 \
-#	      --dry-run \
-#	      --force \
-#	      --delay 5m
-#
-#	(CLI) authorise --credentials ../runtime/sheets/chris/.google/credentials.json --url $(URL)
-#
-#	$(CLI) get --url $(URL) \
-#	           --range "ACL!A2:K" \
-#	           --credentials ../runtime/sheets/chris/.google/credentials.json \
-#	           --file "../runtime/sheets/debug.acl"
-#
-#	$(CLI) --config $(CONFIG) compare-acl \
-#	       --url $(URL) \
-#	       --range "ACL!A2:K" \
-#	       --credentials ../runtime/sheets/chris/.google/credentials.json \
-#	       --report-range "Audit!A1:E"
-#
-#	$(CLI) --config $(CONFIG) load-acl \
-#           --url $(URL) \
-#	       --range "ACL!A2:K" \
-#	       --credentials ../runtime/sheets/chris/.google/credentials.json \
-#	       --report-range "Report!A1:C" \
-#	       --report-retention 1 \
-#	       --log-range "Log!A1:H" \
-#	       --log-retention 1 \
-#	       --force \
-#	       --delay 5m
-#
-#	$(CLI) --config $(CONFIG) compare-acl \
-#	       --url $(URL) \
-#	       --range "ACL!A2:K" \
-#	       --credentials ../runtime/sheets/chris/.google/credentials.json \
-#	       --report-range "Audit!A1:E"
-#
-#	$(CLI) put --url $(URL) \
-#	           --range "AsIs!A2:K"      \
-#	           --credentials ../runtime/sheets/chris/.google/credentials.json \
-#	           --file ../runtime/sheets/debug.acl
-
-	$(CLI) --config $(CONFIG) upload-acl \
-           --url $(URL) \
-           --range "Uploaded!A1:K"      \
-           --credentials ../runtime/sheets/chris/.google/credentials.json \
+	# $(CLI) authorise --url $(URL) \
+	#                  --tokens ../runtime/sheets/.google
+	$(CLI) get --url $(URL) \
+	           --credentials $(CREDENTIALS) \
+	           --tokens ../runtime/sheets/.google \
+	           --range "ACL!A2:K" \
+	           --file "../runtime/sheets/debug.acl"
 
 
 # GENERAL COMMANDS
@@ -149,14 +105,12 @@ version: build
 # ACL COMMANDS
 
 auth: build
-	# $(CLI) authorise --url $(URL)
-	# $(CLI) authorise --credentials ../runtime/sheets/chris/.google/credentials.json --url $(URL)
-	$(CLI) authorize --credentials ../runtime/sheets/chris/.google/credentials.json --url $(URL)
+	$(CLI) authorize --credentials ${CREDENTIALS} --url $(URL)
 
 get: build
 	$(CLI) get --url $(URL) \
-	           --range "ACL!A2:K" \
 	           --credentials $(CREDENTIALS) \
+	           --range "ACL!A2:K" \
 	           --file "../runtime/sheets/debug.acl"
 
 put: build
