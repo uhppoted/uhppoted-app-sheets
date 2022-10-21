@@ -128,7 +128,6 @@ debug: build
            --credentials ../runtime/sheets/chris/.google/credentials.json \
 
 
-
 # GENERAL COMMANDS
 
 usage: build
@@ -136,7 +135,8 @@ usage: build
 
 help: build
 	$(CLI) help
-	$(CLI) help auth
+	$(CLI) help authorise
+	$(CLI) help authorize
 	$(CLI) help get
 	$(CLI) help put
 	$(CLI) help load-acl
@@ -150,8 +150,8 @@ version: build
 
 auth: build
 	# $(CLI) authorise --url $(URL)
-	$(CLI) authorise --credentials ../runtime/sheets/chris/.google/credentials.json --url $(URL)
-	# $(CLI) authorize --credentials ../runtime/sheets/chris/.google.json --url $(URL)
+	# $(CLI) authorise --credentials ../runtime/sheets/chris/.google/credentials.json --url $(URL)
+	$(CLI) authorize --credentials ../runtime/sheets/chris/.google/credentials.json --url $(URL)
 
 get: build
 	$(CLI) get --url $(URL) \

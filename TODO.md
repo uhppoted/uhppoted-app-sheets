@@ -12,7 +12,7 @@
       - [x] Default credentials should be in _etc_ folder
       - [x] Update browser page on response 
       - [x] Browser message on completion 
-      - [ ] Authorize (with a 'z')
+      - [x] Authorize (with a 'z')
       - [ ] --tokens <dir>
 
 - [ ] Fix README

@@ -38,7 +38,7 @@ type Authorise struct {
 }
 
 func (cmd *Authorise) Name() string {
-	return "authorise"
+	return "authorise|authorize"
 }
 
 func (cmd *Authorise) Description() string {
@@ -53,7 +53,7 @@ func (cmd *Authorise) Help() {
 	fmt.Println()
 	fmt.Printf("  Usage: %s [--debug] authorise [options] --url <URL>\n", APP)
 	fmt.Println()
-	fmt.Println("  Authorises uhppoted-app-sheets to access a Google Sheets worksheet")
+	fmt.Println("  Authorises uhppoted-app-sheets access to a Google Sheets spreadsheet")
 	fmt.Println()
 
 	helpOptions(cmd.FlagSet())
@@ -65,7 +65,7 @@ func (cmd *Authorise) Help() {
 }
 
 func (cmd *Authorise) FlagSet() *flag.FlagSet {
-	flagset := flag.NewFlagSet("get", flag.ExitOnError)
+	flagset := flag.NewFlagSet("authorise", flag.ExitOnError)
 
 	workdir := filepath.Join(DEFAULT_WORKDIR, "sheets", ".google")
 
