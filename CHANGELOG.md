@@ -7,6 +7,7 @@
 3. Restricted Google Drive authorisation scope to `drive.metadata.readonly`.
 4. Added --tokens command line argument for (optional) custom _tokens_ folder.
 5. Added section to READ clarifying _uhppoted.conf_ `controllers` section.
+6. Migrated `git` default branch to `main`.
 
 ## [0.8.2](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.8.2) - 2022-10-14
 
