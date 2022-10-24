@@ -56,10 +56,40 @@ process, which is documented in more detail in [HOWTO: Authorisation](https://gi
 ### `uhppoted.conf`
 
 `uhppoted.conf` is the communal configuration file shared by all the `uhppoted` project modules and is (or will 
-eventually be) documented in [uhppoted](https://github.com/uhppoted/uhppoted). `uhppoted-app-sheets` requires the 
-_devices_ section to resolve non-local controller IP addresses and door to controller door identities.
+eventually be) documented in [uhppoted](https://github.com/uhppoted/uhppoted). A sample [_uhppoted.conf_](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/uhppoted.conf) file is included in the _documentation_ folder.
 
-A sample _[uhppoted.conf](https://github.com/uhppoted/uhppoted/blob/main/cookbook/google-sheets/uhppoted.conf)_ file is included in the `uhppoted` distribution.
+`uhppoted-app-sheets` requires the _controllers_ section to resolve non-local controller IP addresses and the mapping from
+ACL door names to controller doors e.g.:
+
+ _ACL_
+
+| Card Number | From       | To         | Great Hall | Gryffindor | Hufflepuff | Ravenclaw | Slytherin | Dungeon | Kitchen | Hogsmeade |
+|-------------|------------|------------|------------|------------|------------|-----------|-----------|---------|---------|-----------|
+| 8112345     | 2022-01-01 | 2022-12-31 | Y          | Y          | N          | N         | N         | N       | Y       | Y         |
+| 8154321     | 2022-01-01 | 2022-12-31 | Y          | N          | Y          | N         | N         | Y       | N       | Y         |
+
+
+_uhppoted.conf_
+
+```
+...
+# CONTROLLERS
+UT0311-L0x.405419896.door.1 = Great Hall
+UT0311-L0x.405419896.door.2 = Kitchen
+UT0311-L0x.405419896.door.3 = Dungeon
+UT0311-L0x.405419896.door.4 = Hogsmeade
+
+UT0311-L0x.303986753.door.1 = Gryffindor
+UT0311-L0x.303986753.door.2 = Hufflepuff
+UT0311-L0x.303986753.door.3 = Ravenclaw
+UT0311-L0x.303986753.door.4 = Slytherin
+...
+```
+Permissions granted to the _Great Hall_, _Kitchen_, _Dungeon_ and _Hogsmeade_ are mapped to doors 1-4 on the controller with
+serial number 405419896 and permissions granted to _Gryffindor_, _Hufflepuff_, _Ravenclaw_ and _Slytherin_ are mapped to doors
+1-4 on the controller with serial number 303986753.
+
+Controller doors that are not in use should also be mapped to name e.g. Unused1, Unused2, etc.s
 
 ### Building from source
 
