@@ -296,7 +296,7 @@ loop:
 	}
 
 	if err := srv.Shutdown(context.Background()); err != nil {
-		warn(fmt.Sprintf("%v", err))
+		warnf("%v", err)
 	}
 
 	return nil

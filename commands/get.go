@@ -98,7 +98,7 @@ func (cmd *Get) Execute(args ...interface{}) error {
 	area := cmd.area
 
 	if cmd.debug {
-		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheet, area))
+		debugf("Spreadsheet - ID:%s  range:%s", spreadsheet, area)
 	}
 
 	// ... authorise
@@ -151,7 +151,7 @@ func (cmd *Get) Execute(args ...interface{}) error {
 		return err
 	}
 
-	info(fmt.Sprintf("Retrieved ACL to file %s\n", cmd.file))
+	infof("Retrieved ACL to file %s", cmd.file)
 
 	return nil
 }

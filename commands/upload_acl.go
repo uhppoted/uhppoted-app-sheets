@@ -102,7 +102,7 @@ func (cmd *UploadACL) Execute(args ...interface{}) error {
 	spreadsheetId := match[1]
 
 	if cmd.debug {
-		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheetId, cmd.acl))
+		debugf("Spreadsheet - ID:%s  range:%s", spreadsheetId, cmd.acl)
 	}
 
 	// ... authorise
@@ -184,7 +184,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	}
 
 	// ... clear existing ACL
-	info("Clearing existing ACL from worksheet")
+	infof("Clearing existing ACL from worksheet")
 	if err := clear(google, spreadsheet, []string{format.title, format.data}); err != nil {
 		return err
 	}
@@ -210,7 +210,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	}
 
 	// ... upload ACL
-	info("Uploading ACL to worksheet")
+	infof("Uploading ACL to worksheet")
 
 	var timestamp = sheets.ValueRange{
 		Range: format.title,

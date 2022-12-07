@@ -106,7 +106,7 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 	spreadsheetId := match[1]
 
 	if cmd.debug {
-		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  audit:%s", spreadsheetId, cmd.acl, cmd.report))
+		debugf("Spreadsheet - ID:%s  range:%s  audit:%s", spreadsheetId, cmd.acl, cmd.report)
 	}
 
 	// ... authorise
@@ -136,7 +136,7 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 	}
 
 	for k, l := range *list {
-		info(fmt.Sprintf("%v  Downloaded %v records", k, len(l)))
+		infof("%v  Downloaded %v records", k, len(l))
 	}
 
 	diff, err := cmd.compare(u, devices, list)
@@ -216,7 +216,7 @@ func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsh
 	}
 
 	for _, w := range warnings {
-		warn(w.Error())
+		warnf("%v", w.Error())
 	}
 
 	return list, nil
@@ -235,7 +235,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	}
 
 	// ... clear existing report
-	info("Clearing existing report from worksheet")
+	infof("Clearing existing report from worksheet")
 	if err := clear(google, spreadsheet, []string{format.title, format.data}); err != nil {
 		return err
 	}
@@ -261,7 +261,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	}
 
 	// ... write report
-	info("Writing report to worksheet")
+	infof("Writing report to worksheet")
 
 	var timestamp = sheets.ValueRange{
 		Range: format.title,

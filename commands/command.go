@@ -3,7 +3,6 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"log"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
+	"github.com/uhppoted/uhppoted-app-sheets/log"
 	"github.com/uhppoted/uhppoted-lib/config"
 )
 
@@ -193,18 +193,18 @@ func clean(v string) string {
 	return strings.TrimSpace(v)
 }
 
-func debug(msg string) {
-	log.Printf("%-5s %s", "DEBUG", msg)
+func debugf(format string, args ...any) {
+	log.Debugf(format, args...)
 }
 
-func info(msg string) {
-	log.Printf("%-5s %s", "INFO", msg)
+func infof(format string, args ...any) {
+	log.Infof(format, args...)
 }
 
-func warn(msg string) {
-	log.Printf("%-5s %s", "WARN", msg)
+func warnf(format string, args ...any) {
+	log.Warnf(format, args...)
 }
 
-func fatal(msg string) {
-	log.Printf("%-5s %s", "ERROR", msg)
+func errorf(format string, args ...any) {
+	log.Errorf(format, args...)
 }

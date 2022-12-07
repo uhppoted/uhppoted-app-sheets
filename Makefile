@@ -75,13 +75,14 @@ release: update-release build-all
 	cd dist; zip --recurse-paths $(DIST).zip $(DIST)
 
 debug: build
-	$(CLI) authorise --url $(URL) \
-	                 --tokens ../runtime/sheets/.google
-	$(CLI) get --url $(URL) \
-	           --credentials $(CREDENTIALS) \
-	           --tokens ../runtime/sheets/.google \
-	           --range "ACL!A2:K" \
-	           --file "../runtime/sheets/debug.acl"
+	env GOOS=windows GOARCH=amd64 go build -trimpath -o dist/$(DIST)/windows ./...
+	# $(CLI) authorise --url $(URL) \
+	#                  --tokens ../runtime/sheets/.google
+	# $(CLI) get --url $(URL) \
+	#            --credentials $(CREDENTIALS) \
+	#            --tokens ../runtime/sheets/.google \
+	#            --range "ACL!A2:K" \
+	#            --file "../runtime/sheets/debug.acl"
 
 
 # GENERAL COMMANDS

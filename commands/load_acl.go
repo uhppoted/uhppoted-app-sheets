@@ -3,8 +3,6 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -16,8 +14,9 @@ import (
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
-	api "github.com/uhppoted/uhppoted-lib/acl"
+	"github.com/uhppoted/uhppoted-lib/acl"
 	"github.com/uhppoted/uhppoted-lib/config"
+	"github.com/uhppoted/uhppoted-lib/lockfile"
 )
 
 var LoadACLCmd = LoadACL{
@@ -134,15 +133,19 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	}
 
 	// ... locked?
-	lockfile, err := cmd.lock()
-	if err != nil {
-		return err
+	lockFile := config.Lockfile{
+		File:   filepath.Join(cmd.workdir, ".google", "uhppoted-app-sheets.lock"),
+		Remove: false, // FIXME use lockfile.RemoveLockfile, when Go package repo has caught up
 	}
 
-	defer func() {
-		info(fmt.Sprintf("Removing lockfile '%v'", lockfile))
-		os.Remove(lockfile)
-	}()
+	if kraken, err := lockfile.MakeLockFile(lockFile); err != nil {
+		return err
+	} else {
+		defer func() {
+			infof("Removing lockfile '%v'", lockFile.File)
+			kraken.Release()
+		}()
+	}
 
 	// ... good to go!
 	conf := config.NewConfig()
@@ -161,16 +164,16 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	cmd.revisions = filepath.Join(cmd.workdir, ".google", fmt.Sprintf("%s.revision", spreadsheetId))
 
 	if cmd.debug {
-		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, cmd.area, cmd.logRange))
+		debugf("Spreadsheet - ID:%s  range:%s  log:%s", spreadsheetId, cmd.area, cmd.logRange)
 	}
 
 	version, err := cmd.getRevision(spreadsheetId)
 	if err != nil {
-		fatal(err.Error())
+		errorf("%v", err)
 	}
 
 	if !cmd.force && !cmd.revised(version) {
-		info("Nothing to do")
+		infof("Nothing to do")
 		return nil
 	}
 
@@ -201,11 +204,11 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	}
 
 	for _, w := range warnings {
-		warn(w.Error())
+		warnf("%v", w.Error())
 	}
 
 	for k, l := range *list {
-		info(fmt.Sprintf("%v  Downloaded %v records", k, len(l)))
+		infof("%v  Downloaded %v records", k, len(l))
 	}
 
 	updated, err := cmd.compare(u, devices, list)
@@ -214,13 +217,13 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	}
 
 	if cmd.force || updated {
-		rpt, errors := api.PutACL(u, *list, cmd.dryrun)
+		rpt, errors := acl.PutACL(u, *list, cmd.dryrun)
 		if len(errors) > 0 {
 			return fmt.Errorf("%v", errors)
 		}
 
 		for _, w := range warnings {
-			if duplicate, ok := w.(*api.DuplicateCardError); ok {
+			if duplicate, ok := w.(*acl.DuplicateCardError); ok {
 				for k, v := range rpt {
 					v.Errored = append(v.Errored, duplicate.CardNumber)
 					rpt[k] = v
@@ -228,15 +231,15 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 			}
 		}
 
-		summary := api.Summarize(rpt)
+		summary := acl.Summarize(rpt)
 		format := "%v  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
 		for _, v := range summary {
-			info(fmt.Sprintf(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored+len(warnings)))
+			infof(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored+len(warnings))
 		}
 
 		for k, v := range rpt {
 			for _, err := range v.Errors {
-				fatal(fmt.Sprintf("%v  %v", k, err))
+				errorf("%v  %v", k, err)
 			}
 		}
 
@@ -256,7 +259,7 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 			}
 		}
 	} else {
-		info("No changes - Nothing to do")
+		infof("No changes - Nothing to do")
 	}
 
 	if version != nil {
@@ -264,27 +267,6 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	}
 
 	return nil
-}
-
-func (l *LoadACL) lock() (string, error) {
-	lockfile := filepath.Join(l.workdir, ".google", "uhppoted-app-sheets.lock")
-	pid := fmt.Sprintf("%d\n", os.Getpid())
-
-	if err := os.MkdirAll(filepath.Dir(lockfile), 0770); err != nil {
-		return "", fmt.Errorf("Unable to create directory '%v' for lockfile (%v)", lockfile, err)
-	}
-
-	if _, err := os.Stat(lockfile); err == nil {
-		return "", fmt.Errorf("Locked by '%v'", lockfile)
-	} else if !os.IsNotExist(err) {
-		return "", fmt.Errorf("Error checking PID lockfile '%v' (%v)", lockfile, err)
-	}
-
-	if err := ioutil.WriteFile(lockfile, []byte(pid), 0660); err != nil {
-		return "", fmt.Errorf("Unable to create lockfile '%v' (%v)", lockfile, err)
-	}
-
-	return lockfile, nil
 }
 
 func (l *LoadACL) validate() error {
@@ -345,15 +327,15 @@ func (cmd *LoadACL) getRevision(spreadsheetId string) (*revision, error) {
 
 func (l *LoadACL) revised(version *revision) bool {
 	if version != nil {
-		info(fmt.Sprintf("Latest revision %v, %s", version.ID, version.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+		infof("Latest revision %v, %s", version.ID, version.Modified.Local().Format("2006-01-02 15:04:05 MST"))
 
 		var last revision
 
 		if err := last.load(l.revisions); err != nil {
-			fatal(fmt.Sprintf("Error reading last revision from %s", l.revisions))
-			fatal(fmt.Sprintf("%v", err))
+			errorf("Error reading last revision from %s", l.revisions)
+			errorf("%v", err)
 		} else {
-			info(fmt.Sprintf("Last revision   %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+			infof("Last revision   %v, %s", last.ID, last.Modified.Local().Format("2006-01-02 15:04:05 MST"))
 
 			if version.sameAs(&last) {
 				return false
@@ -362,7 +344,7 @@ func (l *LoadACL) revised(version *revision) bool {
 
 		cutoff := time.Now().Add(-time.Duration(l.delay))
 		if cutoff.Before(version.Modified) {
-			info(fmt.Sprintf("Latest revision modified less than %s ago (%s)", l.delay, version.Modified.Local().Format("2006-01-02 15:04:05 MST")))
+			infof("Latest revision modified less than %s ago (%s)", l.delay, version.Modified.Local().Format("2006-01-02 15:04:05 MST"))
 			return false
 		}
 	}
@@ -370,13 +352,13 @@ func (l *LoadACL) revised(version *revision) bool {
 	return true
 }
 
-func (l *LoadACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *api.ACL) (bool, error) {
-	current, errors := api.GetACL(u, devices)
+func (l *LoadACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *acl.ACL) (bool, error) {
+	current, errors := acl.GetACL(u, devices)
 	if len(errors) > 0 {
 		return false, fmt.Errorf("%v", errors)
 	}
 
-	diff, err := api.Compare(current, *list)
+	diff, err := acl.Compare(current, *list)
 	if err != nil {
 		return false, err
 	}
@@ -390,7 +372,7 @@ func (l *LoadACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *ap
 	return false, nil
 }
 
-func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*api.ACL, []error, error) {
+func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*acl.ACL, []error, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.area).Do()
 	if err != nil {
 		return nil, nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
@@ -405,7 +387,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 		return nil, nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}
 
-	list, warnings, err := api.ParseTable(table, devices, l.strict)
+	list, warnings, err := acl.ParseTable(table, devices, l.strict)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -417,7 +399,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 	return list, warnings, nil
 }
 
-func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report) error {
+func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]acl.Report) error {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve column headers from log sheet (%v)", err)
@@ -427,7 +409,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 
 	index, columns := buildIndex(response.Values, fields)
 
-	summary := api.Summarize(rpt)
+	summary := acl.Summarize(rpt)
 	var rows = sheets.ValueRange{
 		Values: [][]interface{}{},
 	}
@@ -485,8 +467,8 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 	return nil
 }
 
-func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]api.Report) error {
-	info("Appending report to worksheet")
+func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]acl.Report) error {
+	infof("Appending report to worksheet")
 
 	// ... include 'after cutoff' rows from existing report
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
@@ -542,9 +524,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	// ... append new report
 
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
-
-	consolidated := api.Consolidate(rpt)
-
+	consolidated := acl.Consolidate(rpt)
 	format := []struct {
 		Cards  []uint32
 		Action string
@@ -635,7 +615,7 @@ func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area st
 	list := []int{}
 	deleted := 0
 
-	info(fmt.Sprintf("Pruning records before %v from '%s' worksheet ", cutoff.Format("2006-01-02"), sheet.Properties.Title))
+	infof("Pruning records before %v from '%s' worksheet ", cutoff.Format("2006-01-02"), sheet.Properties.Title)
 
 	for row, record := range response.Values {
 		if ix, ok := index["timestamp"]; ok && ix < len(record) {
@@ -688,7 +668,7 @@ func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area st
 		}
 	}
 
-	info(fmt.Sprintf("Pruned %d records from '%s' worksheet", deleted, sheet.Properties.Title))
+	infof("Pruned %d records from '%s' worksheet", deleted, sheet.Properties.Title)
 
 	return nil
 }

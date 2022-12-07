@@ -106,7 +106,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 	region := cmd.area
 
 	if cmd.debug {
-		debug(fmt.Sprintf("Spreadsheet - ID:%s  range:%s", spreadsheetId, region))
+		debugf("Spreadsheet - ID:%s  range:%s", spreadsheetId, region)
 	}
 
 	// ... authorise
@@ -157,7 +157,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 		return err
 	}
 
-	info(fmt.Sprintf("Uploaded TSV file %v to Google Sheets %v", cmd.file, cmd.area))
+	infof("Uploaded TSV file %v to Google Sheets %v", cmd.file, cmd.area)
 
 	return nil
 }
