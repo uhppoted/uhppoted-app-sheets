@@ -4,11 +4,11 @@ go 1.19
 
 require (
 	github.com/uhppoted/uhppote-core v0.8.3-0.20221014202027-b01c41cc87cb
-	github.com/uhppoted/uhppoted-lib v0.8.3-0.20221207184947-f9bc8fcd6768
+	github.com/uhppoted/uhppoted-lib v0.8.3-0.20221214195318-64964d03619f
 	golang.org/x/net v0.4.0
 	golang.org/x/oauth2 v0.3.0
 	golang.org/x/sys v0.3.0
-	google.golang.org/api v0.104.0
+	google.golang.org/api v0.105.0
 )
 
 require (
