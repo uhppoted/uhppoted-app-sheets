@@ -75,6 +75,10 @@ release: update-release build-all
 	find . -name ".DS_Store" -delete
 	tar --directory=dist --exclude=".DS_Store" -cvzf dist/$(DIST).tar.gz $(DIST)
 
+publish: release
+	echo "Releasing version v$(VERSION)"
+	gh release create "v$(VERSION)" ./dist/*.tar.gz --draft --prerelease --title "v($VERSION)-beta" --notes-file release-notes.md
+
 debug: build
 	env GOOS=windows GOARCH=amd64 go build -trimpath -o dist/$(DIST)/windows ./...
 	# $(CLI) authorise --url $(URL) \
