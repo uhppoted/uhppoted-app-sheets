@@ -6,8 +6,7 @@
 Package uhppoted-app-sheets integrates the uhppote-core API with access control lists stored as Google Sheets.
 
 uhppoted-app-sheets can be used from the command line but is really intended to be run from a cron job to maintain
-the cards and permissions on a set of access controllers from a unified access control list (ACL). Despite
-the name, ACL files can also be read from the local disk or downloaded from an HTTP URL.
+the cards and permissions on a set of access controllers from a unified access control list (ACL). 
 
 uhppoted-app-s3 supports the following commands:
 
