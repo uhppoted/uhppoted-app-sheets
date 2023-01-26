@@ -90,6 +90,8 @@ debug: build
 	#            --range "ACL!A2:K" \
 	#            --file "../runtime/sheets/debug.acl"
 
+godoc:
+	godoc -http=:80	-index_interval=60s
 
 # GENERAL COMMANDS
 

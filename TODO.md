@@ -1,10 +1,8 @@
 # TODO
 
-### IN PROGRESS
+- [x] doc.go overview file
 
-- [x] Fix README
-      - [x] More detail on what's required and how it all fits together i.e. ACL matches door names to controller+door
-      - [x] Change DEVICES to CONTROLLERS
+## TODO
 
 - [ ] Add support for an alternative spreadsheet
       - (?) [AirTable](https://www.airtable.com)
@@ -15,7 +13,6 @@
       - (?) [LibreOffice](https://api.libreoffice.org)
             - https://www.libreoffice.org/download/libreoffice-online/
 
-## TODO
 
 - [ ] Allow arbitrary width uploads
 - [ ] TLA+ model
