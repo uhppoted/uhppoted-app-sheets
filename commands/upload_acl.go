@@ -31,8 +31,9 @@ var UploadACLCmd = UploadACL{
 
 type UploadACL struct {
 	command
-	config string
-	acl    string
+	config  string
+	acl     string
+	withPIN bool
 }
 
 func (cmd *UploadACL) Name() string {
@@ -72,6 +73,7 @@ func (cmd *UploadACL) FlagSet() *flag.FlagSet {
 	flagset := cmd.flagset("upload-acl")
 
 	flagset.StringVar(&cmd.acl, "range", cmd.acl, "Spreadsheet range e.g. 'Uploaded!A2:E'")
+	flagset.BoolVar(&cmd.withPIN, "with-pin", cmd.withPIN, "Includes the card keypad PIN codes in the uploaded ACL file")
 
 	return flagset
 }
@@ -131,12 +133,17 @@ func (cmd *UploadACL) Execute(args ...interface{}) error {
 		return err
 	}
 
-	table, err := api.MakeTable(acl, devices)
-	if err != nil {
-		return err
+	f := func(acl api.ACL, devices []uhppote.Device) (*api.Table, error) {
+		if cmd.withPIN {
+			return api.MakeTableWithPIN(acl, devices)
+		} else {
+			return api.MakeTable(acl, devices)
+		}
 	}
 
-	if err := cmd.upload(google, spreadsheet, table); err != nil {
+	if table, err := f(acl, devices); err != nil {
+		return err
+	} else if err := cmd.upload(google, spreadsheet, table); err != nil {
 		return err
 	}
 

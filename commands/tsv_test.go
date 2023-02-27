@@ -22,7 +22,7 @@ func TestSheetToTSV(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err != nil {
 		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
@@ -47,7 +47,7 @@ func TestSheetToTSVWithOutOfOrderColumns(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err != nil {
 		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
@@ -61,7 +61,7 @@ func TestSheetToTSVWithEmptySheet(t *testing.T) {
 	var f strings.Builder
 	var data = sheets.ValueRange{}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err == nil {
 		t.Fatalf("Expected error return for empty sheet, got %v", err)
 	}
@@ -76,7 +76,7 @@ func TestSheetToTSVWithoutHeaders(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err == nil {
 		t.Fatalf("Expected error return for missing headers, got %v", err)
 	}
@@ -91,7 +91,7 @@ func TestSheetToTSVWithMissingCardNumber(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'card number' column, got %v", err)
 	}
@@ -106,7 +106,7 @@ func TestSheetToTSVWithMissingFromDate(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'from' column, got %v", err)
 	}
@@ -121,7 +121,7 @@ func TestSheetToTSVWithMissingToDate(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err == nil {
 		t.Fatalf("Expected error return for missing 'to' column, got %v", err)
 	}
@@ -137,7 +137,7 @@ func TestSheetToTSVWithDuplicatedColumn(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err == nil {
 		t.Fatalf("Expected error return for duplicated column, got %v", err)
 	}
@@ -159,7 +159,7 @@ func TestSheetToTSVWithInvalidCardNumber(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err != nil {
 		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
@@ -185,7 +185,7 @@ func TestSheetToTSVWithInvalidFromDate(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err != nil {
 		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}
@@ -211,7 +211,7 @@ func TestSheetToTSVWithInvalidToDate(t *testing.T) {
 		},
 	}
 
-	err := sheetToTSV(&f, &data)
+	err := sheetToTSV(&f, &data, false)
 	if err != nil {
 		t.Fatalf("Unexpected error returned fromsheetToTSV (%v)", err)
 	}

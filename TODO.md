@@ -2,6 +2,25 @@
 
 - [x] doc.go overview file
 
+- [x] Card keypad PIN code support (cf. https://github.com/uhppoted/uhppote-core/issues/8)
+      - [x] get
+      - [x] put
+      - [x] load
+      - [x] compare
+      - [x] upload
+      - [x] CHANGELOG
+      - [x] README
+      - [ ] TSV unit tests
+
+- [ ] Fix auth handing to suggest `uhppoted-app-sheets auth ...` when not authorised
+      - [ ] get
+      - [ ] put
+      - [ ] load
+      - [ ] compare
+      - [ ] upload
+
+- [ ] Add static-check to lint
+
 ## TODO
 
 - [ ] Add support for an alternative spreadsheet

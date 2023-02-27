@@ -14,7 +14,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
-	"github.com/uhppoted/uhppoted-lib/acl"
+	lib "github.com/uhppoted/uhppoted-lib/acl"
 	"github.com/uhppoted/uhppoted-lib/config"
 	"github.com/uhppoted/uhppoted-lib/lockfile"
 )
@@ -50,6 +50,7 @@ type LoadACL struct {
 	command
 
 	config          string
+	withPIN         bool
 	area            string
 	nolog           bool
 	logRange        string
@@ -105,6 +106,7 @@ func (cmd *LoadACL) FlagSet() *flag.FlagSet {
 	flagset := cmd.flagset("load-acl")
 
 	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'ACL!A2:E'")
+	flagset.BoolVar(&cmd.withPIN, "with-pin", cmd.withPIN, "Updates card keypad PIN codes when loading an ACL")
 	flagset.BoolVar(&cmd.force, "force", cmd.force, "Forces an update, overriding the spreadsheet version and compare logic")
 	flagset.BoolVar(&cmd.strict, "strict", cmd.strict, "Fails with an error if the spreadsheet contains duplicate card numbers")
 	flagset.BoolVar(&cmd.dryrun, "dry-run", cmd.dryrun, "Simulates a load-acl without making any changes to the access controllers")
@@ -217,13 +219,21 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	}
 
 	if cmd.force || updated {
-		rpt, errors := acl.PutACL(u, *list, cmd.dryrun)
+		f := func(u uhppote.IUHPPOTE, list lib.ACL) (map[uint32]lib.Report, []error) {
+			if cmd.withPIN {
+				return lib.PutACLWithPIN(u, list, cmd.dryrun)
+			} else {
+				return lib.PutACL(u, list, cmd.dryrun)
+			}
+		}
+
+		rpt, errors := f(u, *list)
 		if len(errors) > 0 {
 			return fmt.Errorf("%v", errors)
 		}
 
 		for _, w := range warnings {
-			if duplicate, ok := w.(*acl.DuplicateCardError); ok {
+			if duplicate, ok := w.(*lib.DuplicateCardError); ok {
 				for k, v := range rpt {
 					v.Errored = append(v.Errored, duplicate.CardNumber)
 					rpt[k] = v
@@ -231,7 +241,7 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 			}
 		}
 
-		summary := acl.Summarize(rpt)
+		summary := lib.Summarize(rpt)
 		format := "%v  unchanged:%v  updated:%v  added:%v  deleted:%v  failed:%v  errors:%v"
 		for _, v := range summary {
 			infof(format, v.DeviceID, v.Unchanged, v.Updated, v.Added, v.Deleted, v.Failed, v.Errored+len(warnings))
@@ -352,27 +362,35 @@ func (l *LoadACL) revised(version *revision) bool {
 	return true
 }
 
-func (l *LoadACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *acl.ACL) (bool, error) {
-	current, errors := acl.GetACL(u, devices)
+func (cmd *LoadACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *lib.ACL) (bool, error) {
+	current, errors := lib.GetACL(u, devices)
 	if len(errors) > 0 {
 		return false, fmt.Errorf("%v", errors)
 	}
 
-	diff, err := acl.Compare(current, *list)
-	if err != nil {
-		return false, err
-	}
-
-	for _, v := range diff {
-		if v.HasChanges() {
-			return true, nil
+	f := func(current lib.ACL, list lib.ACL) (map[uint32]lib.Diff, error) {
+		if cmd.withPIN {
+			return lib.CompareWithPIN(current, list)
+		} else {
+			return lib.Compare(current, list)
 		}
 	}
 
-	return false, nil
+	if diff, err := f(current, *list); err != nil {
+		return false, err
+	} else {
+
+		for _, v := range diff {
+			if v.HasChanges() {
+				return true, nil
+			}
+		}
+
+		return false, nil
+	}
 }
 
-func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*acl.ACL, []error, error) {
+func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*lib.ACL, []error, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.area).Do()
 	if err != nil {
 		return nil, nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
@@ -387,7 +405,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 		return nil, nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}
 
-	list, warnings, err := acl.ParseTable(table, devices, l.strict)
+	list, warnings, err := lib.ParseTable(table, devices, l.strict)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -399,7 +417,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 	return list, warnings, nil
 }
 
-func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]acl.Report) error {
+func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]lib.Report) error {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve column headers from log sheet (%v)", err)
@@ -409,7 +427,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 
 	index, columns := buildIndex(response.Values, fields)
 
-	summary := acl.Summarize(rpt)
+	summary := lib.Summarize(rpt)
 	var rows = sheets.ValueRange{
 		Values: [][]interface{}{},
 	}
@@ -467,7 +485,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 	return nil
 }
 
-func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]acl.Report) error {
+func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]lib.Report) error {
 	infof("Appending report to worksheet")
 
 	// ... include 'after cutoff' rows from existing report
@@ -524,7 +542,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	// ... append new report
 
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
-	consolidated := acl.Consolidate(rpt)
+	consolidated := lib.Consolidate(rpt)
 	format := []struct {
 		Cards  []uint32
 		Action string

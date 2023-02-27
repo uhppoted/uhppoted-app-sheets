@@ -3,6 +3,7 @@ CLI         = ./bin/uhppoted-app-sheets
 CREDENTIALS = /usr/local/etc/com.github.uhppoted/sheets/.google/credentials.json
 CONFIG      = /usr/local/etc/com.github.uhppoted/uhppoted.conf
 URL         = https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9haiw-2UqY0kLwo_WTO8
+URL_WITH_PIN = https://docs.google.com/spreadsheets/d/1OztvzkTlCpa_OBK4u6reckKAB4d7VbDRrGrXNCXgEMQ/edit#gid=640947601
 
 DATETIME  = $(shell date "+%Y-%m-%d %H:%M:%S")
 DEBUG    ?= --debug
@@ -116,11 +117,21 @@ version: build
 auth: build
 	$(CLI) authorize --credentials ${CREDENTIALS} --url $(URL)
 
+auth-with-pin: build
+	$(CLI) authorize --credentials ${CREDENTIALS} --url $(URL_WITH_PIN)
+
 get: build
-	$(CLI) get --url $(URL) \
+	$(CLI) get --url $(URL_WITH_PIN) \
 	           --credentials $(CREDENTIALS) \
 	           --range "ACL!A2:K" \
 	           --file "../runtime/sheets/debug.acl"
+
+get-with-pin: build
+	$(CLI) get --url $(URL_WITH_PIN) \
+	           --with-pin \
+	           --credentials $(CREDENTIALS) \
+	           --range "ACL!A2:M" \
+	           --file "../runtime/sheets/debug-with-pin.acl"
 
 put: build
 	$(CLI) put --url $(URL) \
@@ -128,10 +139,30 @@ put: build
                --credentials $(CREDENTIALS) \
                --file ../runtime/sheets/debug.acl
 
+put-with-pin: build
+	$(CLI) put --url $(URL_WITH_PIN) \
+	           --with-pin \
+               --range "AsIs!A2:M"      \
+               --credentials $(CREDENTIALS) \
+               --file ../runtime/sheets/debug-with-pin.acl
+
 load-acl: build
 	$(CLI) --config $(CONFIG) load-acl \
            --url $(URL) \
 	       --range "ACL!A2:K" \
+	       --credentials $(CREDENTIALS) \
+	       --report-range "Report!A1:C" \
+	       --report-retention 1 \
+	       --log-range "Log!A1:H" \
+	       --log-retention 1 \
+	       --force \
+	       --delay 5m
+
+load-acl-with-pin: build
+	$(CLI) --config $(CONFIG) load-acl \
+           --with-pin \
+           --url $(URL_WITH_PIN) \
+	       --range "ACL!A2:M" \
 	       --credentials $(CREDENTIALS) \
 	       --report-range "Report!A1:C" \
 	       --report-retention 1 \
@@ -147,9 +178,24 @@ compare-acl: build
            --credentials $(CREDENTIALS) \
            --report-range "Audit!A1:E"
 
+compare-acl-with-pin: build
+	$(CLI) --config $(CONFIG) compare-acl \
+           --with-pin \
+           --url $(URL_WITH_PIN) \
+           --range "ACL!A2:M" \
+           --credentials $(CREDENTIALS) \
+           --report-range "Audit!A1:E"
+
 upload-acl: build
 	$(CLI) --config $(CONFIG) upload-acl \
            --url $(URL) \
            --range "Uploaded!A1:K"      \
+           --credentials $(CREDENTIALS)
+                       
+upload-acl-with-pin: build
+	$(CLI) --config $(CONFIG) upload-acl \
+           --with-pin \
+           --url $(URL_WITH_PIN) \
+           --range "Uploaded!A1:M"      \
            --credentials $(CREDENTIALS)
                        

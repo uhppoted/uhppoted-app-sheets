@@ -64,11 +64,12 @@ ACL door names to controller doors e.g.:
 
  _ACL_
 
-| Card Number | From       | To         | Great Hall | Gryffindor | Hufflepuff | Ravenclaw | Slytherin | Dungeon | Kitchen | Hogsmeade |
-|-------------|------------|------------|------------|------------|------------|-----------|-----------|---------|---------|-----------|
-| 8112345     | 2022-01-01 | 2022-12-31 | Y          | Y          | N          | N         | N         | N       | Y       | Y         |
-| 8154321     | 2022-01-01 | 2022-12-31 | Y          | N          | Y          | N         | N         | Y       | N       | Y         |
+| Card Number | PIN  | From       | To         | Great Hall | Gryffindor | Hufflepuff | Ravenclaw | Slytherin | Dungeon | Kitchen | Hogsmeade |
+|-------------|------|------------|------------|------------|------------|------------|-----------|-----------|---------|---------|-----------|
+| 8112345     | 1234 | 2023-01-01 | 2022-12-31 | Y          | Y          | N          | N         | N         | N       | Y       | Y         |
+| 8154321     | 4321 | 2023-01-01 | 2022-12-31 | Y          | N          | Y          | N         | N         | Y       | N       | Y         |
 
+(the PIN field is optional)
 
 _uhppoted.conf_
 
@@ -196,12 +197,13 @@ Command line:
 
 ```uhppoted-app-sheets get --url <url> --range <range>``` 
 
-```uhppoted-app-sheets [--debug] get --url <url> --range <range> [--file <TSV>] [--workdir <dir>] [--credentials <file>]```
+```uhppoted-app-sheets [--debug] get --url <url> --range <range> [--with-pin] [--file <TSV>] [--workdir <dir>] [--credentials <file>]```
 
 ```
   --url         Google Sheets worksheet URL from which to fetch the data 
                 e.g. https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k
   --range       Worksheet range of the data (e.g. Names!A2:K)
+  --with-pin    Includes the card keypad PIN code in the retrieved file
   --file        File path for the destination TSV file. Defaults to <yyyy-mm-dd HHmmss>.tsv
   
   --workdir     Directory for working files, in particular the tokens, revisions, etc
@@ -226,14 +228,14 @@ Command line:
 
 ```uhppoted-app-sheets put --file <TSV> --url <url> --range <range>``` 
 
-```uhppoted-app-sheets [--debug] put --file <TSV> --url <url> --range <range> [--workdir <dir>] [--credentials <file>]```
+```uhppoted-app-sheets [--debug] put --file <TSV> --url <url> --range <range> [--with-pin] [--workdir <dir>] [--credentials <file>]```
 
 ```
   --file        File path for the TSV file to be uploaded
   --url         Google Sheets worksheet URL to which to upload the data 
                 e.g. https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k
   --range       Worksheet range of the data (e.g. Summary!A1:D)
-  
+  --with-pin    Includes the card keypad PIN code in the uploaded data
   --workdir     Directory for working files, in particular the tokens, revisions, etc
                 that provide access to Google Sheets. Defaults to:
                 - /var/uhppoted on Linux
@@ -258,12 +260,13 @@ Command line:
 
 ```uhppoted-app-sheets load-acl --url <url> --range <range>```
 
-```uhppoted-app-sheets [--debug] [--config <file>] load-acl --url <url> --range <range> [--force] [--delay <duration>] [--strict] [--dry-run] [--workdir <dir>] [--credentials <file>] [--no-log] [--log-range <range>] [--log-retention <days>] [--no-report] [--report-range <range>] [--report-retention <days>] ```
+```uhppoted-app-sheets [--debug] [--config <file>] load-acl --url <url> --range <range> [--with-pin] [--force] [--delay <duration>] [--strict] [--dry-run] [--workdir <dir>] [--credentials <file>] [--no-log] [--log-range <range>] [--log-retention <days>] [--no-report] [--report-range <range>] [--report-retention <days>] ```
 
 ```
   --url              Google Sheets worksheet URL from which to fetch the ACL
                      e.g. https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k
   --range            Worksheet range of the ACL (e.g. ACL!A2:K)
+  --with-pin         Updated the card keypad PIN codes on the controllers
   --delay            'Settling' delay after an edit before a worksheet is regarded as stable.
                      Specified in as a Go 'duration' e.g. 10m15s and defaults to 15m
   --force            Ignores the worksheet revision and retrieves and updates the access
@@ -309,6 +312,7 @@ Fetches the cards stored in the configured UHPPOTE controllers, creates a matchi
 The destination worksheet is expected to the column names in the first row of the range, and the following column names are hardcoded (column names are case- and space-insensitive):
 
 - card number
+- PIN
 - from
 - to
 
@@ -316,13 +320,13 @@ Command line:
 
 ```uhppoted-app-sheets upload-acl --url <url> --range <range>```
 
-```uhppoted-app-sheets [--debug] [--config <file>] upload-acl --url <url> [--workdir <dir>] [--credentials <file>]```
+```uhppoted-app-sheets [--debug] [--config <file>] upload-acl --url <url> [--with-pin] [--workdir <dir>] [--credentials <file>]```
 
 ```
   --url         Google Sheets worksheet URL to which to upload the ACL
                 e.g. https://docs.google.com/spreadsheets/d/1iSZzHlrXsl3-mipIq0uuEqDNlPWGdamSPJrPe9OBD0k
   --range       Worksheet range of the ACL (e.g. ACL!A2:K)
-  
+  --with-pin    Includes the card keypad PIN codes in the uploaded ACL
   --workdir     Directory for working files, in particular the tokens, revisions, etc, 
                 that provide access to Google Sheets. Defaults to:
                 - /var/uhppoted on Linux
@@ -348,9 +352,9 @@ Fetches an ACL from a Google Sheets worksheet and compares it to the cards store
 
 Command line:
 
-```uhppoted-app-sheets compare-acl --url <url> --range <range> --report-range <range>```
+```uhppoted-app-sheets compare-acl --url <url> --range <range>--report-range <range>```
 
-```uhppoted-app-sheets [--debug] [--config <file>] compare-acl --acl <url> --report-range <range> [--workdir <dir>] [--credentials <file>]```
+```uhppoted-app-sheets [--debug] [--config <file>] compare-acl --acl <url> --report-range <range> [--with-pin] [--workdir <dir>] [--credentials <file>]```
 ```
   --url           Google Sheets worksheet URL from which to retrieve the ACL and to which
                   to upload the report
@@ -358,7 +362,7 @@ Command line:
   --range         Worksheet range of the ACL (e.g. ACL!A2:K)
   --report-range  Worksheet range (e.g. Audit!A1:D) for the compare report. Defaults to 
                   Audit!A1:D
-  
+  --with-pin      Includes the card keypad PIN code when comparing records
   --workdir       Directory for working files, in particular the tokens, revisions, etc, 
                   that provide access to Google Sheets. Defaults to:
                   - /var/uhppoted on Linux

@@ -28,8 +28,9 @@ var GetCmd = Get{
 
 type Get struct {
 	command
-	area string
-	file string
+	area    string
+	file    string
+	withPIN bool
 }
 
 func (cmd *Get) Name() string {
@@ -67,6 +68,7 @@ func (cmd *Get) FlagSet() *flag.FlagSet {
 
 	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'ACL!A2:E'")
 	flagset.StringVar(&cmd.file, "file", cmd.file, "TSV file name. Defaults to 'ACL - <yyyy-mm-dd HHmmss>.tsv'")
+	flagset.BoolVar(&cmd.withPIN, "with-pin", cmd.withPIN, "Includes the card keypad PIN codes in the retrieved ACL file")
 
 	return flagset
 }
@@ -136,7 +138,7 @@ func (cmd *Get) Execute(args ...interface{}) error {
 		os.Remove(tmp.Name())
 	}()
 
-	if err := sheetToTSV(tmp, response); err != nil {
+	if err := sheetToTSV(tmp, response, cmd.withPIN); err != nil {
 		return fmt.Errorf("Error creating TSV file (%v)", err)
 	}
 

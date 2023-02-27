@@ -27,8 +27,9 @@ var PutCmd = Put{
 
 type Put struct {
 	command
-	area string
-	file string
+	area    string
+	file    string
+	withPIN bool
 }
 
 func (cmd *Put) Name() string {
@@ -66,6 +67,7 @@ func (cmd *Put) FlagSet() *flag.FlagSet {
 
 	flagset.StringVar(&cmd.area, "range", cmd.area, "Spreadsheet range e.g. 'AsIs!A2:E'")
 	flagset.StringVar(&cmd.file, "file", cmd.file, "TSV file")
+	flagset.BoolVar(&cmd.withPIN, "with-pin", cmd.withPIN, "Includes the card keypad PIN codes in the uploaded TSV file")
 
 	return flagset
 }

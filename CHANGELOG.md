@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+1. `doc.go` package overview documentation.
+2. Added `--with-pin` option for card keypad PIN to `get`, `put`, `load-acl`, 
+   `upload-acl` and `compare-acl` commands
+
+### Updated
+
 
 ## [0.8.3](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.8.3) - 2022-12-16
 

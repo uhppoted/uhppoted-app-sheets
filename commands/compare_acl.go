@@ -13,7 +13,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
-	api "github.com/uhppoted/uhppoted-lib/acl"
+	lib "github.com/uhppoted/uhppoted-lib/acl"
 	"github.com/uhppoted/uhppoted-lib/config"
 )
 
@@ -33,9 +33,10 @@ var CompareACLCmd = CompareACL{
 
 type CompareACL struct {
 	command
-	config string
-	acl    string
-	report string
+	config  string
+	acl     string
+	report  string
+	withPIN bool
 }
 
 func (cmd *CompareACL) Name() string {
@@ -76,6 +77,7 @@ func (cmd *CompareACL) FlagSet() *flag.FlagSet {
 
 	flagset.StringVar(&cmd.acl, "range", cmd.acl, "Spreadsheet range e.g. 'ACL!A2:E'")
 	flagset.StringVar(&cmd.report, "report-range", cmd.report, "Spreadsheet range for compare report e.g. 'Audit!A1:D'")
+	flagset.BoolVar(&cmd.withPIN, "with-pin", cmd.withPIN, "Includes the card keypad PIN codes when comparing ACLs")
 
 	return flagset
 }
@@ -175,24 +177,31 @@ func (c *CompareACL) validate() error {
 	return nil
 }
 
-func (c *CompareACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *api.ACL) (*api.SystemDiff, error) {
-	current, errors := api.GetACL(u, devices)
+func (cmd *CompareACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *lib.ACL) (*lib.SystemDiff, error) {
+	current, errors := lib.GetACL(u, devices)
 	if len(errors) > 0 {
 		return nil, fmt.Errorf("%v", errors)
 	}
 
-	d, err := api.Compare(current, *list)
-	if err != nil {
-		return nil, err
+	f := func(current lib.ACL, list lib.ACL) (map[uint32]lib.Diff, error) {
+		if cmd.withPIN {
+			return lib.CompareWithPIN(current, list)
+		} else {
+			return lib.Compare(current, list)
+		}
 	}
 
-	diff := api.SystemDiff(d)
+	if d, err := f(current, *list); err != nil {
+		return nil, err
+	} else {
+		diff := lib.SystemDiff(d)
 
-	return &diff, nil
+		return &diff, nil
+	}
 }
 
-func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*api.ACL, error) {
-	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, c.acl).Do()
+func (cmd *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*lib.ACL, error) {
+	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, cmd.acl).Do()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
 	}
@@ -206,23 +215,28 @@ func (c *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsh
 		return nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
 	}
 
-	list, warnings, err := api.ParseTable(table, devices, false)
-	if err != nil {
+	f := func(table *lib.Table, devices []uhppote.Device) (*lib.ACL, []error, error) {
+		if cmd.withPIN {
+			return lib.ParseTable(table, devices, false)
+		} else {
+			return lib.ParseTable(table, devices, false)
+		}
+	}
+
+	if list, warnings, err := f(table, devices); err != nil {
 		return nil, err
-	}
-
-	if list == nil {
+	} else if list == nil {
 		return nil, fmt.Errorf("Error creating ACL from worksheet (%v)", list)
-	}
+	} else {
+		for _, w := range warnings {
+			warnf("%v", w.Error())
+		}
 
-	for _, w := range warnings {
-		warnf("%v", w.Error())
+		return list, nil
 	}
-
-	return list, nil
 }
 
-func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadsheet, diff *api.SystemDiff) error {
+func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadsheet, diff *lib.SystemDiff) error {
 	// ... create report format
 	sheet, err := getSheet(spreadsheet, c.report)
 	if err != nil {

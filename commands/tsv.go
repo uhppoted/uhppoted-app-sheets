@@ -11,7 +11,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-func sheetToTSV(f io.Writer, data *sheets.ValueRange) error {
+func sheetToTSV(f io.Writer, data *sheets.ValueRange, withPIN bool) error {
 	if len(data.Values) == 0 {
 		return fmt.Errorf("Empty sheet")
 	}
@@ -36,6 +36,10 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange) error {
 		header = append(header, clean(row[ix].(string)))
 	}
 
+	if ix, ok := index["pin"]; ok && withPIN {
+		header = append(header, clean(row[ix].(string)))
+	}
+
 	if ix, ok := index["from"]; ok {
 		header = append(header, clean(row[ix].(string)))
 	}
@@ -46,7 +50,7 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange) error {
 
 	for _, v := range row {
 		k := normalise(v.(string))
-		if k != "cardnumber" && k != "from" && k != "to" {
+		if k != "cardnumber" && k != "pin" && k != "from" && k != "to" {
 			header = append(header, clean(v.(string)))
 		}
 	}
@@ -59,12 +63,26 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange) error {
 		return fmt.Errorf("Missing 'card number' column")
 	}
 
-	if len(header) < 2 || normalise(header[1]) != "from" {
-		return fmt.Errorf("Missing 'from' column")
-	}
+	if withPIN {
+		if len(header) < 2 || normalise(header[1]) != "pin" {
+			return fmt.Errorf("Missing 'PIN' column")
+		}
 
-	if len(header) < 3 || normalise(header[2]) != "to" {
-		return fmt.Errorf("Missing 'to' column")
+		if len(header) < 3 || normalise(header[2]) != "from" {
+			return fmt.Errorf("Missing 'from' column")
+		}
+
+		if len(header) < 4 || normalise(header[3]) != "to" {
+			return fmt.Errorf("Missing 'to' column")
+		}
+	} else {
+		if len(header) < 2 || normalise(header[1]) != "from" {
+			return fmt.Errorf("Missing 'from' column")
+		}
+
+		if len(header) < 3 || normalise(header[2]) != "to" {
+			return fmt.Errorf("Missing 'to' column")
+		}
 	}
 
 	// ... records
@@ -74,6 +92,14 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange) error {
 			continue
 		} else if ok, err := regexp.Match(`^\s*[0-9]+\s*$`, []byte(cardnumber)); !ok || err != nil {
 			continue
+		}
+
+		if withPIN {
+			if PIN, ok := row[index["pin"]].(string); !ok {
+				continue
+			} else if ok, err := regexp.Match(`^\s*[0-9]*\s*$`, []byte(PIN)); !ok || err != nil {
+				continue
+			}
 		}
 
 		if from, ok := row[index["from"]].(string); !ok {
