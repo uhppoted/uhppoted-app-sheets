@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
@@ -98,7 +100,7 @@ func (cmd *UploadACL) Execute(args ...interface{}) error {
 
 	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(cmd.url))
 	if len(match) < 2 {
-		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
+		return fmt.Errorf("invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheetId := match[1]
@@ -115,12 +117,13 @@ func (cmd *UploadACL) Execute(args ...interface{}) error {
 
 	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
+		//lint:ignore ST1005 Google should be capitalized
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
 
-	google, err := sheets.New(client)
+	google, err := sheets.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return fmt.Errorf("Unable to create new Google Sheets client (%w)", err)
+		return fmt.Errorf("unable to create new Google Sheets client (%w)", err)
 	}
 
 	spreadsheet, err := getSpreadsheet(google, spreadsheetId)
@@ -164,7 +167,7 @@ func (c *UploadACL) validate() error {
 	}
 
 	if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(c.acl)); len(match) < 2 {
-		return fmt.Errorf("Invalid range '%s' - expected something like 'Current!A2:K", c.acl)
+		return fmt.Errorf("invalid range '%s' - expected something like 'Current!A2:K", c.acl)
 	}
 
 	return nil
@@ -212,7 +215,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		}
 
 		if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &prune).Do(); err != nil {
-			return fmt.Errorf("Error pruning report worksheet (%w)", err)
+			return fmt.Errorf("error pruning report worksheet (%w)", err)
 		}
 	}
 
@@ -242,7 +245,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 
 	for _, record := range table.Records {
 		row := make([]interface{}, cols)
-		for i, _ := range row {
+		for i := range row {
 			row[i] = ""
 		}
 
@@ -274,7 +277,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		ValueInputOption("USER_ENTERED").
 		InsertDataOption("OVERWRITE").
 		Do(); err != nil {
-		return fmt.Errorf("Error padding report worksheet (%w)", err)
+		return fmt.Errorf("error padding report worksheet (%w)", err)
 	}
 
 	return nil
@@ -283,7 +286,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 func (c *UploadACL) buildFormat(google *sheets.Service, spreadsheet *sheets.Spreadsheet, table *api.Table) (*report, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, c.acl).Do()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve data from upload sheet (%v)", err)
+		return nil, fmt.Errorf("unable to retrieve data from upload sheet (%v)", err)
 	}
 
 	columns := map[int]int{}

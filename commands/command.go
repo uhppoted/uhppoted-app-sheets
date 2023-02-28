@@ -107,7 +107,7 @@ func getDevices(conf *config.Config, debug bool) (uhppote.IUHPPOTE, []uhppote.De
 func getSpreadsheet(google *sheets.Service, id string) (*sheets.Spreadsheet, error) {
 	spreadsheet, err := google.Spreadsheets.Get(id).Do()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch spreadsheet (%v)", err)
+		return nil, fmt.Errorf("failed to fetch spreadsheet (%v)", err)
 	}
 
 	return spreadsheet, nil
@@ -116,12 +116,12 @@ func getSpreadsheet(google *sheets.Service, id string) (*sheets.Spreadsheet, err
 func getSheet(spreadsheet *sheets.Spreadsheet, area string) (*sheets.Sheet, error) {
 	name := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(area)[1]
 	for _, sheet := range spreadsheet.Sheets {
-		if strings.ToLower(strings.TrimSpace(sheet.Properties.Title)) == strings.ToLower(strings.TrimSpace(name)) {
+		if strings.EqualFold(strings.TrimSpace(sheet.Properties.Title), strings.TrimSpace(name)) {
 			return sheet, nil
 		}
 	}
 
-	return nil, fmt.Errorf("Unable to identify worksheet for '%s'", area)
+	return nil, fmt.Errorf("unable to identify worksheet for '%s'", area)
 }
 
 func buildIndex(rows [][]interface{}, fields []string) (map[string]int, int) {
@@ -155,36 +155,6 @@ func buildIndex(rows [][]interface{}, fields []string) (map[string]int, int) {
 	return index, columns
 }
 
-func iToCol(index int) string {
-	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	N := len(columns)
-
-	col := string(columns[index%N])
-	index = index / N
-	for ; index > 0; index = index / N {
-		col = col + string(columns[index%N])
-	}
-
-	return col
-}
-
-func colToI(column string) int {
-	columns := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	N := len(columns)
-	col := []rune(strings.ToUpper(column))
-	ix := 0
-
-	for _, c := range col {
-		for i, r := range columns {
-			if r == c {
-				ix = ix*N + i
-				break
-			}
-		}
-	}
-
-	return ix
-}
 func normalise(v string) string {
 	return strings.ToLower(strings.ReplaceAll(v, " ", ""))
 }

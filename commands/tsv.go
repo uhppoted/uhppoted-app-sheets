@@ -13,7 +13,7 @@ import (
 
 func sheetToTSV(f io.Writer, data *sheets.ValueRange, withPIN bool) error {
 	if len(data.Values) == 0 {
-		return fmt.Errorf("Empty sheet")
+		return fmt.Errorf("empty sheet")
 	}
 
 	// .. build index
@@ -22,7 +22,7 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange, withPIN bool) error {
 	for i, v := range row {
 		k := normalise(v.(string))
 		if _, ok := index[k]; ok {
-			return fmt.Errorf("Duplicate column name '%s'", v.(string))
+			return fmt.Errorf("duplicate column name '%s'", v.(string))
 		}
 
 		index[k] = i
@@ -56,32 +56,32 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange, withPIN bool) error {
 	}
 
 	if len(header) == 0 {
-		return fmt.Errorf("Missing/invalid header row")
+		return fmt.Errorf("missing/invalid header row")
 	}
 
 	if len(header) < 1 || normalise(header[0]) != "cardnumber" {
-		return fmt.Errorf("Missing 'card number' column")
+		return fmt.Errorf("missing 'card number' column")
 	}
 
 	if withPIN {
 		if len(header) < 2 || normalise(header[1]) != "pin" {
-			return fmt.Errorf("Missing 'PIN' column")
+			return fmt.Errorf("missing 'PIN' column")
 		}
 
 		if len(header) < 3 || normalise(header[2]) != "from" {
-			return fmt.Errorf("Missing 'from' column")
+			return fmt.Errorf("missing 'from' column")
 		}
 
 		if len(header) < 4 || normalise(header[3]) != "to" {
-			return fmt.Errorf("Missing 'to' column")
+			return fmt.Errorf("missing 'to' column")
 		}
 	} else {
 		if len(header) < 2 || normalise(header[1]) != "from" {
-			return fmt.Errorf("Missing 'from' column")
+			return fmt.Errorf("missing 'from' column")
 		}
 
 		if len(header) < 3 || normalise(header[2]) != "to" {
-			return fmt.Errorf("Missing 'to' column")
+			return fmt.Errorf("missing 'to' column")
 		}
 	}
 
@@ -90,14 +90,14 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange, withPIN bool) error {
 	for _, row := range data.Values[1:] {
 		if cardnumber, ok := row[index["cardnumber"]].(string); !ok {
 			continue
-		} else if ok, err := regexp.Match(`^\s*[0-9]+\s*$`, []byte(cardnumber)); !ok || err != nil {
+		} else if ok := regexp.MustCompile(`^\s*[0-9]+\s*$`).MatchString(cardnumber); !ok {
 			continue
 		}
 
 		if withPIN {
 			if PIN, ok := row[index["pin"]].(string); !ok {
 				continue
-			} else if ok, err := regexp.Match(`^\s*[0-9]*\s*$`, []byte(PIN)); !ok || err != nil {
+			} else if ok := regexp.MustCompile(`^\s*[0-9]*\s*$`).MatchString(PIN); !ok {
 				continue
 			}
 		}
@@ -145,7 +145,7 @@ func sheetToTSV(f io.Writer, data *sheets.ValueRange, withPIN bool) error {
 func tsvToSheet(f io.Reader, area string) (*sheets.ValueRange, *sheets.ValueRange, error) {
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(area)
 	if len(match) < 5 {
-		return nil, nil, fmt.Errorf("Invalid spreadsheet range '%s'", area)
+		return nil, nil, fmt.Errorf("invalid spreadsheet range '%s'", area)
 	}
 
 	name := match[1]

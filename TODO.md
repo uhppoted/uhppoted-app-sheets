@@ -1,6 +1,6 @@
 # TODO
 
-- [x] doc.go overview file
+- [x] Add static-check to lint
 
 - [x] Card keypad PIN code support (cf. https://github.com/uhppoted/uhppote-core/issues/8)
       - [x] get
@@ -18,8 +18,6 @@
       - [ ] load
       - [ ] compare
       - [ ] upload
-
-- [ ] Add static-check to lint
 
 ## TODO
 

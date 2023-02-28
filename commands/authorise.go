@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -85,7 +84,7 @@ func (cmd *Authorise) Execute(args ...any) error {
 
 	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(cmd.url)
 	if len(match) < 2 {
-		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
+		return fmt.Errorf("invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	// ... authenticate
@@ -95,7 +94,7 @@ func (cmd *Authorise) Execute(args ...any) error {
 	}
 
 	if err := authenticate(cmd.credentials, tokens); err != nil {
-		return fmt.Errorf("Authorisation error (%v)", err)
+		return fmt.Errorf("authorisation error (%v)", err)
 	}
 
 	return nil
@@ -115,7 +114,7 @@ func authenticate(credentials, tokens string) error {
 	var drive *oauth2.Config
 	var buffer []byte
 
-	if b, err := ioutil.ReadFile(credentials); err != nil {
+	if b, err := os.ReadFile(credentials); err != nil {
 		return err
 	} else {
 		buffer = b

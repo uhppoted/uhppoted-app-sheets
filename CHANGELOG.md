@@ -8,6 +8,7 @@
    `upload-acl` and `compare-acl` commands
 
 ### Updated
+1. Fixed initial round of _staticcheck_ lint errors and added _staticcheck_ to CI build.
 
 
 ## [0.8.3](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.8.3) - 2022-12-16

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
@@ -152,14 +154,14 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 	// ... good to go!
 	conf := config.NewConfig()
 	if err := conf.Load(cmd.config); err != nil {
-		return fmt.Errorf("WARN  Could not load configuration (%v)", err)
+		return fmt.Errorf("could not load configuration (%v)", err)
 	}
 
 	u, devices := getDevices(conf, cmd.debug)
 
 	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(cmd.url))
 	if len(match) < 2 {
-		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
+		return fmt.Errorf("invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheetId := match[1]
@@ -187,12 +189,13 @@ func (cmd *LoadACL) Execute(args ...interface{}) error {
 
 	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
+		//lint:ignore ST1005 Google should be capitalized
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
 
-	google, err := sheets.New(client)
+	google, err := sheets.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return fmt.Errorf("Unable to create new Google Sheets client (%w)", err)
+		return fmt.Errorf("unable to create new Google Sheets client (%w)", err)
 	}
 
 	spreadsheet, err := getSpreadsheet(google, spreadsheetId)
@@ -293,18 +296,18 @@ func (l *LoadACL) validate() error {
 	}
 
 	if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(l.area)); len(match) < 2 {
-		return fmt.Errorf("Invalid range '%s' - expected something like 'ACL!A2:K", l.area)
+		return fmt.Errorf("invalid range '%s' - expected something like 'ACL!A2:K", l.area)
 	}
 
 	if !l.nolog {
 		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+[0-9]+):([a-zA-Z]+(?:[0-9]+)?)`).FindStringSubmatch(l.logRange); len(match) < 4 {
-			return fmt.Errorf("Invalid log-range '%s' - expected something like 'Log!A1:H", l.logRange)
+			return fmt.Errorf("invalid log-range '%s' - expected something like 'Log!A1:H", l.logRange)
 		}
 	}
 
 	if !l.noreport {
 		if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange); len(match) < 5 {
-			return fmt.Errorf("Invalid report-range '%s' - expected something like 'Report!A1:E", l.reportRange)
+			return fmt.Errorf("invalid report-range '%s' - expected something like 'Report!A1:E", l.reportRange)
 		}
 	}
 
@@ -319,17 +322,18 @@ func (cmd *LoadACL) getRevision(spreadsheetId string) (*revision, error) {
 
 	client, err := authorize(cmd.credentials, drive.DriveMetadataReadonlyScope, tokens)
 	if err != nil {
+		//lint:ignore ST1005 Google should be capitalized
 		return nil, fmt.Errorf("Google Drive authentication/authorization error (%w)", err)
 	}
 
-	gdrive, err := drive.New(client)
+	gdrive, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create new Google Drive client (%w)", err)
+		return nil, fmt.Errorf("unable to create new Google Drive client (%w)", err)
 	}
 
 	version, err := getRevision(gdrive, spreadsheetId)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve spreadsheet revision (%v)", err)
+		return nil, fmt.Errorf("unable to retrieve spreadsheet revision (%v)", err)
 	}
 
 	return version, nil
@@ -393,16 +397,16 @@ func (cmd *LoadACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, list *
 func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*lib.ACL, []error, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.area).Do()
 	if err != nil {
-		return nil, nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
+		return nil, nil, fmt.Errorf("unable to retrieve data from sheet (%v)", err)
 	}
 
 	if len(response.Values) == 0 {
-		return nil, nil, fmt.Errorf("No data in spreadsheet/range")
+		return nil, nil, fmt.Errorf("no data in spreadsheet/range")
 	}
 
 	table, err := makeTable(response.Values)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
+		return nil, nil, fmt.Errorf("error creating table from worksheet (%v)", err)
 	}
 
 	list, warnings, err := lib.ParseTable(table, devices, l.strict)
@@ -411,7 +415,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 	}
 
 	if list == nil {
-		return nil, nil, fmt.Errorf("Error creating ACL from worksheet (%v)", list)
+		return nil, nil, fmt.Errorf("error creating ACL from worksheet (%v)", list)
 	}
 
 	return list, warnings, nil
@@ -420,7 +424,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, rpt map[uint32]lib.Report) error {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.logRange).Do()
 	if err != nil {
-		return fmt.Errorf("Unable to retrieve column headers from log sheet (%v)", err)
+		return fmt.Errorf("unable to retrieve column headers from log sheet (%v)", err)
 	}
 
 	fields := []string{"timestamp", "deviceid", "unchanged", "updated", "added", "deleted", "failed", "errors"}
@@ -479,7 +483,7 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 		ValueInputOption("USER_ENTERED").
 		InsertDataOption("INSERT_ROWS").
 		Do(); err != nil {
-		return fmt.Errorf("Error writing log to Google Sheets (%w)", err)
+		return fmt.Errorf("error writing log to Google Sheets (%w)", err)
 	}
 
 	return nil
@@ -491,7 +495,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	// ... include 'after cutoff' rows from existing report
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(l.reportRange)
 	if len(match) < 5 {
-		return fmt.Errorf("Invalid report range '%s'", l.reportRange)
+		return fmt.Errorf("invalid report range '%s'", l.reportRange)
 	}
 
 	name := match[1]
@@ -513,7 +517,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, l.reportRange).Do()
 	if err != nil {
-		return fmt.Errorf("Unable to retrieve column headers from report sheet (%v)", err)
+		return fmt.Errorf("unable to retrieve column headers from report sheet (%v)", err)
 	}
 
 	fields := []string{"timestamp", "action", "cardnumber"}
@@ -618,7 +622,7 @@ func pruneSheet(google *sheets.Service, spreadsheet *sheets.Spreadsheet, area st
 
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, area).Do()
 	if err != nil {
-		return fmt.Errorf("Unable to retrieve data from %s (%v)", area, err)
+		return fmt.Errorf("unable to retrieve data from %s (%v)", area, err)
 	}
 
 	fields := []string{"timestamp"}

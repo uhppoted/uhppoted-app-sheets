@@ -1,15 +1,16 @@
 package commands
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
+	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -93,7 +94,7 @@ func (cmd *Get) Execute(args ...interface{}) error {
 
 	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(cmd.url)
 	if len(match) < 2 {
-		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
+		return fmt.Errorf("invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheet := match[1]
@@ -111,24 +112,24 @@ func (cmd *Get) Execute(args ...interface{}) error {
 
 	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
-		return fmt.Errorf("Authentication/authorization error (%v)", err)
+		return fmt.Errorf("authentication/authorization error (%v)", err)
 	}
 
-	google, err := sheets.New(client)
+	google, err := sheets.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return fmt.Errorf("Unable to create new Sheets client (%v)", err)
+		return fmt.Errorf("unable to create new Sheets client (%v)", err)
 	}
 
 	response, err := google.Spreadsheets.Values.Get(spreadsheet, area).Do()
 	if err != nil {
-		return fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
+		return fmt.Errorf("unable to retrieve data from sheet (%v)", err)
 	}
 
 	if len(response.Values) == 0 {
-		return fmt.Errorf("No data in spreadsheet/range")
+		return fmt.Errorf("no data in spreadsheet/range")
 	}
 
-	tmp, err := ioutil.TempFile(os.TempDir(), "ACL")
+	tmp, err := os.CreateTemp(os.TempDir(), "ACL")
 	if err != nil {
 		return err
 	}
@@ -139,7 +140,7 @@ func (cmd *Get) Execute(args ...interface{}) error {
 	}()
 
 	if err := sheetToTSV(tmp, response, cmd.withPIN); err != nil {
-		return fmt.Errorf("Error creating TSV file (%v)", err)
+		return fmt.Errorf("error creating TSV file (%v)", err)
 	}
 
 	tmp.Close()

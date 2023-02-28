@@ -10,7 +10,7 @@ import (
 
 func makeTable(rows [][]interface{}) (*api.Table, error) {
 	if len(rows) == 0 {
-		return nil, fmt.Errorf("Empty sheet")
+		return nil, fmt.Errorf("empty sheet")
 	}
 
 	// .. build index
@@ -19,7 +19,7 @@ func makeTable(rows [][]interface{}) (*api.Table, error) {
 	for i, v := range record {
 		k := normalise(v.(string))
 		if _, ok := index[k]; ok {
-			return nil, fmt.Errorf("Duplicate column name '%s'", v.(string))
+			return nil, fmt.Errorf("duplicate column name '%s'", v.(string))
 		}
 
 		index[k] = i
@@ -49,19 +49,19 @@ func makeTable(rows [][]interface{}) (*api.Table, error) {
 	}
 
 	if len(header) == 0 {
-		return nil, fmt.Errorf("Missing/invalid header row")
+		return nil, fmt.Errorf("missing/invalid header row")
 	}
 
 	if len(header) < 1 || normalise(header[0]) != "cardnumber" {
-		return nil, fmt.Errorf("Missing 'card number' column")
+		return nil, fmt.Errorf("missing 'card number' column")
 	}
 
 	if len(header) < 2 || normalise(header[1]) != "from" {
-		return nil, fmt.Errorf("Missing 'from' column")
+		return nil, fmt.Errorf("missing 'from' column")
 	}
 
 	if len(header) < 3 || normalise(header[2]) != "to" {
-		return nil, fmt.Errorf("Missing 'to' column")
+		return nil, fmt.Errorf("missing 'to' column")
 	}
 
 	// ... records
@@ -69,7 +69,7 @@ func makeTable(rows [][]interface{}) (*api.Table, error) {
 	for _, row := range rows[1:] {
 		if cardnumber, ok := row[index["cardnumber"]].(string); !ok {
 			continue
-		} else if ok, err := regexp.Match(`^\s*[0-9]+\s*$`, []byte(cardnumber)); !ok || err != nil {
+		} else if ok := regexp.MustCompile(`^\s*[0-9]+\s*$`).MatchString(cardnumber); !ok {
 			continue
 		}
 

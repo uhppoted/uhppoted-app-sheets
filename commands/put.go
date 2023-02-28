@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -92,7 +94,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(cmd.area)
 	if len(match) < 5 {
-		return fmt.Errorf("Invalid spreadsheet range '%s'", cmd.area)
+		return fmt.Errorf("invalid spreadsheet range '%s'", cmd.area)
 	}
 
 	if strings.TrimSpace(cmd.file) == "" {
@@ -101,7 +103,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 
 	match = regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(cmd.url)
 	if len(match) < 2 {
-		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
+		return fmt.Errorf("invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheetId := match[1]
@@ -119,12 +121,12 @@ func (cmd *Put) Execute(args ...interface{}) error {
 
 	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
-		return fmt.Errorf("Authentication/authorization error (%v)", err)
+		return fmt.Errorf("authentication/authorization error (%v)", err)
 	}
 
-	google, err := sheets.New(client)
+	google, err := sheets.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return fmt.Errorf("Unable to create new Sheets client (%v)", err)
+		return fmt.Errorf("unable to create new Sheets client (%v)", err)
 	}
 
 	spreadsheet, err := getSpreadsheet(google, spreadsheetId)
@@ -143,7 +145,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 	if err != nil {
 		return err
 	} else if header == nil {
-		return fmt.Errorf("Invalid TSV file (%v)", err)
+		return fmt.Errorf("invalid TSV file (%v)", err)
 	}
 
 	if err := cmd.clear(google, spreadsheet); err != nil {
@@ -167,7 +169,7 @@ func (cmd *Put) Execute(args ...interface{}) error {
 func (cmd *Put) clear(google *sheets.Service, spreadsheet *sheets.Spreadsheet) error {
 	match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(cmd.area)
 	if len(match) < 5 {
-		return fmt.Errorf("Invalid spreadsheet range '%s'", cmd.area)
+		return fmt.Errorf("invalid spreadsheet range '%s'", cmd.area)
 	}
 
 	name := match[1]

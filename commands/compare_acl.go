@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
 	"github.com/uhppoted/uhppote-core/uhppote"
@@ -95,14 +97,14 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 
 	conf := config.NewConfig()
 	if err := conf.Load(cmd.config); err != nil {
-		return fmt.Errorf("WARN  Could not load configuration (%v)", err)
+		return fmt.Errorf("could not load configuration (%v)", err)
 	}
 
 	u, devices := getDevices(conf, cmd.debug)
 
 	match := regexp.MustCompile(`^https://docs.google.com/spreadsheets/d/(.*?)(?:/.*)?$`).FindStringSubmatch(strings.TrimSpace(cmd.url))
 	if len(match) < 2 {
-		return fmt.Errorf("Invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
+		return fmt.Errorf("invalid spreadsheet URL - expected something like 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'")
 	}
 
 	spreadsheetId := match[1]
@@ -119,12 +121,13 @@ func (cmd *CompareACL) Execute(args ...interface{}) error {
 
 	client, err := authorize(cmd.credentials, SHEETS, tokens)
 	if err != nil {
+		//lint:ignore ST1005 Google should be capitalized
 		return fmt.Errorf("Google Sheets authentication/authorization error (%w)", err)
 	}
 
-	google, err := sheets.New(client)
+	google, err := sheets.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return fmt.Errorf("Unable to create new Google Sheets client (%w)", err)
+		return fmt.Errorf("unable to create new Google Sheets client (%w)", err)
 	}
 
 	spreadsheet, err := getSpreadsheet(google, spreadsheetId)
@@ -167,11 +170,11 @@ func (c *CompareACL) validate() error {
 	}
 
 	if match := regexp.MustCompile(`(.+?)!.*`).FindStringSubmatch(strings.TrimSpace(c.acl)); len(match) < 2 {
-		return fmt.Errorf("Invalid range '%s' - expected something like 'ACL!A2:K", c.acl)
+		return fmt.Errorf("invalid range '%s' - expected something like 'ACL!A2:K", c.acl)
 	}
 
 	if match := regexp.MustCompile(`(.+?)!([a-zA-Z]+)([0-9]+):([a-zA-Z]+)([0-9]+)?`).FindStringSubmatch(c.report); len(match) < 5 {
-		return fmt.Errorf("Invalid report-range '%s' - expected something like 'Audit!A1:E", c.report)
+		return fmt.Errorf("invalid report-range '%s' - expected something like 'Audit!A1:E", c.report)
 	}
 
 	return nil
@@ -203,16 +206,16 @@ func (cmd *CompareACL) compare(u uhppote.IUHPPOTE, devices []uhppote.Device, lis
 func (cmd *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet, devices []uhppote.Device) (*lib.ACL, error) {
 	response, err := google.Spreadsheets.Values.Get(spreadsheet.SpreadsheetId, cmd.acl).Do()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve data from sheet (%v)", err)
+		return nil, fmt.Errorf("unable to retrieve data from sheet (%v)", err)
 	}
 
 	if len(response.Values) == 0 {
-		return nil, fmt.Errorf("No data in spreadsheet/range")
+		return nil, fmt.Errorf("no data in spreadsheet/range")
 	}
 
 	table, err := makeTable(response.Values)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating table from worksheet (%v)", err)
+		return nil, fmt.Errorf("error creating table from worksheet (%v)", err)
 	}
 
 	f := func(table *lib.Table, devices []uhppote.Device) (*lib.ACL, []error, error) {
@@ -226,7 +229,7 @@ func (cmd *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spread
 	if list, warnings, err := f(table, devices); err != nil {
 		return nil, err
 	} else if list == nil {
-		return nil, fmt.Errorf("Error creating ACL from worksheet (%v)", list)
+		return nil, fmt.Errorf("error creating ACL from worksheet (%v)", list)
 	} else {
 		for _, w := range warnings {
 			warnf("%v", w.Error())
@@ -270,7 +273,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		}
 
 		if _, err := google.Spreadsheets.BatchUpdate(spreadsheet.SpreadsheetId, &prune).Do(); err != nil {
-			return fmt.Errorf("Error pruning report worksheet (%w)", err)
+			return fmt.Errorf("error pruning report worksheet (%w)", err)
 		}
 	}
 
@@ -292,7 +295,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	}
 
 	keys := []uint32{}
-	for k, _ := range *diff {
+	for k := range *diff {
 		keys = append(keys, k)
 	}
 
@@ -348,7 +351,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		ValueInputOption("USER_ENTERED").
 		InsertDataOption("OVERWRITE").
 		Do(); err != nil {
-		return fmt.Errorf("Error padding report worksheet (%w)", err)
+		return fmt.Errorf("error padding report worksheet (%w)", err)
 	}
 
 	return nil

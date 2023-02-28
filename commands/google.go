@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -20,7 +19,7 @@ type revision struct {
 }
 
 func (r *revision) load(file string) error {
-	bytes, err := ioutil.ReadFile(file)
+	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}
@@ -48,7 +47,7 @@ func (r *revision) store(file string) error {
 
 	if bytes, err := json.Marshal(r); err != nil {
 		return err
-	} else if err := ioutil.WriteFile(file, bytes, 0660); err != nil {
+	} else if err := os.WriteFile(file, bytes, 0660); err != nil {
 		return err
 	}
 
@@ -96,7 +95,7 @@ func getRevision(gdrive *drive.Service, fileId string) (*revision, error) {
 	}
 
 	if latest.Modified.IsZero() {
-		return nil, fmt.Errorf("Unable to identify latest revision for file ID %s", fileId)
+		return nil, fmt.Errorf("unable to identify latest revision for file ID %s", fileId)
 	}
 
 	return &latest, nil

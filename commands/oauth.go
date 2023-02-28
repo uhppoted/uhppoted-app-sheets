@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +18,7 @@ const SHEETS = "https://www.googleapis.com/auth/spreadsheets"
 const DRIVE = "https://www.googleapis.com/auth/drive"
 
 func authorize(credentials, scope, dir string) (*http.Client, error) {
-	b, err := ioutil.ReadFile(credentials)
+	b, err := os.ReadFile(credentials)
 	if err != nil {
 		return nil, err
 	}
