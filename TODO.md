@@ -12,12 +12,7 @@
       - [x] README
       - [x] TSV unit tests
 
-- [ ] Fix auth handing to suggest `uhppoted-app-sheets auth ...` when not authorised
-      - [ ] get
-      - [ ] put
-      - [ ] load
-      - [ ] compare
-      - [ ] upload
+- [x] Fix auth handing to suggest `uhppoted-app-sheets auth ...` when not authorised
 
 ## TODO
 

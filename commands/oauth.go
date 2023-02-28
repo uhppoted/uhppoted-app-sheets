@@ -43,37 +43,43 @@ func authorize(credentials, scope, dir string) (*http.Client, error) {
 		file = filepath.Join(dir, fmt.Sprintf("%s.tokens", name))
 	}
 
-	return getClient(file, config), nil
+	return getClient(file, config)
 }
 
-// Retrieve a token, saves the token, then returns the generated client.
-func getClient(tokens string, config *oauth2.Config) *http.Client {
+// Extracts a token from the tokens file and returns the configured client.
+func getClient(tokens string, config *oauth2.Config) (*http.Client, error) {
 	token, err := tokenFromFile(tokens)
 	if err != nil {
-		token = getTokenFromWeb(config)
-		saveToken(tokens, token)
+		fmt.Println("")
+		fmt.Println("   > NOT AUTHORISED")
+		fmt.Println("   >")
+		fmt.Println("   > Please authorise access to Google Sheets and Google Drive with the 'authorise' command:")
+		fmt.Println("   > ")
+		fmt.Println("   >    uhppoted-app-sheets authorise --url <Google Sheets URL>")
+		fmt.Println("")
+		return nil, fmt.Errorf("not authorised")
 	}
 
-	return config.Client(context.Background(), token)
+	return config.Client(context.Background(), token), nil
 }
 
-// Request a token from the web, then returns the retrieved token.
-func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\n", authURL)
+// // Request a token from the web, then returns the retrieved token.
+// func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+// 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+// 	fmt.Printf("Go to the following link in your browser then type the "+
+// 		"authorization code: \n%v\n", authURL)
 
-	var authCode string
-	if _, err := fmt.Scan(&authCode); err != nil {
-		log.Fatalf("Unable to read authorization code: %v", err)
-	}
+// 	var authCode string
+// 	if _, err := fmt.Scan(&authCode); err != nil {
+// 		log.Fatalf("Unable to read authorization code: %v", err)
+// 	}
 
-	tok, err := config.Exchange(context.TODO(), authCode)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
-	}
-	return tok
-}
+// 	tok, err := config.Exchange(context.TODO(), authCode)
+// 	if err != nil {
+// 		log.Fatalf("Unable to retrieve token from web: %v", err)
+// 	}
+// 	return tok
+// }
 
 // Retrieves a token from a local file.
 func tokenFromFile(file string) (*oauth2.Token, error) {

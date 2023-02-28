@@ -84,7 +84,11 @@ publish: release
 	gh release create "$(VERSION)" ./dist/*.tar.gz --draft --prerelease --title "$(VERSION)-beta" --notes-file release-notes.md
 
 debug: build
-	go test ./... -run TestSheetToTSVWithPIN
+	$(CLI) get --url $(URL_WITH_PIN) \
+	           --credentials $(CREDENTIALS) \
+	           --tokens ../runtime/sheets/.debug \
+	           --range "ACL!A2:K" \
+	           --file "../runtime/sheets/debug.acl"
 	# env GOOS=windows GOARCH=amd64 go build -trimpath -o dist/$(DIST)/windows ./...
 	# $(CLI) authorise --url $(URL) \
 	#                  --tokens ../runtime/sheets/.google
