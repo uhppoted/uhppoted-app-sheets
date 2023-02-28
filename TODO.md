@@ -10,7 +10,7 @@
       - [x] upload
       - [x] CHANGELOG
       - [x] README
-      - [ ] TSV unit tests
+      - [x] TSV unit tests
 
 - [ ] Fix auth handing to suggest `uhppoted-app-sheets auth ...` when not authorised
       - [ ] get
