@@ -3,26 +3,26 @@ module github.com/uhppoted/uhppoted-app-sheets
 go 1.19
 
 require (
-	github.com/uhppoted/uhppote-core v0.8.4-0.20230217195015-84dff2e053a7
-	github.com/uhppoted/uhppoted-lib v0.8.4-0.20230227193825-61f6384edd62
-	golang.org/x/net v0.7.0
-	golang.org/x/oauth2 v0.3.0
-	golang.org/x/sys v0.5.0
-	google.golang.org/api v0.105.0
+	github.com/uhppoted/uhppote-core v0.8.4-0.20230310200819-ab269972ff1c
+	github.com/uhppoted/uhppoted-lib v0.8.4-0.20230310200916-306486b2955c
+	golang.org/x/net v0.8.0
+	golang.org/x/oauth2 v0.6.0
+	golang.org/x/sys v0.6.0
+	google.golang.org/api v0.112.0
 )
 
 require (
-	cloud.google.com/go/compute v1.13.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.2 // indirect
+	cloud.google.com/go/compute v1.18.0 // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.2.0 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20221206210731-b1a01be3a5f6 // indirect
-	google.golang.org/grpc v1.51.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/genproto v0.0.0-20230303212802-e74f57abe488 // indirect
+	google.golang.org/grpc v1.53.0 // indirect
+	google.golang.org/protobuf v1.29.0 // indirect
 )
