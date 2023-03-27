@@ -44,9 +44,9 @@ files:
 - `uhppoted.conf`
 - `credentials.json` (see [HOWTO: Authorisation](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md))
 
-As of [3 October 2022](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration), read and write
-authorisation for _uhppoted-app-sheets_ to access the _Google Sheet_ spreadsheet now requires a fairly involved setup 
-process, which is documented in more detail in [HOWTO: Authorisation](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md).
+As of [3 October 2022](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration), 
+read and write authorisation for _uhppoted-app-sheets_ to access the _Google Sheet_ spreadsheet now requires
+a fairly involved setup process, which is documented in more detail in [HOWTO: Authorisation](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md).
 
 **NOTE:** 
 
