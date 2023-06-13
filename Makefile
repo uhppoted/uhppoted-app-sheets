@@ -32,6 +32,11 @@ update:
 update-release:
 	go get -u github.com/uhppoted/uhppote-core
 	go get -u github.com/uhppoted/uhppoted-lib
+	go mod tidy
+
+update-all:
+	go get -u github.com/uhppoted/uhppote-core
+	go get -u github.com/uhppoted/uhppoted-lib
 	go get -u golang.org/x/net
 	go get -u golang.org/x/oauth2
 	go get -u golang.org/x/sys
