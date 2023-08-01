@@ -1,18 +1,6 @@
 # TODO
 
-- [x] Add static-check to lint
-
-- [x] Card keypad PIN code support (cf. https://github.com/uhppoted/uhppote-core/issues/8)
-      - [x] get
-      - [x] put
-      - [x] load
-      - [x] compare
-      - [x] upload
-      - [x] CHANGELOG
-      - [x] README
-      - [x] TSV unit tests
-
-- [x] Fix auth handing to suggest `uhppoted-app-sheets auth ...` when not authorised
+- [x] Replace os.Rename with lib implementation for tmpfs support (cf. https://github.com/uhppoted/uhppoted-httpd/issues/20)
 
 ## TODO
 

@@ -12,6 +12,8 @@ import (
 
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
+
+	lib "github.com/uhppoted/uhppoted-lib/os"
 )
 
 var GetCmd = Get{
@@ -150,7 +152,7 @@ func (cmd *Get) Execute(args ...interface{}) error {
 		return err
 	}
 
-	if err := os.Rename(tmp.Name(), cmd.file); err != nil {
+	if err := lib.Rename(tmp.Name(), cmd.file); err != nil {
 		return err
 	}
 

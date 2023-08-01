@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Updated
+1. Replaced os.Rename with lib implementation for tmpfs support.
+
 
 ## [0.8.5](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.8.5) - 2023-06-13
 
