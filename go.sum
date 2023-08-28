@@ -76,8 +76,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/uhppoted/uhppote-core v0.8.6-0.20230714164141-912d472ef6df h1:HdvJy+Idu6E0xRdSeILN4qWt9iGfv7dM5KtoJisg8JA=
 github.com/uhppoted/uhppote-core v0.8.6-0.20230714164141-912d472ef6df/go.mod h1:q3xZZc7GMkCfpVnKNmdoZQDjvMHfPvH79VNai7HDH3s=
-github.com/uhppoted/uhppoted-lib v0.8.6-0.20230801163955-16b4119234e5 h1:B4RxLs3eVOZ0GQcQ7A865RSzErxcwnIflG49MGIv4Ls=
-github.com/uhppoted/uhppoted-lib v0.8.6-0.20230801163955-16b4119234e5/go.mod h1:3lLcVCtew+bIr0qftO/VsqmJLEoBaItX9rm9lLVusJE=
+github.com/uhppoted/uhppoted-lib v0.8.6-0.20230801172006-853ac88d8561 h1:/5gqnYbqJQPtr73F2/KjnEvYLZunktgoWwLi3Az8k0I=
+github.com/uhppoted/uhppoted-lib v0.8.6-0.20230801172006-853ac88d8561/go.mod h1:zSGqeMwRGELb9pUSlAKfDvrv9r/UTWBbMWAn8h6x4gE=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 go.opencensus.io v0.24.0 h1:y73uSU6J157QMP2kn2r30vwW1A2W2WFwSCGnAVxeaD0=
 go.opencensus.io v0.24.0/go.mod h1:vNK8G9p7aAivkbmorf4v+7Hgx+Zs0yY+0fOtgBfjQKo=
