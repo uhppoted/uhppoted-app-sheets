@@ -74,10 +74,10 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
-github.com/uhppoted/uhppote-core v0.8.6-0.20230714164141-912d472ef6df h1:HdvJy+Idu6E0xRdSeILN4qWt9iGfv7dM5KtoJisg8JA=
-github.com/uhppoted/uhppote-core v0.8.6-0.20230714164141-912d472ef6df/go.mod h1:q3xZZc7GMkCfpVnKNmdoZQDjvMHfPvH79VNai7HDH3s=
-github.com/uhppoted/uhppoted-lib v0.8.6-0.20230801172006-853ac88d8561 h1:/5gqnYbqJQPtr73F2/KjnEvYLZunktgoWwLi3Az8k0I=
-github.com/uhppoted/uhppoted-lib v0.8.6-0.20230801172006-853ac88d8561/go.mod h1:zSGqeMwRGELb9pUSlAKfDvrv9r/UTWBbMWAn8h6x4gE=
+github.com/uhppoted/uhppote-core v0.8.6-0.20230828171048-fbdd46934ad7 h1:Lbm7yVwxzS5qsS2lFhKB/W5h7csIpzEiBbmDFXWZkPY=
+github.com/uhppoted/uhppote-core v0.8.6-0.20230828171048-fbdd46934ad7/go.mod h1:q3xZZc7GMkCfpVnKNmdoZQDjvMHfPvH79VNai7HDH3s=
+github.com/uhppoted/uhppoted-lib v0.8.6-0.20230828171114-c4c16c9779b6 h1:tSNH7NO/CwMQEQgfe7Hey051T/wljaFMuOlZ3xE2iBI=
+github.com/uhppoted/uhppoted-lib v0.8.6-0.20230828171114-c4c16c9779b6/go.mod h1:uS48UcAjY5C1U6IeUmOVIqdvQXSNdOt8yGjeOs2JN48=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 go.opencensus.io v0.24.0 h1:y73uSU6J157QMP2kn2r30vwW1A2W2WFwSCGnAVxeaD0=
 go.opencensus.io v0.24.0/go.mod h1:vNK8G9p7aAivkbmorf4v+7Hgx+Zs0yY+0fOtgBfjQKo=
@@ -128,8 +128,8 @@ golang.org/x/sys v0.0.0-20210423082822-04245dca01da/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.10.0 h1:SqMFp9UcQJZa+pmYuAKjd9xq1f0j5rLcDIk0mj4qAsA=
-golang.org/x/sys v0.10.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.11.0 h1:eG7RXZHdqOJ1i+0lgLgCpSXAp6M3LYlAo6osgSi0xOM=
+golang.org/x/sys v0.11.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
