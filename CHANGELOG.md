@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## Unreleased
+## [0.8.7](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.8.7) - 2023-12-01
+
+### Changed
+1. Maintenance release for compatibility with [uhppoted-lib](https://github.com/uhppoted/uhppoted-lib) v0.8.7
 
 
 ## [0.8.6](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.8.6) - 2023-08-30
@@ -63,4 +66,18 @@
 
 ### Changed
 1. Updated for compatibility with [uhppoted-lib](https://github.com/uhppoted/uhppoted-lib) v0.7.3
+
+## Older
+
+| *Version* | *Description*                                                                   |
+| --------- | ------------------------------------------------------------------------------- |
+| v0.7.2    | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-lib` |
+| v0.7.1    | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-lib` |
+| v0.7.0    | Added support for time profiles from the extended API                           |
+| v0.6.12   | Maintenance release to update dependencies on `uhppote-core` and `uhppoted-api` |
+| v0.6.10   | Maintenance release for version compatibility with `uhppoted-app-wild-apricot`  |
+| v0.6.8    | Maintenance release for version compatibility with `uhppote-core` `v.0.6.8`     |
+| v0.6.7    | Maintenance release for version compatibility with `uhppoted-api` `v.0.6.7`     |
+| v0.6.5    | Maintenance release for version compatibility with `node-red-contrib-uhppoted`  |
+| v0.6.4    | Initial release                                                                 |
 
