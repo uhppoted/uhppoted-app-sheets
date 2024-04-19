@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/uhppoted/uhppote-core v0.8.8
 	github.com/uhppoted/uhppoted-lib v0.8.8
-	golang.org/x/net v0.17.0
+	golang.org/x/net v0.23.0
 	golang.org/x/oauth2 v0.8.0
 	golang.org/x/sys v0.18.0
 	google.golang.org/api v0.127.0
@@ -21,7 +21,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.2.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.10.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
