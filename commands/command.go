@@ -86,22 +86,11 @@ func getDevices(conf *config.Config, debug bool) (uhppote.IUHPPOTE, []uhppote.De
 		listen = *conf.ListenAddress
 	}
 
-	devices := []uhppote.Device{}
-	for s, d := range conf.Devices {
-		// ... because d is *Device and all devices end up with the same info if you don't make a manual copy
-		name := d.Name
-		deviceID := s
-		address := d.Address
-		doors := d.Doors
+	controllers := conf.Devices.ToControllers()
 
-		if device := uhppote.NewDevice(name, deviceID, address, doors); device != nil {
-			devices = append(devices, *device)
-		}
-	}
+	u := uhppote.NewUHPPOTE(bind, broadcast, listen, 5*time.Second, controllers, debug)
 
-	u := uhppote.NewUHPPOTE(bind, broadcast, listen, 5*time.Second, devices, debug)
-
-	return u, devices
+	return u, controllers
 }
 
 func getSpreadsheet(google *sheets.Service, id string) (*sheets.Spreadsheet, error) {
