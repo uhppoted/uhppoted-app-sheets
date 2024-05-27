@@ -75,10 +75,10 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
-github.com/uhppoted/uhppote-core v0.8.9-0.20240524165731-f11a293bdd8d h1:3i+zWCiQpGN0SXlDHDG2RzBsW1/vzL1sO39gmKbyv88=
-github.com/uhppoted/uhppote-core v0.8.9-0.20240524165731-f11a293bdd8d/go.mod h1:Q+DHtT8s74efLs2b0eF20DRBUL9yBkySwaTQ+0lsEVM=
-github.com/uhppoted/uhppoted-lib v0.8.9-0.20240524171653-86bb80223c95 h1:XRdwZQUNT0r3zzwjUNOmbsC7Cqc8o0CGXFOztpqMWHQ=
-github.com/uhppoted/uhppoted-lib v0.8.9-0.20240524171653-86bb80223c95/go.mod h1:X60HhO4iKqIw+J+r0Rh4OkAzpMbhLzo+7QELXKDQowM=
+github.com/uhppoted/uhppote-core v0.8.9-0.20240527172601-d5317b598bb8 h1:54HfgoJgeDfMDJW2cKF/QDy38dh1qKxv9SMTxVlVOVk=
+github.com/uhppoted/uhppote-core v0.8.9-0.20240527172601-d5317b598bb8/go.mod h1:Q+DHtT8s74efLs2b0eF20DRBUL9yBkySwaTQ+0lsEVM=
+github.com/uhppoted/uhppoted-lib v0.8.9-0.20240527174018-4ff1fd4a0224 h1:DYkZ77CR3eVcfTatc9JLSPyVQEcOviJbA2lysPjbVSI=
+github.com/uhppoted/uhppoted-lib v0.8.9-0.20240527174018-4ff1fd4a0224/go.mod h1:3CvWWsUiXmFh4jTzF+NXeWTMeaHiqkIDLOxoKQ0iJd8=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 go.opencensus.io v0.24.0 h1:y73uSU6J157QMP2kn2r30vwW1A2W2WFwSCGnAVxeaD0=
 go.opencensus.io v0.24.0/go.mod h1:vNK8G9p7aAivkbmorf4v+7Hgx+Zs0yY+0fOtgBfjQKo=
