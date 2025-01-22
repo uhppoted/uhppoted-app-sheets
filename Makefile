@@ -23,10 +23,6 @@ clean:
 update:
 	go get -u github.com/uhppoted/uhppote-core@main
 	go get -u github.com/uhppoted/uhppoted-lib@main
-	# go get -u golang.org/x/net
-	# go get -u golang.org/x/oauth2
-	# go get -u golang.org/x/sys
-	# go get -u google.golang.org/api
 	go mod tidy
 
 update-release:
@@ -74,12 +70,14 @@ build-all: build test vet lint
 	mkdir -p dist/$(DIST)/linux
 	mkdir -p dist/$(DIST)/arm
 	mkdir -p dist/$(DIST)/arm7
+	mkdir -p dist/$(DIST)/arm6
 	mkdir -p dist/$(DIST)/darwin-x64
 	mkdir -p dist/$(DIST)/darwin-arm64
 	mkdir -p dist/$(DIST)/windows
 	env GOOS=linux   GOARCH=amd64         GOWORK=off go build -trimpath -o dist/$(DIST)/linux        ./...
 	env GOOS=linux   GOARCH=arm64         GOWORK=off go build -trimpath -o dist/$(DIST)/arm          ./...
 	env GOOS=linux   GOARCH=arm   GOARM=7 GOWORK=off go build -trimpath -o dist/$(DIST)/arm7         ./...
+	env GOOS=linux   GOARCH=arm   GOARM=6 GOWORK=off go build -trimpath -o dist/$(DIST)/arm6         ./...
 	env GOOS=darwin  GOARCH=amd64         GOWORK=off go build -trimpath -o dist/$(DIST)/darwin-x64   ./...
 	env GOOS=darwin  GOARCH=arm64         GOWORK=off go build -trimpath -o dist/$(DIST)/darwin-arm64 ./...
 	env GOOS=windows GOARCH=amd64         GOWORK=off go build -trimpath -o dist/$(DIST)/windows      ./...
@@ -89,6 +87,7 @@ release: update-release build-all
 	tar --directory=dist/$(DIST)/linux        --exclude=".DS_Store" -cvzf dist/$(DIST)-linux-x64.tar.gz    .
 	tar --directory=dist/$(DIST)/arm          --exclude=".DS_Store" -cvzf dist/$(DIST)-arm-x64.tar.gz      .
 	tar --directory=dist/$(DIST)/arm7         --exclude=".DS_Store" -cvzf dist/$(DIST)-arm7.tar.gz         .
+	tar --directory=dist/$(DIST)/arm6         --exclude=".DS_Store" -cvzf dist/$(DIST)-arm6.tar.gz         .
 	tar --directory=dist/$(DIST)/darwin-x64   --exclude=".DS_Store" -cvzf dist/$(DIST)-darwin-x64.tar.gz   .
 	tar --directory=dist/$(DIST)/darwin-arm64 --exclude=".DS_Store" -cvzf dist/$(DIST)-darwin-arm64.tar.gz .
 	cd dist/$(DIST)/windows && zip --recurse-paths ../../$(DIST)-windows-x64.zip . -x ".DS_Store"
@@ -97,6 +96,7 @@ publish: release
 	echo "Releasing version $(VERSION)"
 	gh release create "$(VERSION)" "./dist/$(DIST)-arm-x64.tar.gz"      \
 	                               "./dist/$(DIST)-arm7.tar.gz"         \
+	                               "./dist/$(DIST)-arm6.tar.gz"         \
 	                               "./dist/$(DIST)-darwin-arm64.tar.gz" \
 	                               "./dist/$(DIST)-darwin-x64.tar.gz"   \
 	                               "./dist/$(DIST)-linux-x64.tar.gz"    \

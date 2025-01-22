@@ -3,28 +3,32 @@ module github.com/uhppoted/uhppoted-app-sheets
 go 1.23
 
 require (
-	github.com/uhppoted/uhppote-core v0.8.10-0.20241004174540-7675ee2e4254
-	github.com/uhppoted/uhppoted-lib v0.8.10-0.20241007153101-aa559cf3e032
-	golang.org/x/net v0.23.0
-	golang.org/x/oauth2 v0.8.0
-	golang.org/x/sys v0.28.0
-	google.golang.org/api v0.127.0
+	github.com/uhppoted/uhppote-core v0.8.9
+	github.com/uhppoted/uhppoted-lib v0.8.9
+	golang.org/x/net v0.34.0
+	golang.org/x/oauth2 v0.25.0
+	golang.org/x/sys v0.29.0
+	google.golang.org/api v0.218.0
 )
 
 require (
-	cloud.google.com/go/compute v1.19.3 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/s2a-go v0.1.4 // indirect
-	github.com/google/uuid v1.3.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.2.4 // indirect
-	github.com/googleapis/gax-go/v2 v2.10.0 // indirect
-	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	cloud.google.com/go/auth v0.14.0 // indirect
+	cloud.google.com/go/auth/oauth2adapt v0.2.7 // indirect
+	cloud.google.com/go/compute/metadata v0.6.0 // indirect
+	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/google/s2a-go v0.1.9 // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
+	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
+	go.opentelemetry.io/otel v1.31.0 // indirect
+	go.opentelemetry.io/otel/metric v1.31.0 // indirect
+	go.opentelemetry.io/otel/trace v1.31.0 // indirect
+	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
-	google.golang.org/grpc v1.56.3 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
+	google.golang.org/grpc v1.69.4 // indirect
+	google.golang.org/protobuf v1.36.3 // indirect
 )

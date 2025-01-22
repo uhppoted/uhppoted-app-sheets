@@ -10,7 +10,7 @@ Supported operating systems:
 - Linux
 - MacOS
 - Windows
-- ARM7
+- RaspberryPi (ARM/ARM7/ARM6)
 
 _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google.com/spreadsheets/d/1_erZMyFmO6PM0PrAfEqdsiH9haiw-2UqY0kLwo_WTO8/edit?usp=sharing)_
 
