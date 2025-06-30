@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## [0.8.11](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.8.11) - 2025-07-01
 
 ### Updated
 1. Updated to Go 1.24.

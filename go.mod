@@ -3,11 +3,11 @@ module github.com/uhppoted/uhppoted-app-sheets
 go 1.24
 
 require (
-	github.com/uhppoted/uhppote-core v0.8.11-0.20250331165159-e04fd7de7eab
-	github.com/uhppoted/uhppoted-lib v0.8.11-0.20250331180353-7ccb6f69d17e
+	github.com/uhppoted/uhppote-core v0.8.11
+	github.com/uhppoted/uhppoted-lib v0.8.11
 	golang.org/x/net v0.38.0
 	golang.org/x/oauth2 v0.28.0
-	golang.org/x/sys v0.31.0
+	golang.org/x/sys v0.33.0
 	google.golang.org/api v0.228.0
 )
 
