@@ -1,13 +1,12 @@
 module github.com/uhppoted/uhppoted-app-sheets
 
-go 1.24
+go 1.25
 
 require (
 	github.com/uhppoted/uhppote-core v0.8.11
-	github.com/uhppoted/uhppoted-lib v0.8.11
-	golang.org/x/net v0.38.0
+	github.com/uhppoted/uhppoted-lib v0.8.12
 	golang.org/x/oauth2 v0.28.0
-	golang.org/x/sys v0.33.0
+	golang.org/x/sys v0.38.0
 	google.golang.org/api v0.228.0
 )
 
@@ -28,6 +27,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/grpc v1.71.0 // indirect
