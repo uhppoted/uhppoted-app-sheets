@@ -80,7 +80,7 @@ func (cmd *UploadACL) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (cmd *UploadACL) Execute(args ...interface{}) error {
+func (cmd *UploadACL) Execute(args ...any) error {
 	options := args[0].(*Options)
 
 	cmd.config = options.Config
@@ -224,8 +224,8 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 
 	var timestamp = sheets.ValueRange{
 		Range: format.title,
-		Values: [][]interface{}{
-			[]interface{}{
+		Values: [][]any{
+			[]any{
 				time.Now().Format("2006-01-02 15:04:05"),
 			},
 		},
@@ -233,7 +233,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 
 	var values = sheets.ValueRange{
 		Range:  format.data,
-		Values: [][]interface{}{},
+		Values: [][]any{},
 	}
 
 	cols := 0
@@ -244,7 +244,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	}
 
 	for _, record := range table.Records {
-		row := make([]interface{}, cols)
+		row := make([]any, cols)
 		for i := range row {
 			row[i] = ""
 		}
@@ -270,7 +270,7 @@ func (c *UploadACL) upload(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	// ... pad
 
 	var pad = sheets.ValueRange{
-		Values: [][]interface{}{[]interface{}{""}},
+		Values: [][]any{[]any{""}},
 	}
 
 	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, c.acl, &pad).

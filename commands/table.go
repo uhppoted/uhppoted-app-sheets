@@ -8,7 +8,7 @@ import (
 	api "github.com/uhppoted/uhppoted-lib/acl"
 )
 
-func makeTable(rows [][]interface{}) (*api.Table, error) {
+func makeTable(rows [][]any) (*api.Table, error) {
 	if len(rows) == 0 {
 		return nil, fmt.Errorf("empty sheet")
 	}

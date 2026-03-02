@@ -125,7 +125,7 @@ func (cmd *LoadACL) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (cmd *LoadACL) Execute(args ...interface{}) error {
+func (cmd *LoadACL) Execute(args ...any) error {
 	options := args[0].(*Options)
 
 	cmd.config = options.Config
@@ -433,14 +433,14 @@ func (l *LoadACL) updateLogSheet(google *sheets.Service, spreadsheet *sheets.Spr
 
 	summary := lib.Summarize(rpt)
 	var rows = sheets.ValueRange{
-		Values: [][]interface{}{},
+		Values: [][]any{},
 	}
 
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
 	for _, v := range summary {
-		row := make([]interface{}, columns)
+		row := make([]any, columns)
 
-		for i := 0; i < columns; i++ {
+		for i := range columns {
 			row[i] = ""
 		}
 
@@ -505,7 +505,7 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	var rows = sheets.ValueRange{
 		Range:  fmt.Sprintf("%s!%s%v:%s", name, left, top+1, right),
-		Values: [][]interface{}{},
+		Values: [][]any{},
 	}
 
 	before := time.Now().
@@ -524,8 +524,8 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	index, columns := buildIndex(response.Values, fields)
 
 	for _, record := range response.Values[1:] {
-		row := make([]interface{}, columns)
-		for i := 0; i < columns; i++ {
+		row := make([]any, columns)
+		for i := range columns {
 			row[i] = ""
 		}
 
@@ -560,9 +560,9 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 
 	for _, f := range format {
 		for _, card := range f.Cards {
-			row := make([]interface{}, columns)
+			row := make([]any, columns)
 
-			for i := 0; i < columns; i++ {
+			for i := range columns {
 				row[i] = ""
 			}
 
@@ -583,10 +583,10 @@ func (l *LoadACL) updateReportSheet(google *sheets.Service, spreadsheet *sheets.
 	}
 
 	// ... pad below
-	for i := 0; i < 2; i++ {
-		row := make([]interface{}, columns)
+	for range 2 {
+		row := make([]any, columns)
 
-		for i := 0; i < columns; i++ {
+		for i := range columns {
 			row[i] = ""
 		}
 

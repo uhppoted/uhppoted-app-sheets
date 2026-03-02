@@ -113,7 +113,7 @@ func getSheet(spreadsheet *sheets.Spreadsheet, area string) (*sheets.Sheet, erro
 	return nil, fmt.Errorf("unable to identify worksheet for '%s'", area)
 }
 
-func buildIndex(rows [][]interface{}, fields []string) (map[string]int, int) {
+func buildIndex(rows [][]any, fields []string) (map[string]int, int) {
 	index := map[string]int{}
 
 	for ix, col := range fields {

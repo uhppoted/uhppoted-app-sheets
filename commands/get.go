@@ -76,7 +76,7 @@ func (cmd *Get) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (cmd *Get) Execute(args ...interface{}) error {
+func (cmd *Get) Execute(args ...any) error {
 	options := args[0].(*Options)
 
 	cmd.debug = options.Debug

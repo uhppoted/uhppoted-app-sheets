@@ -16,10 +16,10 @@ func TestMakeTable(t *testing.T) {
 		},
 	}
 
-	var data = [][]interface{}{
-		[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
-		[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-		[]interface{}{"6001002", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
+	var data = [][]any{
+		[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
+		[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+		[]any{"6001002", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
 	}
 
 	table, err := makeTable(data)
@@ -45,10 +45,10 @@ func TestMakeTableWithOutOfOrderColumns(t *testing.T) {
 		},
 	}
 
-	var data = [][]interface{}{
-		[]interface{}{"Gate", "Card Number", "Tower", "To", "From", "Dungeon", "Lair"},
-		[]interface{}{"Y", "6001001", "N", "2020-12-31", "2020-01-01", "N", "Y"},
-		[]interface{}{"Y", "6001002", "Y", "2020-11-30", "2020-02-03", "N", "N"},
+	var data = [][]any{
+		[]any{"Gate", "Card Number", "Tower", "To", "From", "Dungeon", "Lair"},
+		[]any{"Y", "6001001", "N", "2020-12-31", "2020-01-01", "N", "Y"},
+		[]any{"Y", "6001002", "Y", "2020-11-30", "2020-02-03", "N", "N"},
 	}
 
 	table, err := makeTable(data)
@@ -66,7 +66,7 @@ func TestMakeTableWithOutOfOrderColumns(t *testing.T) {
 }
 
 func TestMakeTableWithEmptySheet(t *testing.T) {
-	var data = [][]interface{}{}
+	var data = [][]any{}
 
 	_, err := makeTable(data)
 	if err == nil {
@@ -75,8 +75,8 @@ func TestMakeTableWithEmptySheet(t *testing.T) {
 }
 
 func TestMakeTableWithoutHeaders(t *testing.T) {
-	data := [][]interface{}{
-		[]interface{}{},
+	data := [][]any{
+		[]any{},
 	}
 
 	_, err := makeTable(data)
@@ -86,8 +86,8 @@ func TestMakeTableWithoutHeaders(t *testing.T) {
 }
 
 func TestMakeTableWithMissingCardNumber(t *testing.T) {
-	data := [][]interface{}{
-		[]interface{}{"Card Number X"},
+	data := [][]any{
+		[]any{"Card Number X"},
 	}
 
 	_, err := makeTable(data)
@@ -97,8 +97,8 @@ func TestMakeTableWithMissingCardNumber(t *testing.T) {
 }
 
 func TestMakeTableWithMissingFromDate(t *testing.T) {
-	data := [][]interface{}{
-		[]interface{}{"Card Number"},
+	data := [][]any{
+		[]any{"Card Number"},
 	}
 
 	_, err := makeTable(data)
@@ -108,8 +108,8 @@ func TestMakeTableWithMissingFromDate(t *testing.T) {
 }
 
 func TestMakeTableWithMissingToDate(t *testing.T) {
-	data := [][]interface{}{
-		[]interface{}{"Card Number", "From"},
+	data := [][]any{
+		[]any{"Card Number", "From"},
 	}
 
 	_, err := makeTable(data)
@@ -119,10 +119,10 @@ func TestMakeTableWithMissingToDate(t *testing.T) {
 }
 
 func TestMakeTableWithDuplicatedColumn(t *testing.T) {
-	var data = [][]interface{}{
-		[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Gate"},
-		[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-		[]interface{}{"6001002", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
+	var data = [][]any{
+		[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Gate"},
+		[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+		[]any{"6001002", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
 	}
 
 	_, err := makeTable(data)
@@ -140,11 +140,11 @@ func TestMakeTableWithInvalidCardNumber(t *testing.T) {
 		},
 	}
 
-	var data = [][]interface{}{
-		[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
-		[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-		[]interface{}{"600100X", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
-		[]interface{}{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
+	var data = [][]any{
+		[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
+		[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+		[]any{"600100X", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
+		[]any{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
 	}
 
 	table, err := makeTable(data)
@@ -170,11 +170,11 @@ func TestMakeTableWithInvalidFromDate(t *testing.T) {
 		},
 	}
 
-	var data = [][]interface{}{
-		[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
-		[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-		[]interface{}{"6001002", "2020-02-0X", "2020-11-30", "Y", "Y", "N", "N"},
-		[]interface{}{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
+	var data = [][]any{
+		[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
+		[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+		[]any{"6001002", "2020-02-0X", "2020-11-30", "Y", "Y", "N", "N"},
+		[]any{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
 	}
 
 	table, err := makeTable(data)
@@ -200,11 +200,11 @@ func TestMakeTableWithInvalidToDate(t *testing.T) {
 		},
 	}
 
-	var data = [][]interface{}{
-		[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
-		[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-		[]interface{}{"6001002", "2020-02-03", "2020-11-3X", "Y", "Y", "N", "N"},
-		[]interface{}{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
+	var data = [][]any{
+		[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
+		[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+		[]any{"6001002", "2020-02-03", "2020-11-3X", "Y", "Y", "N", "N"},
+		[]any{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
 	}
 
 	table, err := makeTable(data)

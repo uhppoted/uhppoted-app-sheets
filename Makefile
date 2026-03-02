@@ -24,11 +24,13 @@ update:
 	go get -u github.com/uhppoted/uhppote-core@main
 	go get -u github.com/uhppoted/uhppoted-lib@main
 	go mod tidy
+	go fix ./...
 
 update-release:
 	go get -u github.com/uhppoted/uhppote-core
 	go get -u github.com/uhppoted/uhppoted-lib
 	go mod tidy
+	go fix ./...
 
 update-all:
 	go get -u github.com/uhppoted/uhppote-core
@@ -38,6 +40,7 @@ update-all:
 	go get -u golang.org/x/sys
 	go get -u google.golang.org/api
 	go mod tidy
+	go fix ./...
 
 format: 
 	go fmt ./...

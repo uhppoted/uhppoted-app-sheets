@@ -156,8 +156,8 @@ func TestSheetToTSVWithMissingFromDate(t *testing.T) {
 	var f strings.Builder
 
 	data := sheets.ValueRange{
-		Values: [][]interface{}{
-			[]interface{}{"Card Number"},
+		Values: [][]any{
+			[]any{"Card Number"},
 		},
 	}
 
@@ -171,8 +171,8 @@ func TestSheetToTSVWithMissingToDate(t *testing.T) {
 	var f strings.Builder
 
 	data := sheets.ValueRange{
-		Values: [][]interface{}{
-			[]interface{}{"Card Number", "From"},
+		Values: [][]any{
+			[]any{"Card Number", "From"},
 		},
 	}
 
@@ -185,10 +185,10 @@ func TestSheetToTSVWithMissingToDate(t *testing.T) {
 func TestSheetToTSVWithDuplicatedColumn(t *testing.T) {
 	var f strings.Builder
 	var data = sheets.ValueRange{
-		Values: [][]interface{}{
-			[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Gate"},
-			[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-			[]interface{}{"6001002", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
+		Values: [][]any{
+			[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Gate"},
+			[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+			[]any{"6001002", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
 		},
 	}
 
@@ -206,11 +206,11 @@ func TestSheetToTSVWithInvalidCardNumber(t *testing.T) {
 
 	var f strings.Builder
 	var data = sheets.ValueRange{
-		Values: [][]interface{}{
-			[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
-			[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-			[]interface{}{"600100X", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
-			[]interface{}{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
+		Values: [][]any{
+			[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
+			[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+			[]any{"600100X", "2020-02-03", "2020-11-30", "Y", "Y", "N", "N"},
+			[]any{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
 		},
 	}
 
@@ -258,11 +258,11 @@ func TestSheetToTSVWithInvalidFromDate(t *testing.T) {
 
 	var f strings.Builder
 	var data = sheets.ValueRange{
-		Values: [][]interface{}{
-			[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
-			[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-			[]interface{}{"6001002", "2020-02-0X", "2020-11-30", "Y", "Y", "N", "N"},
-			[]interface{}{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
+		Values: [][]any{
+			[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
+			[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+			[]any{"6001002", "2020-02-0X", "2020-11-30", "Y", "Y", "N", "N"},
+			[]any{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
 		},
 	}
 
@@ -284,11 +284,11 @@ func TestSheetToTSVWithInvalidToDate(t *testing.T) {
 
 	var f strings.Builder
 	var data = sheets.ValueRange{
-		Values: [][]interface{}{
-			[]interface{}{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
-			[]interface{}{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
-			[]interface{}{"6001002", "2020-02-03", "2020-11-3X", "Y", "Y", "N", "N"},
-			[]interface{}{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
+		Values: [][]any{
+			[]any{"Card Number", "From", "To", "Gate", "Tower", "Dungeon", "Lair"},
+			[]any{"6001001", "2020-01-01", "2020-12-31", "Y", "N", "N", "Y"},
+			[]any{"6001002", "2020-02-03", "2020-11-3X", "Y", "Y", "N", "N"},
+			[]any{"6001003", "2020-01-01", "2020-12-31", "Y", "N", "Y", "N"},
 		},
 	}
 

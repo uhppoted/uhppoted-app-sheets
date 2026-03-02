@@ -170,7 +170,7 @@ func tsvToSheet(f io.Reader, area string) (*sheets.ValueRange, *sheets.ValueRang
 		return nil, nil, fmt.Errorf("TSV file missing header")
 	}
 
-	h := make([]interface{}, len(records[0]))
+	h := make([]any, len(records[0]))
 
 	for i, v := range records[0] {
 		h[i] = fmt.Sprintf("%v", v)
@@ -178,14 +178,14 @@ func tsvToSheet(f io.Reader, area string) (*sheets.ValueRange, *sheets.ValueRang
 
 	header := sheets.ValueRange{
 		Range:  fmt.Sprintf("%s!%s%v:%s%v", name, left, top, right, top),
-		Values: [][]interface{}{h},
+		Values: [][]any{h},
 	}
 
 	// data
-	rows := make([][]interface{}, 0)
+	rows := make([][]any, 0)
 
 	for _, record := range records[1:] {
-		row := make([]interface{}, len(record))
+		row := make([]any, len(record))
 
 		for i, v := range record {
 			row[i] = fmt.Sprintf("%v", v)

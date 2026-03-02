@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -84,7 +84,7 @@ func (cmd *CompareACL) FlagSet() *flag.FlagSet {
 	return flagset
 }
 
-func (cmd *CompareACL) Execute(args ...interface{}) error {
+func (cmd *CompareACL) Execute(args ...any) error {
 	options := args[0].(*Options)
 
 	cmd.config = options.Config
@@ -282,8 +282,8 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 
 	var timestamp = sheets.ValueRange{
 		Range: format.title,
-		Values: [][]interface{}{
-			[]interface{}{
+		Values: [][]any{
+			[]any{
 				time.Now().Format("2006-01-02 15:04:05"),
 			},
 		},
@@ -291,7 +291,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 
 	var values = sheets.ValueRange{
 		Range:  format.data,
-		Values: [][]interface{}{},
+		Values: [][]any{},
 	}
 
 	keys := []uint32{}
@@ -299,23 +299,20 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 		keys = append(keys, k)
 	}
 
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	slices.Sort(keys)
 
 	for _, k := range keys {
 		if v, ok := (*diff)[k]; ok {
 			top := len(values.Values)
-			values.Values = append(values.Values, []interface{}{fmt.Sprintf("%v", k), "'-", "'-", "'-"})
+			values.Values = append(values.Values, []any{fmt.Sprintf("%v", k), "'-", "'-", "'-"})
 
-			rows := len(v.Updated)
-			if len(v.Added) > rows {
-				rows = len(v.Added)
-			}
+			rows := max(len(v.Added), len(v.Updated))
 			if len(v.Deleted) > rows {
 				rows = len(v.Deleted)
 			}
 
 			for i := 1; i <= rows; i++ {
-				values.Values = append(values.Values, []interface{}{"", "", "", ""})
+				values.Values = append(values.Values, []any{"", "", "", ""})
 			}
 
 			for i, c := range v.Updated {
@@ -344,7 +341,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 	// ... pad
 
 	var pad = sheets.ValueRange{
-		Values: [][]interface{}{[]interface{}{""}},
+		Values: [][]any{[]any{""}},
 	}
 
 	if _, err := google.Spreadsheets.Values.Append(spreadsheet.SpreadsheetId, c.report, &pad).
