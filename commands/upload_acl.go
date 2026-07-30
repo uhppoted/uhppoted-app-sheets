@@ -13,9 +13,9 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
-	"github.com/uhppoted/uhppote-core/uhppote"
-	api "github.com/uhppoted/uhppoted-lib/acl"
-	"github.com/uhppoted/uhppoted-lib/config"
+	"codeberg.org/uhppoted/uhppoted-core/uhppote"
+	api "codeberg.org/uhppoted/uhppoted-lib/acl"
+	"codeberg.org/uhppoted/uhppoted-lib/config"
 )
 
 var UploadACLCmd = UploadACL{
@@ -138,9 +138,9 @@ func (cmd *UploadACL) Execute(args ...any) error {
 
 	f := func(acl api.ACL, devices []uhppote.Device) (*api.Table, error) {
 		if cmd.withPIN {
-			return api.MakeTableWithPIN(acl, devices)
+			return api.MakeTable(acl, devices, true, false)
 		} else {
-			return api.MakeTable(acl, devices)
+			return api.MakeTable(acl, devices, false, false)
 		}
 	}
 

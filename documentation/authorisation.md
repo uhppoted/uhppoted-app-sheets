@@ -5,8 +5,8 @@
 
 __The terminal implementation of Google's OAuth2 flow was deprecated completely on 3 October 2022 (see [OOB Migration](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration)).__
 
-*_uhppoted-app-sheets_ has been updated for the new _OAuth2_ flow but the changes are only in the current development version. To build the development version please see [Building from source](https://github.com/uhppoted/uhppoted-app-sheets#building-from-source)
-in the [README](https://github.com/uhppoted/uhppoted-app-sheets)*.
+*_uhppoted-app-sheets_ has been updated for the new _OAuth2_ flow but the changes are only in the current development version. To build the development version please see [Building from source](https://codeberg.org/uhppoted/uhppoted-app-sheets#building-from-source)
+in the [README](https://codeberg.org/uhppoted/uhppoted-app-sheets)*.
 
 ---
 
@@ -81,8 +81,8 @@ Now create a set of _OAuth2_ credentials:
 
 ## _uhppoted-app-sheets_ authorisation
 
-Installation for _uhppoted-app-sheets_ is described in the [README](https://github.com/uhppoted/uhppoted-app-sheets#installation)
-but for the current _development_ build you will have to follow the steps under [Building from source](https://github.com/uhppoted/uhppoted-app-sheets#building-from-source).
+Installation for _uhppoted-app-sheets_ is described in the [README](https://codeberg.org/uhppoted/uhppoted-app-sheets#installation)
+but for the current _development_ build you will have to follow the steps under [Building from source](https://codeberg.org/uhppoted/uhppoted-app-sheets#building-from-source).
 
 Having installed (or built) _uhppoted-app-sheets_, the next step is to _authorise_ access to the _Google Sheets_ spreadsheet:
 

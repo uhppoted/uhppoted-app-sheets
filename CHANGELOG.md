@@ -5,6 +5,7 @@
 ### Updated
 1. Updated to Go v1.26.
 2. Updated to _modern_ Go with 'go fix'.
+3. Migrated from _github.com/uhppoted/uhppoted-app-s3_ to _codeberg.org/uhppoted/uhppoted-app-s3_.
 
 
 ## [0.9.0](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.9.0) - 2026-01-27

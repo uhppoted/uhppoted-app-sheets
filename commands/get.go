@@ -13,7 +13,7 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
-	lib "github.com/uhppoted/uhppoted-lib/os"
+	lib "codeberg.org/uhppoted/uhppoted-lib/os"
 )
 
 var GetCmd = Get{

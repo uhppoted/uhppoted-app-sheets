@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"time"
 
-	api "github.com/uhppoted/uhppoted-lib/acl"
+	api "codeberg.org/uhppoted/uhppoted-lib/acl"
 )
 
 func makeTable(rows [][]any) (*api.Table, error) {

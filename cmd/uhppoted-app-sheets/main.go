@@ -6,10 +6,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/uhppoted/uhppote-core/uhppote"
-	"github.com/uhppoted/uhppoted-app-sheets/commands"
-	"github.com/uhppoted/uhppoted-lib/command"
-	"github.com/uhppoted/uhppoted-lib/config"
+	"codeberg.org/uhppoted/uhppoted-app-sheets/commands"
+	"codeberg.org/uhppoted/uhppoted-core/uhppote"
+	"codeberg.org/uhppoted/uhppoted-lib/command"
+	"codeberg.org/uhppoted/uhppoted-lib/config"
 )
 
 var cli = []uhppoted.Command{

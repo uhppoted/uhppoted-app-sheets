@@ -1,12 +1,12 @@
-module github.com/uhppoted/uhppoted-app-sheets
+module codeberg.org/uhppoted/uhppoted-app-sheets
 
 go 1.26
 
 require (
-	github.com/uhppoted/uhppote-core v0.9.1-0.20260219172325-1dd279d6cc53
-	github.com/uhppoted/uhppoted-lib v0.9.1-0.20260220173047-f3a88dcbc696
+	codeberg.org/uhppoted/uhppoted-core v0.0.0-20260723154335-7d132936dee1
+	codeberg.org/uhppoted/uhppoted-lib v0.0.0-20260730164853-a9c9795085df
 	golang.org/x/oauth2 v0.28.0
-	golang.org/x/sys v0.41.0
+	golang.org/x/sys v0.47.0
 	google.golang.org/api v0.228.0
 )
 

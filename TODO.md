@@ -1,10 +1,8 @@
 # TODO
 
-- [x] TCP/IP protocol (cf. https://github.com/uhppoted/uhppote-core/issues/17)
-- [x] Update to Go 1.23 (cf. https://github.com/uhppoted/uhppoted/issues/53)
-- [x] ARM6 target (cf. https://github.com/uhppoted/uhppoted/issues/55)
+- [x] Migrate to codeberg.org (cf. https://codeberg.org/uhppoted/uhppoted/issues/1)
 
-## TODO
+## To Be Done
 
 - [ ] Add support for an alternative spreadsheet
       - (?) [AirTable](https://www.airtable.com)

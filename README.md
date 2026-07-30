@@ -25,17 +25,17 @@ _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google
 
 ## Installation
 
-Executables for all the supported operating systems are packaged in the [releases](https://github.com/uhppoted/uhppoted-app-sheets/releases). The provided archives contain the executables for all the operating systems - OS specific tarballs can be found in the [uhppoted](https://github.com/uhppoted/uhppoted/releases) releases.
+Executables for all the supported operating systems are packaged in the [releases](https://codeberg.org/uhppoted/uhppoted-app-sheets/releases). The provided archives contain the executables for all the operating systems - OS specific tarballs can be found in the [uhppoted](https://codeberg.org/uhppoted/uhppoted/releases) releases.
 
 Installation is straightforward - download the archive and extract it to a directory of your choice and then place the executable in a directory in your PATH. The `uhppoted-app-sheets` utility requires the following additional 
 files:
 
 - `uhppoted.conf`
-- `credentials.json` (see [HOWTO: Authorisation](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md))
+- `credentials.json` (see [HOWTO: Authorisation](https://codeberg.org/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md))
 
 As of [3 October 2022](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration), 
 read and write authorisation for _uhppoted-app-sheets_ to access the _Google Sheet_ spreadsheet now requires
-a fairly involved setup process, which is documented in more detail in [HOWTO: Authorisation](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md).
+a fairly involved setup process, which is documented in more detail in [HOWTO: Authorisation](https://codeberg.org/uhppoted/uhppoted-app-sheets/blob/main/documentation/authorisation.md).
 
 **NOTE:** 
 
@@ -47,7 +47,7 @@ a fairly involved setup process, which is documented in more detail in [HOWTO: A
 ### `uhppoted.conf`
 
 `uhppoted.conf` is the communal configuration file shared by all the `uhppoted` project modules and is (or will 
-eventually be) documented in [uhppoted](https://github.com/uhppoted/uhppoted). A sample [_uhppoted.conf_](https://github.com/uhppoted/uhppoted-app-sheets/blob/main/documentation/uhppoted.conf) file is included in the _documentation_ folder.
+eventually be) documented in [uhppoted](https://codeberg.org/uhppoted/uhppoted). A sample [_uhppoted.conf_](https://codeberg.org/uhppoted/uhppoted-app-sheets/blob/main/documentation/uhppoted.conf) file is included in the _documentation_ folder.
 
 `uhppoted-app-sheets` requires the _controllers_ section to resolve non-local controller IP addresses and the mapping from
 ACL door names to controller doors e.g.:
@@ -88,14 +88,14 @@ Controller doors that are not in use should also be mapped to name e.g. Unused1,
 Assuming you have `Go` and `make` installed:
 
 ```
-git clone https://github.com/uhppoted/uhppoted-app-sheets.git
+git clone https://codeberg.org/uhppoted/uhppoted-app-sheets.git
 cd uhppoted-app-sheets
 make build
 ```
 
 If you prefer not to use `make`:
 ```
-git clone https://github.com/uhppoted/uhppoted-app-sheets.git
+git clone https://codeberg.org/uhppoted/uhppoted-app-sheets.git
 cd uhppoted-app-sheets
 mkdir bin
 go build -trimpath -o bin ./...
@@ -107,8 +107,6 @@ The above commands build the `uhppoted-app-sheets` executable to the `bin` direc
 
 | *Dependency*                                                                 | *Description*                              |
 | ---------------------------------------------------------------------------- | ------------------------------------------ |
-| [com.github/uhppoted/uhppote-core](https://github.com/uhppoted/uhppote-core) | Device level API implementation            |
-| [com.github/uhppoted/uhppoted-lib](https://github.com/uhppoted/uhppoted-lib) | Shared application library                 |
 | [google.golang.org/api](https://google.golang.org/api)                       | Google Sheets API v4 Go library            |
 | golang.org/x/net                                                             | Google Sheets API library dependency       |
 | golang.org/x/oauth2                                                          | Google Sheets API library dependency       |

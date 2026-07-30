@@ -14,9 +14,9 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
-	"github.com/uhppoted/uhppote-core/uhppote"
-	lib "github.com/uhppoted/uhppoted-lib/acl"
-	"github.com/uhppoted/uhppoted-lib/config"
+	"codeberg.org/uhppoted/uhppoted-core/uhppote"
+	lib "codeberg.org/uhppoted/uhppoted-lib/acl"
+	"codeberg.org/uhppoted/uhppoted-lib/config"
 )
 
 var CompareACLCmd = CompareACL{
@@ -220,9 +220,9 @@ func (cmd *CompareACL) getACL(google *sheets.Service, spreadsheet *sheets.Spread
 
 	f := func(table *lib.Table, devices []uhppote.Device) (*lib.ACL, []error, error) {
 		if cmd.withPIN {
-			return lib.ParseTable(table, devices, false)
+			return lib.ParseTable(table, devices, false, true, false)
 		} else {
-			return lib.ParseTable(table, devices, false)
+			return lib.ParseTable(table, devices, false, false, false)
 		}
 	}
 
@@ -306,10 +306,7 @@ func (c *CompareACL) write(google *sheets.Service, spreadsheet *sheets.Spreadshe
 			top := len(values.Values)
 			values.Values = append(values.Values, []any{fmt.Sprintf("%v", k), "'-", "'-", "'-"})
 
-			rows := max(len(v.Added), len(v.Updated))
-			if len(v.Deleted) > rows {
-				rows = len(v.Deleted)
-			}
+			rows := max(len(v.Deleted), max(len(v.Added), len(v.Updated)))
 
 			for i := 1; i <= rows; i++ {
 				values.Values = append(values.Values, []any{"", "", "", ""})

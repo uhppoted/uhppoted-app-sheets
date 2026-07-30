@@ -15,10 +15,10 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
-	"github.com/uhppoted/uhppote-core/uhppote"
-	lib "github.com/uhppoted/uhppoted-lib/acl"
-	"github.com/uhppoted/uhppoted-lib/config"
-	"github.com/uhppoted/uhppoted-lib/lockfile"
+	"codeberg.org/uhppoted/uhppoted-core/uhppote"
+	lib "codeberg.org/uhppoted/uhppoted-lib/acl"
+	"codeberg.org/uhppoted/uhppoted-lib/config"
+	"codeberg.org/uhppoted/uhppoted-lib/lockfile"
 )
 
 var LoadACLCmd = LoadACL{
@@ -224,9 +224,9 @@ func (cmd *LoadACL) Execute(args ...any) error {
 	if cmd.force || updated {
 		f := func(u uhppote.IUHPPOTE, list lib.ACL) (map[uint32]lib.Report, []error) {
 			if cmd.withPIN {
-				return lib.PutACLWithPIN(u, list, cmd.dryrun)
+				return lib.PutACL(u, list, cmd.dryrun, true, false)
 			} else {
-				return lib.PutACL(u, list, cmd.dryrun)
+				return lib.PutACL(u, list, cmd.dryrun, false, false)
 			}
 		}
 
@@ -409,7 +409,7 @@ func (l *LoadACL) getACL(google *sheets.Service, spreadsheet *sheets.Spreadsheet
 		return nil, nil, fmt.Errorf("error creating table from worksheet (%v)", err)
 	}
 
-	list, warnings, err := lib.ParseTable(table, devices, l.strict)
+	list, warnings, err := lib.ParseTable(table, devices, l.strict, false, false)
 	if err != nil {
 		return nil, nil, err
 	}

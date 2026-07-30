@@ -10,9 +10,9 @@ import (
 
 	"google.golang.org/api/sheets/v4"
 
-	"github.com/uhppoted/uhppote-core/uhppote"
-	"github.com/uhppoted/uhppoted-app-sheets/log"
-	"github.com/uhppoted/uhppoted-lib/config"
+	"codeberg.org/uhppoted/uhppoted-app-sheets/log"
+	"codeberg.org/uhppoted/uhppoted-core/uhppote"
+	"codeberg.org/uhppoted/uhppoted-lib/config"
 )
 
 const APP = "uhppoted-app-sheets"

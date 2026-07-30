@@ -20,7 +20,7 @@ import (
 	"golang.org/x/oauth2/google"
 	gdrive "google.golang.org/api/drive/v3"
 
-	"github.com/uhppoted/uhppoted-app-sheets/commands/html"
+	"codeberg.org/uhppoted/uhppoted-app-sheets/commands/html"
 )
 
 var AuthoriseCmd = Authorise{
