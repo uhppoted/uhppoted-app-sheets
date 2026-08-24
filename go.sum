@@ -4,10 +4,10 @@ cloud.google.com/go/auth/oauth2adapt v0.2.8 h1:keo8NaayQZ6wimpNSmW5OPc283g65QNIi
 cloud.google.com/go/auth/oauth2adapt v0.2.8/go.mod h1:XQ9y31RkqZCcwJWNSx2Xvric3RrU88hAYYbjDWYDL+c=
 cloud.google.com/go/compute/metadata v0.6.0 h1:A6hENjEsCDtC1k8byVsgwvVcioamEHvZ4j01OwKxG9I=
 cloud.google.com/go/compute/metadata v0.6.0/go.mod h1:FjyFAW1MW0C203CEOMDTu3Dk1FlqW3Rga40jzHL4hfg=
-codeberg.org/uhppoted/uhppoted-core v0.0.0-20260723154335-7d132936dee1 h1:G86Hf9223qeZAUQZCmYO6tkTGcvt+6DWU/2Ad3f0fKM=
-codeberg.org/uhppoted/uhppoted-core v0.0.0-20260723154335-7d132936dee1/go.mod h1:MoeCM7GWMq72F2tUs6/lBt9tlnBoOsMFT6effpitLRs=
-codeberg.org/uhppoted/uhppoted-lib v0.0.0-20260730164853-a9c9795085df h1:6AWH8plnZ1lrMdng8GnQ10/0+VZ6LovHoI4Qbrhibic=
-codeberg.org/uhppoted/uhppoted-lib v0.0.0-20260730164853-a9c9795085df/go.mod h1:0GAYfXxnmDI4j5wxGx4+me4Xp+RHASifTfHRVvk3BIk=
+codeberg.org/uhppoted/uhppoted-core v0.9.1-0.20260820171041-ca52d834887a h1:i1wC2cOwppbN3+DjCbHqrAjG+Kj22D6yYffbDE8FuHo=
+codeberg.org/uhppoted/uhppoted-core v0.9.1-0.20260820171041-ca52d834887a/go.mod h1:MoeCM7GWMq72F2tUs6/lBt9tlnBoOsMFT6effpitLRs=
+codeberg.org/uhppoted/uhppoted-lib v0.9.1-0.20260820171240-21ac1c6a3137 h1:gKirxDDubBWenp5rmo9SVltuQnHBMGC2xIK2dbEe7KI=
+codeberg.org/uhppoted/uhppoted-lib v0.9.1-0.20260820171240-21ac1c6a3137/go.mod h1:r8KVWWXlqh+CT17OG+wTF4jOIC0NbCHGdN6WxsVSv1k=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=
