@@ -19,7 +19,7 @@ _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google
 
 ### Current Release
 
-**[v0.9.0](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.9.0) - 2026-01-27**
+**[v0.9.0](https://codeberg.org/uhppoted/uhppoted-app-sheets/releases/tag/v0.9.0) - 2026-01-27**
 1. Updated to Go 1.25
 2. Replaced deprecated _golang.org/x/net/context_ package with _context_ from the standard library.
 
