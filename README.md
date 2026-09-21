@@ -1,4 +1,5 @@
-![build](https://github.com/uhppoted/uhppoted-app-sheets/workflows/build/badge.svg)
+![build](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/twystd/2609d9356470acaf904386ce4a74f54e/raw/uhppoted-app-sheets.json)
+
 
 # uhppoted-app-sheets
 
