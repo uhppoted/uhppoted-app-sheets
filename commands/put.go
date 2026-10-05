@@ -15,13 +15,11 @@ import (
 )
 
 var PutCmd = Put{
-	command: command{
-		workdir:     DEFAULT_WORKDIR,
-		credentials: DEFAULT_CREDENTIALS,
-		tokens:      "",
-		url:         "",
-		debug:       false,
-	},
+	workdir:     DEFAULT_WORKDIR,
+	credentials: DEFAULT_CREDENTIALS,
+	tokens:      "",
+	url:         "",
+	debug:       false,
 
 	area: "",
 	file: "",

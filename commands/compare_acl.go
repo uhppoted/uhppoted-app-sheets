@@ -20,13 +20,11 @@ import (
 )
 
 var CompareACLCmd = CompareACL{
-	command: command{
-		workdir:     DEFAULT_WORKDIR,
-		credentials: DEFAULT_CREDENTIALS,
-		tokens:      "",
-		url:         "",
-		debug:       false,
-	},
+	workdir:     DEFAULT_WORKDIR,
+	credentials: DEFAULT_CREDENTIALS,
+	tokens:      "",
+	url:         "",
+	debug:       false,
 
 	config: config.DefaultConfig,
 	acl:    "",

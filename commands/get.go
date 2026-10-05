@@ -17,13 +17,11 @@ import (
 )
 
 var GetCmd = Get{
-	command: command{
-		workdir:     DEFAULT_WORKDIR,
-		credentials: DEFAULT_CREDENTIALS,
-		tokens:      "",
-		url:         "",
-		debug:       false,
-	},
+	workdir:     DEFAULT_WORKDIR,
+	credentials: DEFAULT_CREDENTIALS,
+	tokens:      "",
+	url:         "",
+	debug:       false,
 
 	area: "",
 	file: time.Now().Format("2006-01-02T150405.tsv"),

@@ -22,13 +22,11 @@ import (
 )
 
 var LoadACLCmd = LoadACL{
-	command: command{
-		workdir:     DEFAULT_WORKDIR,
-		credentials: DEFAULT_CREDENTIALS,
-		tokens:      "",
-		url:         "",
-		debug:       false,
-	},
+	workdir:     DEFAULT_WORKDIR,
+	credentials: DEFAULT_CREDENTIALS,
+	tokens:      "",
+	url:         "",
+	debug:       false,
 
 	config: config.DefaultConfig,
 	area:   "",
