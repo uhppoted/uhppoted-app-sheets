@@ -1,4 +1,4 @@
-![build](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/twystd/2609d9356470acaf904386ce4a74f54e/raw/uhppoted-app-sheets.json)
+![build](https://github.com/uhppoted/uhppoted-app-sheets/workflows/build/badge.svg)
 
 
 # uhppoted-app-sheets
@@ -19,7 +19,7 @@ _Example Google Sheets worksheet: [uhppoted-app-sheets-demo](https://docs.google
 
 ### Current Release
 
-## [0.9.1](https://github.com/uhppoted/uhppoted-app-sheets/releases/tag/v0.9.1) - 2026-10-13
+## [0.9.1](https://codeberg.org/uhppoted/uhppoted-app-sheets/releases/tag/v0.9.1) - 2026-10-13
 
 _Maintenance release_
 
